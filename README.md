@@ -30,9 +30,9 @@ Download [latest release](https://github.com/brainfoolong/form-data-json/release
 
 ## How to use
 ###### Read form input values
-
-    FormDataJson.formToJson(document.querySelector("form"))
-    
+```javascript
+FormDataJson.formToJson(document.querySelector("form"))
+``` 
 ###### Read form input values including all inputs, even disabled inputs or unchecked checkboxes
 ```javascript
 FormDataJson.formToJson(document.querySelector("form"), new FormDataJsonOptions({ includeDisabled: true }))
