@@ -31,27 +31,49 @@ class FormDataJson {
   /**
    * Get input value
    * Unchecked checkboxes/radios will return null
+   * Unselected selectbox will return null
    * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} inputElement
    * @return {*}
    */
   static getInputValue (inputElement) {
     if (inputElement instanceof HTMLSelectElement) {
-      if (inputElement.multiple) {
-        let arr = []
-        for (let i = 0; i < inputElement.options.length; i++) {
-          let opt = inputElement.options[i]
-          if (opt.selected) {
-            arr.push(typeof opt.value !== 'undefined' ? opt.value : opt.text)
-          }
+      let arr = []
+      for (let i = 0; i < inputElement.options.length; i++) {
+        let option = inputElement.options[i]
+        if (option.selected) {
+          arr.push((typeof option.value !== 'undefined' ? option.value : option.text).toString())
         }
+      }
+      if (inputElement.multiple) {
         return arr
       }
-      return inputElement.selectedIndex
+      return arr.length ? arr[0] : null
     }
     if (inputElement instanceof HTMLInputElement && FormDataJson.checkedInputTypes.indexOf(inputElement.type.toLowerCase()) > -1) {
       return inputElement.checked ? inputElement.value : null
     }
     return inputElement.value
+  }
+
+  /**
+   * Set input value
+   * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} inputElement
+   * @param {*|null} value Null will unset the value
+   */
+  static setInputValue (inputElement, value) {
+    let inputType = (inputElement.type || 'text').toLowerCase()
+    if (inputElement instanceof HTMLInputElement && FormDataJson.checkedInputTypes.indexOf(inputType) > -1) {
+      inputElement.checked = value === inputElement.value
+    } else if (inputElement instanceof HTMLSelectElement) {
+      if (!Array.isArray(value)) value = [value]
+      for (let i = 0; i < inputElement.options.length; i++) {
+        let option = inputElement.options[i]
+        let optionValue = typeof option.value !== 'undefined' ? option.value : option.text
+        option.selected = value.indexOf(optionValue) > -1
+      }
+    } else {
+      inputElement.value = value
+    }
   }
 
   /**
@@ -123,8 +145,9 @@ class FormDataJson {
    * @param {HTMLFormElement|Element} formElement
    * @param {Object} values
    * @param {FormDataJsonOptions=} options
+   * @param {string=} keyPrefix
    */
-  static fillFormFromJsonValues (formElement, values, options) {
+  static fillFormFromJsonValues (formElement, values, options, keyPrefix) {
     if (options && !(options instanceof FormDataJsonOptions)) {
       console.error('Options are not an instance of FormDataJsonOptions')
       return
@@ -132,28 +155,68 @@ class FormDataJson {
     if (!values) {
       return
     }
+    options = options || new FormDataJsonOptions()
+    if (options.unsetAllInputsOnFill) {
+      FormDataJson.unsetFormInputs(formElement)
+    }
+    let arrayCounts = {}
+    let inputsFlat = {}
+    let inputs = formElement.querySelectorAll('select, textarea, input, button')
+    for (let i = 0; i < inputs.length; i++) {
+      let input = inputs[i]
+      let inputName = input.name
+      let isMultiple = input instanceof HTMLSelectElement && input.multiple
+      if (!inputName || inputName.length === 0) continue
+      inputsFlat[inputName] = input
+      if (inputName.match(/\[\]/)) {
+        let parts = inputName.split('[]')
+        if (isMultiple) {
+          parts = inputName.substr(0, inputName.length - 2).split('[]')
+        }
+        let partInputName = ''
+        for (let j = 0; j < parts.length; j++) {
+          if (!parts[j].length) continue
+          partInputName += parts[j] + '[]'
+          if (typeof arrayCounts[partInputName] === 'undefined') {
+            arrayCounts[partInputName] = -1
+          }
+          arrayCounts[partInputName]++
+          partInputName = partInputName.replace(/\[\]/, '[' + arrayCounts[partInputName] + ']')
+        }
+        if (isMultiple) {
+          partInputName += '[]'
+        }
+        inputsFlat[partInputName] = input
+      }
+    }
     for (let inputName in values) {
-
+      let value = values[inputName]
+      let searchInputName = keyPrefix ? keyPrefix + '[' + inputName + ']' : inputName
+      if (Array.isArray(value)) {
+        searchInputName += '[]'
+      }
+      let input = inputsFlat[searchInputName] || null
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        FormDataJson.fillFormFromJsonValues(formElement, value, options, searchInputName)
+      } else if (input) {
+        FormDataJson.setInputValue(input, value)
+      }
     }
   }
 
   /**
-   * Merge options
-   * @param {Object} optionsDefault
-   * @param {Object=} optionsUser
-   * @return {{}}
+   * Unset for inputs
+   * @param {HTMLFormElement|Element} formElement
    */
-  static mergeOptions (optionsDefault, optionsUser) {
-    let options = {}
-    for (let i in optionsDefault) {
-      options[i] = optionsDefault[i]
-    }
-    if (typeof optionsUser === 'object') {
-      for (let i in optionsUser) {
-        options[i] = optionsUser[i]
+  static unsetFormInputs (formElement) {
+    let inputs = formElement.querySelectorAll('select, textarea, input')
+    for (let i = 0; i < inputs.length; i++) {
+      let inputType = (inputs[i].type || 'text').toLowerCase()
+      if (FormDataJson.buttonInputTypes.indexOf(inputType) > -1) {
+        continue
       }
+      FormDataJson.setInputValue(inputs[i], null)
     }
-    return options
   }
 }
 

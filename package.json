@@ -3,7 +3,7 @@
   "name": "formdata-json",
   "description": "Convert html forms into json or fill forms from json.",
   "repository": "https://github.com/brainfoolong/formdata-json",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "scripts": {
     "dist": "node build/dist.js"
   },

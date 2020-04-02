@@ -3,29 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <title>Test FormDataJson</title>
-    <!--<script src="../dist/form-data-json.min.js"></script>-->
-    <script src="../src/form-data-json.js"></script>
     <script>
-      function runTest (form, options, expectedJsonString) {
-        let values = FormDataJson.formToJson(form, options)
+      ;(function () {
+        let url = '../dist/form-data-json.min.js'
+        // with debug flag we directly load original source file
+        // only work in supported browsers, like chrome
+        if (location.href.match(/\?debug/)) {
+          url = '../src/form-data-json.js'
+        }
+        let s = document.createElement('script')
+        s.setAttribute('src', url)
+        document.head.appendChild(s)
+      })()
+    </script>
+    <script>
+      /**
+       * Run a test
+       * @param {string} mode read|write
+       * @param {HTMLFormElement|Element} form
+       * @param {Object|null} options
+       * @param {string} data Expected/Set data as json string
+       */
+      function runTest (mode, form, options, data) {
+        // because we dynamically insert required script in head, we may not have loading the library on page load
+        if (typeof FormDataJson === 'undefined') {
+          setTimeout(function () {
+            runTest(mode, form, options, data)
+          }, 100)
+          return
+        }
+        let values, result
+        if (options) options = new FormDataJsonOptions(options)
+        if (mode === 'read') {
+          values = FormDataJson.formToJson(form, options)
+          result = data === JSON.stringify(values)
+        } else {
+          FormDataJson.fillFormFromJsonValues(form, JSON.parse(data), options)
+          values = FormDataJson.formToJson(form, options)
+          result = data === JSON.stringify(values)
+        }
+        form.classList.add('result-' + (result ? 'success' : 'error'))
         let title = 'Test ' + form.getAttribute('name')
-        let result = expectedJsonString === JSON.stringify(values)
-        console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;')
-        console.log('Expected JsonString', expectedJsonString)
-        console.log('Expected Object', JSON.parse(expectedJsonString))
+        console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline; color:orange;')
+        console.log('Expected JsonString', data)
+        console.log('Expected Object', JSON.parse(data))
         console.log('Got JsonString', JSON.stringify(values))
         console.log('Got Object', values)
         console.log('%c' + (result ? 'Success' : 'Error'), result ? 'color:green' : 'color:red')
-        let html = form.innerHTML
-        html = '<h3>' + title + '</h3>' + html
-        html += '<div class="result">'
+        form.querySelector('h3').innerHTML = title
+        let html = '<div class="result">'
         if (result) {
-          html += '<div class="success">Test successfull</div>'
+          html += '<div>Test successfull</div>'
         } else {
-          html += '<div class="error">Test error. See console log for detailed information.</div>'
+          html += '<div>Test error. See console log for detailed information.</div>'
         }
         html += '</div>'
-        form.innerHTML = html
+        form.querySelector('.result').innerHTML = html
       }
     </script>
     <style type="text/css">
@@ -36,27 +69,36 @@
             display: block;
             padding: 10px;
             border: 1px solid #ddd;
+            margin-bottom: 10px;
         }
         h3 {
             margin: 0;
             padding: 0;
             margin-bottom: 10px;
         }
+        .result-success {
+            background: #ceffce;
+        }
+        .result-error {
+            background: #ffc2ba;
+        }
         .result {
             padding-top: 10px;
         }
-        .result .success {
+        .result-success .result {
             color: green;
         }
-        .result .error {
+        .result-error .result {
             color: red;
         }
     </style>
 </head>
 <body>
-
-<form name="f1" id="f1">
-    <p>Let us test pretty weird array combinations. This tool is designed to create auto numbered indexes if no index is provided. If multiple equal keys exist, values will be overriden in dom order.</p>
+<form name="read-array" id="read-array">
+    <h3></h3>
+    <p>Testing read of pretty weird array input names. This tool is designed to create auto numbered indexes if no index
+        is
+        provided. If multiple equal keys exist, values will be overriden in dom order.</p>
     <input type="hidden" name="name" value="1">
     <input type="hidden" name="name2">
     <input type="hidden" name="name[]" value="name[]">
@@ -68,16 +110,40 @@
     <input type="hidden" name="name[]" value="name[]">
     <input type="checkbox" name="chk[]" value="1" checked>
     <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
 </form>
 <script>
   (function () {
-    runTest(document.querySelector('#f1'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":{"0":"1"}}')
+    runTest('read', document.querySelector('#read-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":{"0":"1"}}')
   })()
 </script>
 
-<form name="f2" id="f2" action="test.php" method="post">
-    <p>Lets test all existing input types.</p>
-    <input type="button" name="button" value="Button">
+<form name="write-array" id="write-array">
+    <h3></h3>
+    <p>Testing write of pretty weird array input names.</p>
+    <input type="hidden" name="name" value="">
+    <input type="hidden" name="name2">
+    <input type="hidden" name="name[]" value="">
+    <input type="hidden" name="name[foo]" value="">
+    <input type="hidden" name="name[bar]" value="">
+    <input type="hidden" name="name[]" value="">
+    <input type="hidden" name="name[0][sub1]" value="">
+    <input type="hidden" name="name[0][sub2]" value="">
+    <input type="hidden" name="name[]" value="">
+    <input type="checkbox" name="chk[]" value="1">
+    <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('write', document.querySelector('#write-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":{"0":"1"}}')
+  })()
+</script>
+
+<form name="read-all" id="read-all">
+    <h3></h3>
+    <p>Testing read formToJson() of all existing input types.</p>
+    <input type="button" name="button" value="">
     <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
     <input type="checkbox" name="checkbox" value="checkbox unchecked">
     <input type="color" name="color" value="#ff0000">
@@ -122,10 +188,135 @@
         <option selected>2</option>
         <option value="3" selected>3</option>
     </select>
+    <div class="result"></div>
 </form>
 <script>
   (function () {
-    runTest(document.querySelector('#f2'), null, '{}')
+    runTest('read', document.querySelector('#read-all'), null, '{"checkbox_checked":"checkbox checked","color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","file":"","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+  })()
+</script>
+
+<form name="write-all" id="write-all">
+    <h3></h3>
+    <p>Testing write fillFormFromJsonValues() of all existing input types.</p>
+    <input type="button" name="button" value="">
+    <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
+    <input type="checkbox" name="checkbox" value="checkbox unchecked">
+    <input type="color" name="color">
+    <input type="date" name="date" value="">
+    <input type="datetime-local" name="datetime-local" value="">
+    <input type="email" name="email" value="">
+    <input type="file" name="file">
+    <input type="hidden" name="hidden" value="">
+    <input type="image" name="image">
+    <input type="month" name="month" value="">
+    <input type="number" name="number" value="">
+    <input type="password" name="password" value="">
+    <input type="radio" name="radio" value="radio unchecked1">
+    <input type="radio" name="radio" value="radio checked" checked>
+    <input type="radio" name="radio" value="radio unchecked2">
+    <input type="range" name="range" value="" min="1" maxlength="10">
+    <input type="reset" name="reset" value="reset">
+    <input type="search" name="search" value="">
+    <input type="submit" name="submit" value="submit">
+    <input type="tel" name="tel" value="">
+    <input type="text" name="text" value="">
+    <input type="time" name="time" value="">
+    <input type="url" name="url" value="">
+    <input type="week" name="week" value="">
+    <button value="Button Element" name="button_element"></button>
+    <textarea name="textarea"></textarea>
+    <select name="select_single_value">
+        <option value="1">1</option>
+        <option value="2">2</option>
+    </select>
+    <select name="select_single_text">
+        <option>1</option>
+        <option>2</option>
+    </select>
+    <select name="select_multiple[]" multiple>
+        <option>1</option>
+        <option>2</option>
+        <option value="3">3</option>
+    </select>
+    <select name="select_multiple_depth[123][]" multiple>
+        <option>1</option>
+        <option>2</option>
+        <option value="3">3</option>
+    </select>
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","file":"","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+  })()
+</script>
+
+<form name="option-includeDisabled" id="option-includeDisabled">
+    <h3></h3>
+    <p>Testing option "includeDisabled".</p>
+    <input type="email" name="email_enabled" value="notdisabled@foo.bar">
+    <input type="email" name="email_disabled" value="disabled@foo.bar" disabled>
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#option-includeDisabled'), { includeDisabled: true }, '{"email_enabled":"notdisabled@foo.bar","email_disabled":"disabled@foo.bar"}')
+  })()
+</script>
+
+<form name="option-includeUncheckedAsNull" id="option-includeUncheckedAsNull">
+    <h3></h3>
+    <p>Testing option "includeUncheckedAsNull".</p>
+    <input type="checkbox" name="checked" value="1" checked>
+    <input type="checkbox" name="unchecked" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#option-includeUncheckedAsNull'), { includeUncheckedAsNull: true }, '{"checked":"1","unchecked":null}')
+  })()
+</script>
+
+<form name="option-includeButtonValues" id="option-includeButtonValues">
+    <h3></h3>
+    <p>Testing option "includeButtonValues".</p>
+    <input type="checkbox" name="checked" value="1" checked>
+    <input type="checkbox" name="unchecked" value="2">
+    <input type="button" name="button" value="Btn1">
+    <input type="submit" name="submit" value="submit">
+    <input type="reset" name="reset" value="reset">
+    <button value="Button Element" name="button_element"></button>
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#option-includeButtonValues'), { includeButtonValues: true }, '{"checked":"1","button":"Btn1","submit":"submit","reset":"reset","button_element":"Button Element"}')
+  })()
+</script>
+
+<form name="option-unsetAllInputsOnFill" id="option-unsetAllInputsOnFill">
+    <h3></h3>
+    <p>Testing option "unsetAllInputsOnFill".</p>
+    <input type="checkbox" name="checked" value="1">
+    <input type="checkbox" name="unchecked" value="2">
+    <input type="button" name="button" value="Btn1">
+    <input type="text" value="foobar" name="foobar">
+    <select name="select">
+        <option>1</option>
+        <option>2</option>
+        <option value="3" selected>3</option>
+    </select>
+    <select name="select_multiple_depth[123][]" multiple>
+        <option selected>1</option>
+        <option>2</option>
+        <option value="3" selected>3</option>
+    </select>
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('write', document.querySelector('#option-unsetAllInputsOnFill'), { unsetAllInputsOnFill: true }, '{"foobar":"","select":"1","select_multiple_depth":{"123":[]}}')
   })()
 </script>
 </body>
