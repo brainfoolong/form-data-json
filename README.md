@@ -11,6 +11,7 @@ Download [latest release](https://github.com/brainfoolong/form-data-json/release
 * No dependency - Vanilla javascript
 * Cross Browser including IE11
 * Multidimensional input name support. For example: `name="entry[123][person]"`
+* Super small: ~3kB gzipped 
 
 ## Supported Browser
 * Chrome
