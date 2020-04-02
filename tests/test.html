@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test FormDataJson</title>
+    <!--<script src="../dist/form-data-json.min.js"></script>-->
+    <script src="../src/form-data-json.js"></script>
+    <script>
+      function runTest (form, options, expectedJsonString) {
+        let values = FormDataJson.formToJson(form, options)
+        let title = 'Test ' + form.getAttribute('name')
+        let result = expectedJsonString === JSON.stringify(values)
+        console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;')
+        console.log('Expected JsonString', expectedJsonString)
+        console.log('Expected Object', JSON.parse(expectedJsonString))
+        console.log('Got JsonString', JSON.stringify(values))
+        console.log('Got Object', values)
+        console.log('%c' + (result ? 'Success' : 'Error'), result ? 'color:green' : 'color:red')
+        let html = form.innerHTML
+        html = '<h3>' + title + '</h3>' + html
+        html += '<div class="result">'
+        if (result) {
+          html += '<div class="success">Test successfull</div>'
+        } else {
+          html += '<div class="error">Test error. See console log for detailed information.</div>'
+        }
+        html += '</div>'
+        form.innerHTML = html
+      }
+    </script>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: block;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        h3 {
+            margin: 0;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+        .result {
+            padding-top: 10px;
+        }
+        .result .success {
+            color: green;
+        }
+        .result .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<form name="f1" id="f1">
+    <p>Let us test pretty weird array combinations. This tool is designed to create auto numbered indexes if no index is provided. If multiple equal keys exist, values will be overriden in dom order.</p>
+    <input type="hidden" name="name" value="1">
+    <input type="hidden" name="name2">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="hidden" name="name[foo]" value="name[foo]">
+    <input type="hidden" name="name[bar]" value="name[bar]">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
+    <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="checkbox" name="chk[]" value="1" checked>
+    <input type="checkbox" name="chk[]" value="2">
+</form>
+<script>
+  (function () {
+    runTest(document.querySelector('#f1'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":{"0":"1"}}')
+  })()
+</script>
+
+<form name="f2" id="f2" action="test.php" method="post">
+    <p>Lets test all existing input types.</p>
+    <input type="button" name="button" value="Button">
+    <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
+    <input type="checkbox" name="checkbox" value="checkbox unchecked">
+    <input type="color" name="color" value="#ff0000">
+    <input type="date" name="date" value="2020-01-03">
+    <input type="datetime-local" name="datetime-local" value="2014-01-02T11:42:13.510">
+    <input type="email" name="email" value="email@foo.bar">
+    <input type="file" name="file">
+    <input type="hidden" name="hidden" value="hidden">
+    <input type="image" name="image">
+    <input type="month" name="month" value="2020-01">
+    <input type="number" name="number" value="666">
+    <input type="password" name="password" value="1234">
+    <input type="radio" name="radio" value="radio unchecked1">
+    <input type="radio" name="radio" value="radio checked" checked>
+    <input type="radio" name="radio" value="radio unchecked2">
+    <input type="range" name="range" value="6" min="1" maxlength="10">
+    <input type="reset" name="reset" value="reset">
+    <input type="search" name="search" value="search">
+    <input type="submit" name="submit" value="submit">
+    <input type="tel" name="tel" value="+436666666666">
+    <input type="text" name="text" value="text">
+    <input type="time" name="time" value="06:06">
+    <input type="url" name="url" value="https://github.com/brainfoolong/formdata-json">
+    <input type="week" name="week" value="2014-W48">
+    <button value="Button Element" name="button_element"></button>
+    <textarea name="textarea">textarea</textarea>
+    <select name="select_single_value">
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+    </select>
+    <select name="select_single_text">
+        <option>1</option>
+        <option selected>2</option>
+    </select>
+    <select name="select_multiple[]" multiple>
+        <option>1</option>
+        <option selected>2</option>
+        <option value="3" selected>3</option>
+    </select>
+    <select name="select_multiple_depth[123][]" multiple>
+        <option>1</option>
+        <option selected>2</option>
+        <option value="3" selected>3</option>
+    </select>
+</form>
+<script>
+  (function () {
+    runTest(document.querySelector('#f2'), null, '{}')
+  })()
+</script>
+</body>
+</html>

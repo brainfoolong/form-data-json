@@ -1,0 +1,17 @@
+{
+  "license": "MIT",
+  "name": "formdata-json",
+  "description": "Convert html forms into json or fill forms from json.",
+  "repository": "https://github.com/brainfoolong/formdata-json",
+  "version": "0.0.1",
+  "scripts": {
+    "dist": "node build/dist.js"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.9.0",
+    "babel-preset-minify": "^0.5.1"
+  }
+}
