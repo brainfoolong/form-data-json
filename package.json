@@ -1,6 +1,6 @@
 {
   "license": "MIT",
-  "name": "formdata-json",
+  "name": "form-data-json",
   "description": "Convert html forms into json or fill forms from json.",
   "repository": "https://github.com/brainfoolong/formdata-json",
   "version": "1.0.0",
