@@ -18,7 +18,7 @@ Download [latest release](https://github.com/brainfoolong/form-data-json/release
 * Super small: ~3kB gzipped 
 
 ## Playground
-[Test out the script here.](https://raw.githack.com/brainfoolong/form-data-json/master/example/playground.html)
+[Test it out here.](https://unpkg.com/form-data-json-convert@latest/example/playground.html)
 
 ## Supported Browser
 * Chrome
