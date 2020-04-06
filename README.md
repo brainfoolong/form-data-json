@@ -47,7 +47,7 @@ FormDataJson.formToJson(document.querySelector("form"))
 ``` 
 ###### Read form input values including all inputs, even disabled inputs or unchecked checkboxes
 ```javascript
-FormDataJson.formToJson(document.querySelector("form"), new FormDataJsonOptions({ includeDisabled: true }))
+let values = FormDataJson.formToJson(document.querySelector("form"), new FormDataJsonOptions({ includeDisabled: true }))
 ```
 ###### Read with file inputs as base64 data uri
 ```javascript
