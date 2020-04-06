@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/brainfoolong/form-data-json.git"
   },
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "dist": "node build/dist.js"
   },

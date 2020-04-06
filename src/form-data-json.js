@@ -1,14 +1,4 @@
 'use strict'
-
-/**
- * Fix for older browsers
- */
-if (!Array.isArray) {
-  Array.isArray = function (vArg) {
-    return Object.prototype.toString.call(vArg) === '[object Array]'
-  }
-}
-
 /**
  * Form Data Json Converter
  * @link https://github.com/brainfoolong/formdata-json
@@ -65,7 +55,7 @@ class FormDataJson {
     if (inputElement instanceof HTMLInputElement && FormDataJson.checkedInputTypes.indexOf(inputType) > -1) {
       inputElement.checked = value === inputElement.value
     } else if (inputElement instanceof HTMLSelectElement) {
-      if (!Array.isArray(value)) value = [value]
+      if (!FormDataJson.isArray(value)) value = [value]
       for (let i = 0; i < inputElement.options.length; i++) {
         let option = inputElement.options[i]
         let optionValue = typeof option.value !== 'undefined' ? option.value : option.text
@@ -192,11 +182,11 @@ class FormDataJson {
     for (let inputName in values) {
       let value = values[inputName]
       let searchInputName = keyPrefix ? keyPrefix + '[' + inputName + ']' : inputName
-      if (Array.isArray(value)) {
+      if (FormDataJson.isArray(value)) {
         searchInputName += '[]'
       }
       let input = inputsFlat[searchInputName] || null
-      if (typeof value === 'object' && !Array.isArray(value)) {
+      if (typeof value === 'object' && !FormDataJson.isArray(value)) {
         FormDataJson.fillFormFromJsonValues(formElement, value, options, searchInputName)
       } else if (input) {
         FormDataJson.setInputValue(input, value)
@@ -217,6 +207,15 @@ class FormDataJson {
       }
       FormDataJson.setInputValue(inputs[i], null)
     }
+  }
+
+  /**
+   * Check if arg is arr
+   * @param {*} arr
+   * @return {boolean}
+   */
+  static isArray (arg) {
+    return typeof arg === 'object' && Object.prototype.toString.call(arg) === '[object Array]'
   }
 }
 
