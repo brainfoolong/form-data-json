@@ -1,5 +1,5 @@
 # Form Data Json - Form input values to/from JSON
-A zero dependency, cross browser library to easily get form input values as a json object. Or set form input values from a json object. It can handle almost all existing input types, including multidimensional array names.
+A zero dependency, cross browser library to easily get or set form input values as/from a json object. It can handle all existing input types, including multidimensional array names and file input.
 
 ## Installation
 Download [latest release](https://github.com/brainfoolong/form-data-json/releases/latest) and include `dist/form-data-json.min.js` into your project.
