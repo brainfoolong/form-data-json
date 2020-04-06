@@ -25,7 +25,8 @@
        **/
       function showTestResults (form, expected, got) {
         let result = expected === JSON.stringify(got)
-        form.classList.remove('result-success', 'result-error')
+        form.classList.remove('result-success')
+        form.classList.remove('result-error')
         form.classList.add('result-' + (result ? 'success' : 'error'))
         let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + form.getAttribute('name')
         if (!location.href.match(/(\?|\&)noverbose/)) {
@@ -100,9 +101,7 @@
           showTestResults(form, expected, values)
           // after user has changed files, run test again
           form.addEventListener('change', function () {
-            console.log('change')
             FormDataJson.formToJson(form, options, function (values) {
-              console.log(values)
               showTestResults(form, expected, values)
             })
           }, false)
