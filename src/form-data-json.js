@@ -1,7 +1,7 @@
 'use strict'
 /**
  * Form Data Json Converter
- * @link https://github.com/brainfoolong/formdata-json
+ * @link https://github.com/brainfoolong/form-data-json
  * @licence MIT
  */
 class FormDataJson {
