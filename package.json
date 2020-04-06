@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/brainfoolong/form-data-json.git"
   },
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "dist": "node build/dist.js"
   },
@@ -26,6 +26,11 @@
     "test": "tests",
     "example": "example"
   },
+  "files": [
+    "dist/*",
+    "src/*",
+    "*.md"
+  ],
   "keywords": [
     "javascript",
     "forms",

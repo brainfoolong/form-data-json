@@ -1,3 +1,6 @@
+### 1.1.1 - 6. April 2020
+* Reduced NPM package included files
+
 ### 1.1.0 - 6. April 2020
 * Added read of file inputs
 
