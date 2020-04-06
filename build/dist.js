@@ -36,8 +36,10 @@ async function compile () {
   } else {
     files = [__dirname + '/../src/form-data-json.js']
   }
+  let packageJson = require(__dirname + '/../package.json')
   files.forEach(function (file) {
-    let contents = babel.transformSync(fs.readFileSync(file), babelConf).code
+    let contents = '// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n'
+    contents += babel.transformSync(fs.readFileSync(file), babelConf).code
     let basename = path.basename(file)
     let minFile = distFolder + '/' + basename.substr(0, basename.length - 3) + '.min.js'
     fs.writeFileSync(minFile, contents)
