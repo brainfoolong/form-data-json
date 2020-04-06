@@ -43,7 +43,7 @@ npm install form-data-json-convert
 ## How to use
 ###### Read form input values
 ```javascript
-FormDataJson.formToJson(document.querySelector("form"))
+let values = FormDataJson.formToJson(document.querySelector("form"))
 ``` 
 ###### Read form input values including all inputs, even disabled inputs or unchecked checkboxes
 ```javascript
