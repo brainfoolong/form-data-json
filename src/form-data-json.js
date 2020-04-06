@@ -1,4 +1,5 @@
 'use strict'
+
 /**
  * Form Data Json Converter
  * @link https://github.com/brainfoolong/form-data-json
@@ -70,9 +71,10 @@ class FormDataJson {
    * Get values from form
    * @param {HTMLFormElement|Element} formElement
    * @param {FormDataJsonOptions=} options
+   * @param {function=} fileValuesCallback If given, than call this callback when all file values are readed as base64 data-uri
    * @return {Object}
    */
-  static formToJson (formElement, options) {
+  static formToJson (formElement, options, fileValuesCallback) {
     if (options && !(options instanceof FormDataJsonOptions)) {
       console.error('Options are not an instance of FormDataJsonOptions')
       return
@@ -81,6 +83,7 @@ class FormDataJson {
     let object = {}
     let inputs = formElement.querySelectorAll('select, textarea, input, button')
     let arrayCounts = {}
+    let files = []
     for (let i = 0; i < inputs.length; i++) {
       let input = inputs[i]
       let inputType = (input.type || 'text').toLowerCase()
@@ -119,11 +122,45 @@ class FormDataJson {
           if (!options.includeUncheckedAsNull && value === null) {
             delete o[namePart]
           }
+          if (inputType === 'file') {
+            delete o[namePart]
+            if (fileValuesCallback) {
+              files.push({ 'object': o, 'name': namePart, 'input': input })
+            }
+          }
         } else {
           if (typeof o[namePart] !== 'object') {
             o[namePart] = {}
           }
           o = o[namePart]
+        }
+      }
+    }
+    if (files.length) {
+      let filesDone = 0
+      let filesRequired = 0
+      for (let i = 0; i < files.length; i++) {
+        let row = files[i]
+        let o = row.object
+        filesRequired += row.input.files.length
+        for (let j = 0; j < row.input.files.length; j++) {
+          let file = row.input.files[j]
+          let reader = new FileReader()
+          reader.onload = function () {
+            if (typeof o[row.name] === 'undefined') {
+              o[row.name] = row.input.multiple ? [] : null
+            }
+            if (row.input.multiple) {
+              o[row.name].push(reader.result)
+            } else {
+              o[row.name] = reader.result
+            }
+            filesDone++
+            if (filesDone === filesRequired) {
+              fileValuesCallback(object)
+            }
+          }
+          reader.readAsDataURL(file)
         }
       }
     }

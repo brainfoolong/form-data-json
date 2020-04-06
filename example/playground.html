@@ -26,7 +26,7 @@
     </style>
 </head>
 <body>
-<form name="myform" id="myform">
+<form name="myform" id="myform" autocomplete="off" spellcheck="false">
     <h3>Form Data Json Playground</h3>
     <div class="field">
         <div>First Name ([name='firstName'])</div>
@@ -77,6 +77,12 @@
         </div>
     </div>
     <div class="field">
+        <div>Do you have a file for us? ([name='file'])</div>
+        <div>
+            <input type="file" name="file">
+        </div>
+    </div>
+    <div class="field">
         <input type="button" id="tojson" value="Show JSON">
         <input type="button" id="fromjson" value="Set values from JSON"><br/>
         <div id="script-call"></div>
@@ -96,8 +102,10 @@
     document.head.appendChild(s)
 
     function toJson () {
-      scriptCall.innerHTML = 'FormDataJson.formToJson(document.getElementById(\'myform\'))'
-      textarea.value = JSON.stringify(FormDataJson.formToJson(form), null, 2)
+      scriptCall.innerHTML = '// read without file inputs<br/>let values = FormDataJson.formToJson(document.getElementById(\'myform\'));<br/>// read with file inputs<br/>FormDataJson.formToJson(document.getElementById(\'myform\'), null, function(values) { // callback when files are loaded })'
+      textarea.value = JSON.stringify(FormDataJson.formToJson(form, null, function (values) {
+        textarea.value = JSON.stringify(values, null, 2)
+      }), null, 2)
     }
 
     function fromJson () {

@@ -33,7 +33,7 @@ npm install form-data-json-convert
 * And probably every other that we don't test
 
 ## What's not supported
-* `<input type="file">` It's impossible in javascript to set values for file inputs, for security reasons.
+* Write to `<input type="file">` It's impossible in javascript to set values for file inputs, for security reasons. However, reading file input as base64 data uri string is supported.
 
 ## How to contribute
 * Please write an issue before you start programming.
@@ -49,7 +49,11 @@ FormDataJson.formToJson(document.querySelector("form"))
 ```javascript
 FormDataJson.formToJson(document.querySelector("form"), new FormDataJsonOptions({ includeDisabled: true }))
 ```
-    
+###### Read with file inputs as base64 data uri
+```javascript
+FormDataJson.formToJson(document.querySelector("form"), null, function(values){})
+```
+
 ###### Set form input values
 ```javascript
 FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'})

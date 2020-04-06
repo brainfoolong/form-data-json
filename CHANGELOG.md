@@ -1,3 +1,6 @@
+### 1.1.0 - 6. April 2020
+* Added read of file inputs
+
 ### 1.0.2 - 6. April 2020
 * Fixed populate of Array.isArray
 
