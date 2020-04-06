@@ -1,9 +1,12 @@
 {
   "license": "MIT",
-  "name": "form-data-json",
+  "name": "form-data-json-convert",
   "description": "Convert html forms into json or fill forms from json.",
-  "repository": "https://github.com/brainfoolong/form-data-json",
-  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brainfoolong/form-data-json.git"
+  },
+  "version": "1.0.1",
   "scripts": {
     "dist": "node build/dist.js"
   },
@@ -13,5 +16,22 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.9.0",
     "babel-preset-minify": "^0.5.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/brainfoolong/form-data-json/issues"
+  },
+  "homepage": "https://github.com/brainfoolong/form-data-json#readme",
+  "main": "dist/form-data-json.min.js",
+  "directories": {
+    "test": "tests",
+    "example": "example"
+  },
+  "keywords": [
+    "javascript",
+    "forms",
+    "json",
+    "input",
+    "serializejson"
+  ],
+  "author": "BrainFooLong"
 }

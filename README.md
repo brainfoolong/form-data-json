@@ -6,12 +6,19 @@ Download [latest release](https://github.com/brainfoolong/form-data-json/release
 ```html
 <script src="dist/form-data-json.min.js"></script>
 ```
+###### Or CDN
+```html
+<script src="https://unpkg.com/form-data-json-convert@latest/dist/form-data-json.min.js"></script>
+```
 
 ## Features
 * No dependency - Vanilla javascript
 * Cross Browser including IE11
 * Multidimensional input name support. For example: `name="entry[123][person]"`
 * Super small: ~3kB gzipped 
+
+## Playground
+[Test out the script here.](https://raw.githack.com/brainfoolong/form-data-json/master/example/playground.html)
 
 ## Supported Browser
 * Chrome
