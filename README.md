@@ -10,6 +10,10 @@ Download [latest release](https://github.com/brainfoolong/form-data-json/release
 ```html
 <script src="https://unpkg.com/form-data-json-convert@latest/dist/form-data-json.min.js"></script>
 ```
+###### Or NPM
+```
+npm install form-data-json-convert
+```
 
 ## Features
 * No dependency - Vanilla javascript
