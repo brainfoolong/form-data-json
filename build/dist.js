@@ -43,6 +43,8 @@ async function compile () {
     let basename = path.basename(file)
     let minFile = distFolder + '/' + basename.substr(0, basename.length - 3) + '.min.js'
     fs.writeFileSync(minFile, contents)
+    // also copy to docs folder
+    fs.copyFileSync(minFile, __dirname + '/../docs/lib/' + path.basename(minFile))
   })
 }
 

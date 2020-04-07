@@ -91,11 +91,11 @@
 </form>
 <script>
   ;(function () {
-    let url = 'https://unpkg.com/form-data-json-convert@latest/dist/form-data-json.min.js'
+    let url = '../lib/form-data-json.min.js'
     // with debug flag we directly load original source file
     // only work in supported browsers, like chrome
     if (location.href.match(/\?debug/)) {
-      url = '../src/form-data-json.js'
+      url = '../../src/form-data-json.js'
     }
     let s = document.createElement('script')
     s.setAttribute('src', url)
