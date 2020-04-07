@@ -38,7 +38,7 @@ npm install form-data-json-convert
 ## How to contribute
 * Please write an issue before you start programming.
 * Always test the official supported browsers.
-* Write all tests in `tests/test.html`. Each new option must have an own test.
+* Write all tests in `docs/tests/test.html`. Each new option must have an own test.
 
 ## How to use
 ###### Read form input values

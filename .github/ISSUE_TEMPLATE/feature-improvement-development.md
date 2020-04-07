@@ -7,7 +7,7 @@ assignees: brainfoolong
 
 ---
 
-- [ ] Test added in `tests/test.html`
+- [ ] Test added in `docs/tests/test.html`
 - [ ] Updated minified version with `npm run dist`
 - [ ] Updated `Changelog.md`
 - [ ] Updated version in `package.json`

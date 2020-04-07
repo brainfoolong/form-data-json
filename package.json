@@ -23,7 +23,7 @@
   "homepage": "https://github.com/brainfoolong/form-data-json#readme",
   "main": "dist/form-data-json.min.js",
   "directories": {
-    "test": "tests",
+    "test": "docs/tests",
     "example": "example"
   },
   "files": [
