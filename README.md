@@ -81,4 +81,12 @@ includeUncheckedAsNull = false
 * @type {boolean}
 */
 includeButtonValues = false
+
+/**
+* Will unset all existing input fields in form when using fillFormFromJsonValues
+* This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked 
+* because the key not exist in the json data
+* @type {boolean}
+*/
+unsetAllInputsOnFill = false
 ```
