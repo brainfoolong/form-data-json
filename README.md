@@ -22,7 +22,7 @@ npm install form-data-json-convert
 * Super small: ~3kB gzipped 
 
 ## Playground
-[Test it out here.](https://unpkg.com/form-data-json-convert@latest/example/playground.html)
+[Test it out here.](https://brainfoolong.github.io/form-data-json/example/playground.html)
 
 ## Supported Browser
 * Chrome
