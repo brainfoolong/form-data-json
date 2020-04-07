@@ -54,7 +54,7 @@ class FormDataJson {
   static setInputValue (inputElement, value) {
     let inputType = (inputElement.type || 'text').toLowerCase()
     if (inputElement instanceof HTMLInputElement && FormDataJson.checkedInputTypes.indexOf(inputType) > -1) {
-      inputElement.checked = value === inputElement.value
+      inputElement.checked = value
     } else if (inputElement instanceof HTMLSelectElement) {
       if (!FormDataJson.isArray(value)) value = [value]
       for (let i = 0; i < inputElement.options.length; i++) {
