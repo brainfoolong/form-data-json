@@ -1,3 +1,10 @@
+### 1.1.3 - 8. April 2020
+* fixed setInputValue for file input fields, to not create an error
+* updated src documentation
+
+### 1.1.2 - 6. April 2020
+* Version bump
+
 ### 1.1.1 - 6. April 2020
 * Reduced NPM package included files
 
