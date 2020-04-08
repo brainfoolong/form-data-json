@@ -22,7 +22,7 @@ class FormDataJson {
   /**
    * Get input value
    * Unchecked checkboxes/radios will return null
-   * Unselected selectbox will return null
+   * Unselected single selectbox will return null, multiple always return array even if it's empty
    * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} inputElement
    * @return {*}
    */
@@ -48,6 +48,7 @@ class FormDataJson {
 
   /**
    * Set input value
+   * To mark radio/checkbox as checked the value must match the checkbox value attribute, boolean true/false does not work here
    * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} inputElement
    * @param {*|null} value Null will unset the value
    */
@@ -62,6 +63,8 @@ class FormDataJson {
         let optionValue = typeof option.value !== 'undefined' ? option.value : option.text
         option.selected = value.indexOf(optionValue) > -1
       }
+    } else if (inputElement instanceof HTMLInputElement && inputType === 'file') {
+      // cannot set file type
     } else {
       inputElement.value = value
     }
@@ -163,6 +166,8 @@ class FormDataJson {
           reader.readAsDataURL(file)
         }
       }
+    } else if (fileValuesCallback) {
+      fileValuesCallback(object)
     }
     return object
   }
@@ -248,7 +253,7 @@ class FormDataJson {
 
   /**
    * Check if arg is arr
-   * @param {*} arr
+   * @param {*} arg
    * @return {boolean}
    */
   static isArray (arg) {

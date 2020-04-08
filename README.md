@@ -1,3 +1,5 @@
+![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/logo-readme-github.png)
+
 # Form Data Json - Form input values to/from JSON
 A zero dependency, cross browser library to easily get or set form input values as/from a json object. It can handle all existing input types, including multidimensional array names and file input.
 
@@ -54,6 +56,11 @@ let values = FormDataJson.formToJson(document.querySelector("form"), new FormDat
 FormDataJson.formToJson(document.querySelector("form"), null, function(values){})
 ```
 
+###### Read a single input field
+```javascript
+let values = FormDataJson.getInputValue(document.querySelector("input"))
+```
+
 ###### Set form input values
 ```javascript
 FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'})
@@ -62,6 +69,12 @@ FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'Br
 ```javascript
 FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'}, new FormDataJsonOptions({ unsetAllInputsOnFill: true }))
 ```
+
+###### Set a single input field
+```javascript
+let values = FormDataJson.setInputValue(document.querySelector("input"), 'foo')
+```
+
 ###### All options
 ```javascript
 /**
