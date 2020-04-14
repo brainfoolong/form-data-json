@@ -6,17 +6,17 @@
     "type": "git",
     "url": "git+https://github.com/brainfoolong/form-data-json.git"
   },
-  "version": "1.1.3",
+  "version": "1.1.4",
   "scripts": {
     "dist": "node build/dist.js"
   },
-  "devDependencies": {},
-  "dependencies": {
+  "devDependencies": {
     "@babel/core": "^7.9.0",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.9.0",
     "babel-preset-minify": "^0.5.1"
   },
+  "dependencies": {},
   "bugs": {
     "url": "https://github.com/brainfoolong/form-data-json/issues"
   },
