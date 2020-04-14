@@ -267,36 +267,40 @@ class FormDataJson {
 class FormDataJsonOptions {
 
   /**
-   * Include all disabled inputs in result data
-   * @type {boolean}
+   * Default option values
+   * @type {Object}
    */
-  includeDisabled = false
-
-  /**
-   * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
-   * @type {boolean}
-   */
-  includeUncheckedAsNull = false
-
-  /**
-   * Include all input buttons/submits values, otherwise the key they will not exist in result data
-   * @type {boolean}
-   */
-  includeButtonValues = false
-
-  /**
-   * Will unset all existing input fields in form when using fillFormFromJsonValues
-   * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
-   * because the key not exist in the json data
-   * @type {boolean}
-   */
-  unsetAllInputsOnFill = false
+  static defaults = {
+    /**
+     * Include all disabled inputs in result data
+     * @type {boolean}
+     */
+    includeDisabled: false,
+    /**
+     * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
+     * @type {boolean}
+     */
+    includeUncheckedAsNull: false,
+    /**
+     * Include all input buttons/submits values, otherwise the key they will not exist in result data
+     * @type {boolean}
+     */
+    includeButtonValues: false,
+    /**
+     * Will unset all existing input fields in form when using fillFormFromJsonValues
+     * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
+     * because the key not exist in the json data
+     * @type {boolean}
+     */
+    unsetAllInputsOnFill: false
+  }
 
   /**
    * Constructor
    * @param {Object=} options
    */
   constructor (options) {
+    this.merge(FormDataJsonOptions.defaults)
     this.merge(options)
   }
 

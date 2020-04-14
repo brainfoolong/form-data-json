@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/brainfoolong/form-data-json.git"
   },
-  "version": "1.1.4",
+  "version": "1.1.5",
   "scripts": {
     "dist": "node build/dist.js"
   },
@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/brainfoolong/form-data-json/issues"
   },
-  "homepage": "https://github.com/brainfoolong/form-data-json#readme",
+  "homepage": "https://brainfoolong.github.io/form-data-json/example/playground.html",
   "main": "dist/form-data-json.min.js",
   "directories": {
     "test": "docs/tests",

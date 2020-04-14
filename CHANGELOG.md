@@ -1,3 +1,9 @@
+### 1.1.5 - 14. April 2020
+* added `FormDataJsonOptions.defaults`
+
+### 1.1.4 - 14. April 2020
+* NPM version bump
+
 ### 1.1.3 - 8. April 2020
 * fixed setInputValue for file input fields, to not create an error
 * updated src documentation
