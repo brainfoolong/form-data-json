@@ -1,3 +1,6 @@
+### 1.2.0 - 25. November 2020
+* added `FormDataJson.flattenJsonFormValues`
+
 ### 1.1.5 - 14. April 2020
 * added `FormDataJsonOptions.defaults`
 

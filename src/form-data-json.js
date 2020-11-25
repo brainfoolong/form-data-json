@@ -71,6 +71,27 @@ class FormDataJson {
   }
 
   /**
+   * Take an object from formToJson and make it an one dimensional object
+   * Example: {'foo' : {'bar' 1, 'name' : 'nobody'}} becomes to { 'foo[bar]' : 1, 'foo[name]' : 'nobody'}
+   * @param {Object} src The data from formToJson
+   * @param {string=} prependKey Internal
+   * @param {Object=} merged Internal
+   * @return {Object}
+   */
+  static flattenJsonFormValues (src, prependKey, merged) {
+    merged = merged || {}
+    for (let i in src) {
+      const k = prependKey ? prependKey + '[' + i + ']' : i
+      if (typeof src[i] === 'object') {
+        merged = FormDataJson.flattenJsonFormValues(src[i], k, merged)
+      } else {
+        merged[k] = src[i]
+      }
+    }
+    return merged
+  }
+
+  /**
    * Get values from form
    * @param {HTMLFormElement|Element} formElement
    * @param {FormDataJsonOptions=} options
