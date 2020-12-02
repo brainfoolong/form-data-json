@@ -1,3 +1,6 @@
+### 1.2.1 - 2. December 2020
+* fixed a bug that delete `null` values out of the result, even when they should be included
+
 ### 1.2.0 - 25. November 2020
 * added `FormDataJson.flattenJsonFormValues`
 

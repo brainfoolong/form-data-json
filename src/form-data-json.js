@@ -82,7 +82,7 @@ class FormDataJson {
     merged = merged || {}
     for (let i in src) {
       const k = prependKey ? prependKey + '[' + i + ']' : i
-      if (typeof src[i] === 'object') {
+      if (typeof src[i] === 'object' && src[i] !== null) {
         merged = FormDataJson.flattenJsonFormValues(src[i], k, merged)
       } else {
         merged[k] = src[i]
@@ -143,7 +143,7 @@ class FormDataJson {
           }
           o[namePart] = value
           // delete key is we should not include undefined values
-          if (!options.includeUncheckedAsNull && value === null) {
+          if (!options.includeUncheckedAsNull && FormDataJson.checkedInputTypes.indexOf(inputType) > -1 && value === null) {
             delete o[namePart]
           }
           if (inputType === 'file') {
