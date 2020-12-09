@@ -337,3 +337,11 @@ class FormDataJsonOptions {
     }
   }
 }
+
+// node module export
+if (typeof module !== 'undefined') {
+  module.exports = {
+    'FormDataJson': FormDataJson,
+    'FormDataJsonOptions': FormDataJsonOptions
+  }
+}

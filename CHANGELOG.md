@@ -1,3 +1,6 @@
+### 1.2.2 - 9. December 2020
+* fixed node module usage [#7](https://github.com/brainfoolong/form-data-json/issues/7)
+
 ### 1.2.1 - 2. December 2020
 * fixed a bug that delete `null` values out of the result, even when they should be included
 

@@ -15,6 +15,7 @@ Download [latest release](https://github.com/brainfoolong/form-data-json/release
 ###### NPM
 ```
 npm install form-data-json-convert
+// import: const {FormDataJson, FormDataJsonOptions} = require('form-data-json-convert')
 ```
 
 ## Features
