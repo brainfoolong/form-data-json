@@ -1,4 +1,4 @@
-![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/logo-readme-github.png)
+![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/logo-readme-github.png?1)
 
 # Form Data Json - Form input values to/from JSON
 A zero dependency, cross browser library to easily get or set form input values as/from a json object. It can handle all existing input types, including multidimensional array names and file input. It is similar to native [FormData](https://developer.mozilla.org/docs/Web/API/FormData) but have some advantages: Get data as multidimensional object, writing data into forms (not just reading), reading unchecked/disabled fields as well, reading file inputs, and some other helpful features.
