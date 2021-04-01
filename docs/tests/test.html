@@ -304,10 +304,13 @@
 
 <form name="read-files" id="read-files">
     <h3></h3>
-    <p>Testing read formToJson() with files callback. To test this with manual user input, you have to choose the test-file.gif from this directory for both single and multiple file inputs. After choosing both the test must turn green again.</p>
+    <p>Testing read formToJson() with files callback. To test this with manual user input, you have to choose the
+        test-file.gif from this directory for both single and multiple file inputs. After choosing both the test must
+        turn green again.</p>
     Single: <input type="file" name="file"
-           data-test-value='"data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="'><br/>
-    Multiple: <input type="file" name="files" multiple data-test-value='["data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="]'>
+                   data-test-value='"data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="'><br/>
+    Multiple: <input type="file" name="files" multiple
+                     data-test-value='["data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="]'>
     <div class="result"></div>
 </form>
 <script>
@@ -381,6 +384,20 @@
 <script>
   (function () {
     runTest('write', document.querySelector('#option-unsetAllInputsOnFill'), { unsetAllInputsOnFill: true }, '{"foobar":"","select":"1","select_multiple_depth":{"123":[]}}')
+  })()
+</script>
+
+<form name="option-inputFilter" id="option-inputFilter">
+    <h3></h3>
+    <p>Testing option "inputFilter" for read and write.</p>
+    <input type="password" name="pw" value="1">
+    <input type="text" value="" name="foobar">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#option-inputFilter'), { inputFilter: function (inputElement) { return (inputElement.type || 'text') !== 'password' } }, '{"foobar":"foobar"}')
+    runTest('write', document.querySelector('#option-inputFilter'), { inputFilter: function (inputElement) { return (inputElement.type || 'text') !== 'password' } }, '{"foobar":"foobar"}')
   })()
 </script>
 </body>

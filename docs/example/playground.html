@@ -70,7 +70,8 @@
     </style>
 </head>
 <body>
-<a href="https://github.com/brainfoolong/form-data-json"><img src="../logo-readme-github.png" alt="Form Data Json"></a><br/>
+<a href="https://github.com/brainfoolong/form-data-json"><img src="../logo-readme-github.png"
+                                                              alt="Form Data Json"></a><br/>
 <form name="myform" id="myform" autocomplete="off" spellcheck="false">
     <label class="field">
         <span class="label">First Name ([name='firstName'])</span>
@@ -155,6 +156,10 @@
         <input type="checkbox" name="unsetAllInputsOnFill" value="1"> Unset all inputs that not exist in values when
         using fillFormFromJsonValues ("unsetAllInputsOnFill")
     </label>
+    <label class="field">
+        <input type="checkbox" name="inputFilter" value="1"> Ignore specific input elements with a filter, in this
+        example all 'password fields' ("inputFilter")
+    </label>
 </div>
 <div class="submit">
     <input class="button" type="button" id="tojson" value="Show JSON">
@@ -179,11 +184,25 @@
 
     function getOptions () {
       let options = FormDataJson.formToJson(document.querySelector('.options'))
+      let optionsStringify = {}
       for (let i in options) {
+        optionsStringify[i] = options[i] === '1'
         options[i] = options[i] === '1'
+        if (i === 'inputFilter' && options[i]) {
+          optionsStringify[i] = '__inputFilter__'
+          options[i] = function (inputElement) {
+            return (inputElement.type || 'text') !== 'password'
+          }
+        }
       }
-      let optionsCall = Object.keys(options).length ? ', new FormDataJsonOptions(' + JSON.stringify(options) + ')' : ''
-      return { 'options': Object.keys(options).length ? new FormDataJsonOptions(options) : null, 'call': optionsCall, 'callfiles' : optionsCall !== '' ? optionsCall : ', null'}
+      let optionsStringified = JSON.stringify(optionsStringify)
+      optionsStringified = optionsStringified.replace(/"__inputFilter__"/ig, 'function(inputElement) { return (inputElement.type || \'text\') !== \'password\'}')
+      let optionsCall = Object.keys(options).length ? ', new FormDataJsonOptions(' + optionsStringified + ')' : ''
+      return {
+        'options': Object.keys(options).length ? new FormDataJsonOptions(options) : null,
+        'call': optionsCall,
+        'callfiles': optionsCall !== '' ? optionsCall : ', null'
+      }
     }
 
     function toJson () {

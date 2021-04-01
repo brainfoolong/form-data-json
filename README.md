@@ -61,6 +61,10 @@ let values = FormDataJson.formToJson(document.querySelector("form"), new FormDat
 ```javascript
 FormDataJson.formToJson(document.querySelector("form"), null, function(values){})
 ```
+###### Read form input values but filter out, for example,  all password fields
+```javascript
+let values = FormDataJson.formToJson(document.querySelector("form"), new FormDataJsonOptions({ inputFilter: function(inputElement) { return (inputElement.type || 'text') !== 'password' } }))
+``` 
 
 ###### Read a single input field
 ```javascript
@@ -71,9 +75,15 @@ let values = FormDataJson.getInputValue(document.querySelector("input"))
 ```javascript
 FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'})
 ```
+
 ###### Set form input values and unset all other existing input values
 ```javascript
 FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'}, new FormDataJsonOptions({ unsetAllInputsOnFill: true }))
+```
+
+###### Set form input values but ignore, for example, password fields
+```javascript
+FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'}, new FormDataJsonOptions({ inputFilter: function(inputElement) { return (inputElement.type || 'text') !== 'password' } })
 ```
 
 ###### Set a single input field
@@ -82,30 +92,41 @@ let values = FormDataJson.setInputValue(document.querySelector("input"), 'foo')
 ```
 
 ###### All options and their defaults
-You can edit this defaults to your needs.
+You can edit this defaults to your needs. You can pass this options directly to the `new FormDataOptions({...})` instantiation.
 ```javascript
 FormDataJsonOptions.defaults = {
-    /**
-     * Include all disabled inputs in result data
-     * @type {boolean}
-     */
-    includeDisabled: false,
-    /**
-     * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
-     * @type {boolean}
-     */
-    includeUncheckedAsNull: false,
-    /**
-     * Include all input buttons/submits values, otherwise the key they will not exist in result data
-     * @type {boolean}
-     */
-    includeButtonValues: false,
-    /**
-     * Will unset all existing input fields in form when using fillFormFromJsonValues
-     * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
-     * because the key not exist in the json data
-     * @type {boolean}
-     */
-    unsetAllInputsOnFill: false
-  }
+  /**
+   * Include all disabled inputs in result data
+   * @type {boolean}
+   */
+  includeDisabled,
+
+  /**
+   * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
+   * @type {boolean}
+   */
+  includeUncheckedAsNull,
+
+  /**
+   * Include all input buttons/submits values, otherwise the key they will not exist in result data
+   * @type {boolean}
+   */
+  includeButtonValues,
+
+  /**
+   * Will unset all existing input fields in form when using fillFormFromJsonValues
+   * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
+   * because the key not exist in the json data
+   * @type {boolean}
+   */
+  unsetAllInputsOnFill,
+
+  /**
+   * If set to a function, this will receive the current input element in progress of formToJson|fillFormFromJsonValues|unsetFormInputs
+   * It must return bool true to allow the script to progress the input element
+   * If other than true is returned, than the input will be skipped
+   * @type {FormDataJsonOptions~inputFilterCallback|null}
+   */
+  inputFilter
+}
 ```

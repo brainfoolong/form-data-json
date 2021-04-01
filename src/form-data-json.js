@@ -110,6 +110,7 @@ class FormDataJson {
     let files = []
     for (let i = 0; i < inputs.length; i++) {
       let input = inputs[i]
+      if (!FormDataJson.isElementAllowed(input, options)) continue
       let inputType = (input.type || 'text').toLowerCase()
       if (!input.name || input.name.length === 0) continue
       if (!options.includeDisabled && input.disabled) continue
@@ -217,6 +218,7 @@ class FormDataJson {
     let inputs = formElement.querySelectorAll('select, textarea, input, button')
     for (let i = 0; i < inputs.length; i++) {
       let input = inputs[i]
+      if (!FormDataJson.isElementAllowed(input, options)) continue
       let inputName = input.name
       let isMultiple = input instanceof HTMLSelectElement && input.multiple
       if (!inputName || inputName.length === 0) continue
@@ -258,17 +260,20 @@ class FormDataJson {
   }
 
   /**
-   * Unset for inputs
+   * Unset for inputs in given form/container
    * @param {HTMLFormElement|Element} formElement
+   * @param {FormDataJsonOptions=} options
    */
-  static unsetFormInputs (formElement) {
+  static unsetFormInputs (formElement, options) {
     let inputs = formElement.querySelectorAll('select, textarea, input')
     for (let i = 0; i < inputs.length; i++) {
-      let inputType = (inputs[i].type || 'text').toLowerCase()
+      let input = inputs[i]
+      if (!FormDataJson.isElementAllowed(input, options)) continue
+      let inputType = (input.type || 'text').toLowerCase()
       if (FormDataJson.buttonInputTypes.indexOf(inputType) > -1) {
         continue
       }
-      FormDataJson.setInputValue(inputs[i], null)
+      FormDataJson.setInputValue(input, null)
     }
   }
 
@@ -280,6 +285,17 @@ class FormDataJson {
   static isArray (arg) {
     return typeof arg === 'object' && Object.prototype.toString.call(arg) === '[object Array]'
   }
+
+  /**
+   * Check if given input element is allowed depending on the given options
+   * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element
+   * @param {FormDataJsonOptions=} options
+   * @return {boolean}
+   */
+  static isElementAllowed (element, options) {
+    if (!element || !options || !options.inputFilter || typeof options.inputFilter !== 'function') return true
+    return options.inputFilter(element) === true
+  }
 }
 
 /**
@@ -289,32 +305,50 @@ class FormDataJsonOptions {
 
   /**
    * Default option values
+   * For detailed explanation check properties bellow
    * @type {Object}
    */
   static defaults = {
-    /**
-     * Include all disabled inputs in result data
-     * @type {boolean}
-     */
     includeDisabled: false,
-    /**
-     * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
-     * @type {boolean}
-     */
     includeUncheckedAsNull: false,
-    /**
-     * Include all input buttons/submits values, otherwise the key they will not exist in result data
-     * @type {boolean}
-     */
     includeButtonValues: false,
-    /**
-     * Will unset all existing input fields in form when using fillFormFromJsonValues
-     * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
-     * because the key not exist in the json data
-     * @type {boolean}
-     */
-    unsetAllInputsOnFill: false
+    unsetAllInputsOnFill: false,
+    inputFilter: null
   }
+
+  /**
+   * Include all disabled inputs in result data
+   * @type {boolean}
+   */
+  includeDisabled
+
+  /**
+   * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
+   * @type {boolean}
+   */
+  includeUncheckedAsNull
+
+  /**
+   * Include all input buttons/submits values, otherwise the key they will not exist in result data
+   * @type {boolean}
+   */
+  includeButtonValues
+
+  /**
+   * Will unset all existing input fields in form when using fillFormFromJsonValues
+   * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
+   * because the key not exist in the json data
+   * @type {boolean}
+   */
+  unsetAllInputsOnFill
+
+  /**
+   * If set to a function, this will receive the current input element in progress of formToJson|fillFormFromJsonValues|unsetFormInputs
+   * It must return bool true to allow the script to progress the input element
+   * If other than true is returned, than the input will be skipped
+   * @type {FormDataJsonOptions~inputFilterCallback|null}
+   */
+  inputFilter
 
   /**
    * Constructor
@@ -338,8 +372,15 @@ class FormDataJsonOptions {
   }
 }
 
-// node module export
-if (typeof module !== 'undefined') {
+/**
+ * The input filter callback documentation
+ * @callback FormDataJsonOptions~inputFilterCallback
+ * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element
+ * @return {boolean}
+ */
+
+// module exports
+if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     'FormDataJson': FormDataJson,
     'FormDataJsonOptions': FormDataJsonOptions

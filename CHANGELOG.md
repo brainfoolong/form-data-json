@@ -1,3 +1,6 @@
+### 1.3.0 - 1. April 2021
+* added a new feature `inputFilter` to `FormDataOptions` - Thanks to [@alcalyn](https://github.com/alcalyn) for the idea and initial coding in [#8](https://github.com/brainfoolong/form-data-json/issues/8)
+
 ### 1.2.2 - 9. December 2020
 * fixed node module usage [#7](https://github.com/brainfoolong/form-data-json/issues/7)
 
