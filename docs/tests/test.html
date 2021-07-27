@@ -396,8 +396,8 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-inputFilter'), { inputFilter: function (inputElement) { return (inputElement.type || 'text') !== 'password' } }, '{"foobar":"foobar"}')
     runTest('write', document.querySelector('#option-inputFilter'), { inputFilter: function (inputElement) { return (inputElement.type || 'text') !== 'password' } }, '{"foobar":"foobar"}')
+    runTest('read', document.querySelector('#option-inputFilter'), { inputFilter: function (inputElement) { return (inputElement.type || 'text') !== 'password' } }, '{"foobar":"foobar"}')
   })()
 </script>
 </body>

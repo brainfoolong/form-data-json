@@ -58,6 +58,10 @@ class FormDataJson {
       inputElement.checked = value === inputElement.value
     } else if (inputElement instanceof HTMLSelectElement) {
       if (!FormDataJson.isArray(value)) value = [value]
+      // convert all values to string to fix not found indexOf when passing numbers
+      for (let i = 0; i < value.length; i++) {
+        value[i] = value[i] !== null && value[i] !== undefined ? value[i] + '' : value[i]
+      }
       for (let i = 0; i < inputElement.options.length; i++) {
         let option = inputElement.options[i]
         let optionValue = typeof option.value !== 'undefined' ? option.value : option.text

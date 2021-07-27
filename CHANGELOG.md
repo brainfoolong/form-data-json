@@ -1,3 +1,6 @@
+### 1.3.1 - 27. July 2021
+* fixed bug that `setInputValue` will not work for `selects` when passed a non-string value
+
 ### 1.3.0 - 1. April 2021
 * added a new feature `inputFilter` to `FormDataOptions` - Thanks to [@alcalyn](https://github.com/alcalyn) for the idea and initial coding in [#8](https://github.com/brainfoolong/form-data-json/issues/8)
 
