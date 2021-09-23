@@ -64,7 +64,6 @@
           return
         }
         let values
-        if (options) options = new FormDataJsonOptions(options)
         if (mode === 'read') {
           values = FormDataJson.formToJson(form, options)
         } else {
@@ -164,7 +163,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#read-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":{"0":"1"}}')
+    runTest('read', document.querySelector('#read-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1"]}')
   })()
 </script>
 
@@ -186,7 +185,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":{"0":"1"}}')
+    runTest('write', document.querySelector('#write-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1"]}')
   })()
 </script>
 
@@ -215,6 +214,8 @@
     <input type="submit" name="submit" value="submit">
     <input type="tel" name="tel" value="+436666666666">
     <input type="text" name="text" value="text">
+    <input type="text" name="text_depth[]" value="text">
+    <input type="text" name="text_depth[]" value="text">
     <input type="time" name="time" value="06:06">
     <input type="url" name="url" value="https://github.com/brainfoolong/formdata-json">
     <input type="week" name="week" value="2014-W48">

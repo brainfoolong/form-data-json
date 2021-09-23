@@ -75,24 +75,129 @@ class FormDataJson {
   }
 
   /**
-   * Take an object from formToJson and make it an one dimensional object
+   * Take an object and make it an one dimensional object
    * Example: {'foo' : {'bar' 1, 'name' : 'nobody'}} becomes to { 'foo[bar]' : 1, 'foo[name]' : 'nobody'}
    * @param {Object} src The data from formToJson
    * @param {string=} prependKey Internal
    * @param {Object=} merged Internal
    * @return {Object}
    */
-  static flattenJsonFormValues (src, prependKey, merged) {
+  static flatten (src, prependKey, merged) {
     merged = merged || {}
     for (let i in src) {
       const k = prependKey ? prependKey + '[' + i + ']' : i
       if (typeof src[i] === 'object' && src[i] !== null) {
-        merged = FormDataJson.flattenJsonFormValues(src[i], k, merged)
+        merged = FormDataJson.flatten(src[i], k, merged)
       } else {
         merged[k] = src[i]
       }
     }
     return merged
+  }
+
+  /**
+   * Get all form elements as a flat key/value mapping
+   * @param {*} el
+   * @return {Object|null}
+   * @private
+   */
+  static getFormElementsFlat (el) {
+    el = FormDataJson.getElement(el)
+    if (!el) {
+      console.warn('FormDataJson: Unsupported element passed')
+      return null
+    }
+    let inputs = el.querySelectorAll('select, textarea, input, button')
+    let inputsFlat = {}
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i]
+      if (!input.name || input.name.length === 0) continue
+      let inputName = input.name
+      let inputNameClean = inputName.replace(/\[\]$/g, '')
+      let isMultiple = input instanceof HTMLSelectElement && input.multiple
+      // for all elements with blank array index, that uses auto increment key
+      if (!isMultiple && inputNameClean !== inputName) {
+        if (typeof inputsFlat[inputNameClean] === 'undefined') {
+          inputsFlat[inputNameClean] = []
+        }
+        inputsFlat[inputNameClean].push(input)
+      } else {
+        if (isMultiple) {
+          inputsFlat[inputNameClean] = input
+        } else {
+          inputsFlat[inputName] = input
+        }
+      }
+    }
+    let returnObject = {}
+    for (let inputName in inputsFlat) {
+      const row = inputsFlat[inputName]
+      if (FormDataJson.isArray(row)) {
+        for (let i = 0; i < row.length; i++) {
+          returnObject[inputName + '[' + i + ']'] = { 'type': 'array', 'input': row[i] }
+        }
+      } else {
+        returnObject[inputName] = { 'type': 'default', 'input': row }
+      }
+    }
+    return returnObject
+  }
+
+  /**
+   * Get values from all form elements inside the given element
+   * @param {*} el
+   * @param {Object=} options
+   * @param {function=} fileValuesCallback If given, than call this callback when all file values are readed as base64 data-uri
+   * @return {Object}
+   */
+  static toJson (el, options, fileValuesCallback) {
+    let inputs = FormDataJson.getFormElementsFlat(el)
+    if (!inputs) return {}
+    options = options || {}
+    let returnObject = {}
+    for (let inputName in inputs) {
+      const row = inputs[inputName]
+      const input = row.input
+      if (!FormDataJson.isElementAllowed(input, options)) continue
+      let inputType = (input.type || 'text').toLowerCase()
+      if (!options.includeDisabled && input.disabled) continue
+      if (!options.includeButtonValues && (input instanceof HTMLButtonElement || FormDataJson.buttonInputTypes.indexOf(inputType) > -1)) {
+        continue
+      }
+      let value = FormDataJson.getInputValue(input)
+      let keySplit = inputName.split('[')
+      let useObject = returnObject
+      let keyParts = keySplit.length
+      for (let i = 0; i < keyParts; i++) {
+        let keyPart = keySplit[i].replace(/\]$/, '')
+        if (i === keyParts - 1) {
+          useObject[keyPart] = value
+        } else {
+          if (typeof useObject[keyPart] === 'undefined') {
+            useObject[keyPart] = row.type === 'array' ? [] : {}
+          }
+          useObject = useObject[keyPart]
+        }
+      }
+    }
+    return returnObject
+  }
+
+  /**
+   * Fill given form values into all form elements inside given element
+   * @param {*} el
+   * @param {Object} values
+   * @param {Object=} options
+   * @param {string=} keyPrefix Internal only
+   * @param {number=} depth Internal only
+   */
+  static fromJson (el, values, options, keyPrefix, depth) {
+    if (!values) return
+    el = FormDataJson.getElement(el)
+    if (!el) {
+      console.warn('FormDataJson: Unsupported element passed')
+      return
+    }
   }
 
   /**
@@ -186,16 +291,16 @@ class FormDataJson {
             }
             filesDone++
             if (filesDone === filesRequired) {
-              fileValuesCallback(object)
+              fileValuesCallback(FormDataJson.convertObjectToArrayIfPossible(object))
             }
           }
           reader.readAsDataURL(file)
         }
       }
     } else if (fileValuesCallback) {
-      fileValuesCallback(object)
+      fileValuesCallback(FormDataJson.convertObjectToArrayIfPossible(object))
     }
-    return object
+    return FormDataJson.convertObjectToArrayIfPossible(object)
   }
 
   /**
@@ -204,8 +309,9 @@ class FormDataJson {
    * @param {Object} values
    * @param {FormDataJsonOptions=} options
    * @param {string=} keyPrefix
+   * @param {number=} depth Internal reference for depth, leave empty
    */
-  static fillFormFromJsonValues (formElement, values, options, keyPrefix) {
+  static fillFormFromJsonValues (formElement, values, options, keyPrefix, depth) {
     if (options && !(options instanceof FormDataJsonOptions)) {
       console.error('Options are not an instance of FormDataJsonOptions')
       return
@@ -214,9 +320,11 @@ class FormDataJson {
       return
     }
     options = options || new FormDataJsonOptions()
-    if (options.unsetAllInputsOnFill) {
+    if (options.unsetAllInputsOnFill && !depth) {
       FormDataJson.unsetFormInputs(formElement)
     }
+    depth = depth || 0
+    depth++
     let arrayCounts = {}
     let inputsFlat = {}
     let inputs = formElement.querySelectorAll('select, textarea, input, button')
@@ -251,14 +359,18 @@ class FormDataJson {
     for (let inputName in values) {
       let value = values[inputName]
       let searchInputName = keyPrefix ? keyPrefix + '[' + inputName + ']' : inputName
-      if (FormDataJson.isArray(value)) {
-        searchInputName += '[]'
+      let testInputNames = [searchInputName, searchInputName + '[]']
+      let input = null
+      for (let i = 0; i < testInputNames.length; i++) {
+        console.log(testInputNames[i])
+        input = inputsFlat[testInputNames[i]] || null
+        if (input) {
+          FormDataJson.setInputValue(input, value)
+          break
+        }
       }
-      let input = inputsFlat[searchInputName] || null
-      if (typeof value === 'object' && !FormDataJson.isArray(value)) {
-        FormDataJson.fillFormFromJsonValues(formElement, value, options, searchInputName)
-      } else if (input) {
-        FormDataJson.setInputValue(input, value)
+      if (!input && typeof value === 'object') {
+        FormDataJson.fillFormFromJsonValues(formElement, value, options, searchInputName, depth)
       }
     }
   }
@@ -293,100 +405,63 @@ class FormDataJson {
   /**
    * Check if given input element is allowed depending on the given options
    * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element
-   * @param {FormDataJsonOptions=} options
+   * @param {Object=} options
    * @return {boolean}
    */
   static isElementAllowed (element, options) {
-    if (!element || !options || !options.inputFilter || typeof options.inputFilter !== 'function') return true
+    if (typeof options.inputFilter !== 'function') return true
     return options.inputFilter(element) === true
   }
-}
-
-/**
- * Form data json options
- */
-class FormDataJsonOptions {
 
   /**
-   * Default option values
-   * For detailed explanation check properties bellow
-   * @type {Object}
+   * Convert given object into a real array, if the object only contains numeric incremented indexes
+   * Otherwise it just return the given object unmodified
+   * @param {Object} object
+   * @return {Object|Array|*}
    */
-  static defaults = {
-    includeDisabled: false,
-    includeUncheckedAsNull: false,
-    includeButtonValues: false,
-    unsetAllInputsOnFill: false,
-    inputFilter: null
-  }
-
-  /**
-   * Include all disabled inputs in result data
-   * @type {boolean}
-   */
-  includeDisabled
-
-  /**
-   * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
-   * @type {boolean}
-   */
-  includeUncheckedAsNull
-
-  /**
-   * Include all input buttons/submits values, otherwise the key they will not exist in result data
-   * @type {boolean}
-   */
-  includeButtonValues
-
-  /**
-   * Will unset all existing input fields in form when using fillFormFromJsonValues
-   * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
-   * because the key not exist in the json data
-   * @type {boolean}
-   */
-  unsetAllInputsOnFill
-
-  /**
-   * If set to a function, this will receive the current input element in progress of formToJson|fillFormFromJsonValues|unsetFormInputs
-   * It must return bool true to allow the script to progress the input element
-   * If other than true is returned, than the input will be skipped
-   * @type {FormDataJsonOptions~inputFilterCallback|null}
-   */
-  inputFilter
-
-  /**
-   * Constructor
-   * @param {Object=} options
-   */
-  constructor (options) {
-    this.merge(FormDataJsonOptions.defaults)
-    this.merge(options)
-  }
-
-  /**
-   * Merge options into this instance
-   * @param {Object=} options
-   */
-  merge (options) {
-    if (typeof options === 'object') {
-      for (let i in options) {
-        this[i] = options[i]
+  static convertObjectToArrayIfPossible (object) {
+    if (!object) return object
+    const keys = Object.keys(object)
+    let validArray = true
+    for (let i = 0; i < keys.length; i++) {
+      const value = object[keys[i]]
+      if (value && typeof value === 'object' && !FormDataJson.isArray(value)) {
+        object[keys[i]] = FormDataJson.convertObjectToArrayIfPossible(value)
+      }
+      if (keys[i] !== i.toString()) {
+        validArray = false
       }
     }
+    if (validArray) {
+      return Object.values(object)
+    }
+    return object
+  }
+
+  /**
+   * Get html element out of given parameter
+   * @param {HTMLElement|JQuery|string} param
+   * @return {HTMLElement|null}
+   */
+  static getElement (param) {
+    if (typeof param === 'string') return document.querySelector(param)
+    if (param instanceof HTMLElement) return param
+    if (typeof jQuery !== 'undefined' && param instanceof jQuery) param = param[0]
+    return null
   }
 }
 
-/**
- * The input filter callback documentation
- * @callback FormDataJsonOptions~inputFilterCallback
- * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} element
- * @return {boolean}
- */
-
 // module exports
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    'FormDataJson': FormDataJson,
-    'FormDataJsonOptions': FormDataJsonOptions
-  }
+if (
+
+  typeof
+    module
+  !==
+  'undefined'
+  &&
+  module
+    .exports
+) {
+  module
+    .exports = FormDataJson
 }
