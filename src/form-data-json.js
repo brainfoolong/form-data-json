@@ -110,57 +110,97 @@ class FormDataJson {
    * @return {Object}
    */
   static toJson (el, options) {
-    let inputs = FormDataJson.#getInputsFlat(el)
-    if (!inputs) return {}
+    let inputs = FormDataJson.getFieldTree(el)
+    if (!inputs.length) return {}
+
+    console.log(inputs)
     options = Object.assign({}, FormDataJson.defaultOptionsToJson, options || {})
     let returnObject = {}
     let files = []
-    for (let inputName in inputs) {
-      const input = inputs[inputName]
-      if (!FormDataJson.#isElementAllowed(input, options)) continue
-      let inputType = (input.type || 'text').toLowerCase()
-      if (!options.includeDisabled && input.disabled) continue
+    for (let k = 0; k < inputs.length; k++) {
+      const row = inputs[k]
+      const input = row.input
+      const inputType = (input.type || 'text').toLowerCase()
+
+      // ignore disabled fields
+      if (!options.includeDisabled && input.disabled) {
+        continue
+      }
+
+      // filter elements by input filter
+      if (!FormDataJson.#checkInputFilter(input, options)) {
+        continue
+      }
+
+      // radio inputs are special, as multiple inputs share the same name
+      // we have already processed the same input name
+      if (inputType === 'radio') {
+        if (typeof returnObject[row.name] !== 'undefined') continue
+        returnObject[row.name] = null
+        // radio elements are supposed to have same input names, so take the value from the checked one
+        for (let i = 0; i < row.inputGroup.length; i++) {
+          let inputGroup = row.inputGroup[i]
+          if (inputGroup.checked) {
+            returnObject[row.name] = inputGroup.value
+            break
+          }
+        }
+        continue
+      }
+
+      // ignore button values
       if (!options.includeButtonValues && (input instanceof HTMLButtonElement || FormDataJson.#buttonInputTypes.indexOf(inputType) > -1)) {
         continue
       }
-      let value = FormDataJson.#getInputValue(input)
-      let keySplit = options.flatList ? [input.name] : inputName.replace(/\]/g, '').split('[')
+
+      let value = null
+      if (input instanceof HTMLSelectElement) {
+        let arr = []
+        for (let i = 0; i < input.options.length; i++) {
+          let option = input.options[i]
+          if (option.selected) {
+            arr.push((typeof option.value !== 'undefined' ? option.value : option.text).toString())
+          }
+        }
+        if (input.multiple) {
+          value = arr
+        } else {
+          value = arr.length ? arr[0] : null
+        }
+      } else if (FormDataJson.#checkedInputTypes.indexOf(inputType) > -1) {
+        value = input.checked ? input.value : null
+      } else {
+        value = input.value
+      }
+
+      // ignore unchecked fields
+      if (!options.includeUncheckedAsNull && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1 && value === null) {
+        continue
+      }
+
+      let keySplit = options.flatList ? [row.name] : row.nameWithIndex.replace(/\]/g, '').split('[')
+      // multiple selects are one level higher when ending with []
+      if (row.name.endsWith('[]') && input instanceof HTMLSelectElement && input.multiple) {
+        keySplit.pop()
+      }
+
       let useObject = returnObject
-      let prevObject = null
-      let prevKey = null
       let keyParts = keySplit.length
       for (let i = 0; i < keyParts; i++) {
         let keyPart = keySplit[i]
         if (i === keyParts - 1) {
+          // last level of input name array
           if (inputType === 'file') {
             if (options.filesCallback) {
               files.push({ 'object': useObject, 'key': keyPart, 'input': input })
             }
             value = null
           }
-          // ignore if we should not include unchecked fields
-          if (!options.includeUncheckedAsNull && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1 && value === null) {
-            continue
-          }
-          // key doesn't match the next index key of the array, we make it an object
-          if (prevKey !== null && FormDataJson.#isArray(useObject) && parseInt(keyPart) !== useObject.length) {
-            useObject = Object.assign({}, useObject)
-            // make sure to update the reference in the parent object
-            prevObject[prevKey] = useObject
-          }
-          if (FormDataJson.#isArray(useObject[keyPart])) {
-            useObject[keyPart].push(value)
-          } else {
-            useObject[keyPart] = value
-          }
+          useObject[keyPart] = value
         } else {
-          // by default, we try to use native arrays
-          // only when the keypart doesn't match the next index of the array, we make it an object
           if (typeof useObject[keyPart] !== 'object') {
-            useObject[keyPart] = []
+            useObject[keyPart] = {}
           }
-          prevObject = useObject
-          prevKey = keyPart
           useObject = useObject[keyPart]
         }
       }
@@ -187,16 +227,16 @@ class FormDataJson {
             }
             filesDone++
             if (filesDone === filesRequired) {
-              options.filesCallback(returnObject)
+              options.filesCallback(FormDataJson.#arrayfy(returnObject))
             }
           }
           reader[options.fileReaderFunction](file)
         }
       }
     } else if (options.filesCallback) {
-      options.filesCallback(returnObject)
+      options.filesCallback(FormDataJson.#arrayfy(returnObject))
     }
-    return returnObject
+    return FormDataJson.#arrayfy(returnObject)
   }
 
   /**
@@ -244,7 +284,7 @@ class FormDataJson {
    * @param {*} el
    */
   static reset (el) {
-    let inputs = FormDataJson.#getInputsFlat(el)
+    let inputs = FormDataJson.getFieldTree(el)
     if (!inputs) return
     for (let inputName in inputs) {
       const row = inputs[inputName]
@@ -274,7 +314,7 @@ class FormDataJson {
    * @param {*} el
    */
   static clear (el) {
-    let inputs = FormDataJson.#getInputsFlat(el)
+    let inputs = FormDataJson.getFieldTree(el)
     if (!inputs) return
 
     for (let inputName in inputs) {
@@ -289,31 +329,28 @@ class FormDataJson {
   }
 
   /**
-   * Get input value
-   * Unchecked checkboxes/radios will return null
-   * Unselected single selectbox will return null, multiple always return array even if it's empty
-   * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} inputElement
+   * Make an object to array if possible
+   * @param {Object} object
    * @return {*}
-   * @private
    */
-  static #getInputValue (inputElement) {
-    if (inputElement instanceof HTMLSelectElement) {
-      let arr = []
-      for (let i = 0; i < inputElement.options.length; i++) {
-        let option = inputElement.options[i]
-        if (option.selected) {
-          arr.push((typeof option.value !== 'undefined' ? option.value : option.text).toString())
+  static #arrayfy (object) {
+    if (FormDataJson.#isObject(object)) {
+      let count = 0
+      let valid = true
+      for (let key in object) {
+        if (FormDataJson.#isObject(object[key])) {
+          object[key] = FormDataJson.#arrayfy(object[key])
         }
+        if (parseInt(key) !== count) {
+          valid = false
+        }
+        count++
       }
-      if (inputElement.multiple) {
-        return arr
+      if (valid) {
+        return Object.values(object)
       }
-      return arr.length ? arr[0] : null
     }
-    if (inputElement instanceof HTMLInputElement && FormDataJson.#checkedInputTypes.indexOf(inputElement.type.toLowerCase()) > -1) {
-      return inputElement.checked ? inputElement.value : null
-    }
-    return inputElement.value
+    return object
   }
 
   /**
@@ -419,52 +456,62 @@ class FormDataJson {
   }
 
   /**
-   * Get all input fields as a flat array
+   * Get all input fields as a multidimensional tree, as it would later appear in json data
    * @param {*} el
-   * @return {Object|null}
+   * @return {Object}
    * @private
    */
-  static #getInputsFlat (el) {
+  static getFieldTree (el) {
     el = FormDataJson.#getElement(el)
     if (!el) {
-      return null
+      return []
     }
     let inputs = el.querySelectorAll('select, textarea, input, button')
-    let inputsFlat = []
+    let inputTree = {}
+    let autoIncrementCounts = {}
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i]
       if (!input.name || input.name.length === 0) continue
-      inputsFlat.push({'name' : input.name, 'input' : input})
+      const inputType = (input.type || 'text').toLowerCase()
+      let name = input.name
+      const keyParts = input.name.replace(/\]/g, '').split('[')
+      if (name.endsWith('[]')) {
+        if (input instanceof HTMLSelectElement && input.multiple) {
+          // special for multiple selects, we skip the last empty part to fix double nested arrays
+          keyParts.pop()
+        } else if (inputType === 'radio') {
+          // special for radio buttons, as they group multiple inputs to the same name
+          // so a radio could never be an auto increment array name
+          keyParts.pop()
+        }
+      }
 
-      let inputName = input.name
-      let inputNameClean = inputName.replace(/\[\]$/g, '')
-      let isMultiple = input instanceof HTMLSelectElement && input.multiple
-      // for all elements with blank array index, that uses auto increment key
-      if (!isMultiple && inputNameClean !== inputName) {
-        if (!FormDataJson.#isArray(inputsFlat[inputNameClean])) {
-          inputsFlat[inputNameClean] = []
+      const keyPartsLength = keyParts.length
+      let useObject = inputTree
+      let currentName = ''
+      for (let j = 0; j < keyPartsLength; j++) {
+        let keyPart = keyParts[j]
+        currentName = currentName ? currentName + '[' + keyPart + ']' : keyPart
+        // auto increment key part
+        if (keyPart === '') {
+          if (typeof autoIncrementCounts[currentName] === 'undefined') {
+            autoIncrementCounts[currentName] = 0
+          }
+          keyPart = autoIncrementCounts[currentName].toString()
+          autoIncrementCounts[currentName]++
         }
-        inputsFlat[inputNameClean].push(input)
-      } else {
-        if (isMultiple) {
-          inputsFlat[inputNameClean] = input
+        if (keyPartsLength - 1 === j) {
+          // last level
+          useObject[keyPart] = input
         } else {
-          inputsFlat[inputName] = input
+          if (typeof useObject[keyPart] === 'undefined') {
+            useObject[keyPart] = {}
+          }
+          useObject = useObject[keyPart]
         }
       }
     }
-    let returnObject = {}
-    for (let inputName in inputsFlat) {
-      const row = inputsFlat[inputName]
-      if (FormDataJson.#isArray(row)) {
-        for (let i = 0; i < row.length; i++) {
-          returnObject[inputName + '[' + i + ']'] = row[i]
-        }
-      } else {
-        returnObject[inputName] = row
-      }
-    }
-    return returnObject
+    return inputTree
   }
 
   /**
@@ -478,6 +525,22 @@ class FormDataJson {
   }
 
   /**
+   * Get length of an object/array
+   * @param {*} arg
+   * @return {number}
+   * @private
+   */
+  static #objectLength (arg) {
+    if (FormDataJson.#isArray(arg)) return arg.length
+    if (FormDataJson.#isObject(arg)) {
+      let count = 0
+      for (let k in arg) count++
+      return count
+    }
+    return 0
+  }
+
+  /**
    * Check if arg is arr
    * @param {*} arg
    * @return {boolean}
@@ -488,13 +551,13 @@ class FormDataJson {
   }
 
   /**
-   * Check if given input element is allowed depending on the given options
+   * Check if given input element is allowed depending on the given filter
    * @param {HTMLElement} element
    * @param {Object=} options
    * @return {boolean}
    * @private
    */
-  static #isElementAllowed (element, options) {
+  static #checkInputFilter (element, options) {
     if (typeof options.inputFilter !== 'function') return true
     return options.inputFilter(element) === true
   }

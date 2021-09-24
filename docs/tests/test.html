@@ -59,7 +59,7 @@
        * @param {string} expected Expected/Set data as json string
        */
       function runTest (mode, form, options, expected) {
-        if(form.id !== 'write-all') return
+        if (location.search.includes('singleTest=') && !location.search.includes('singleTest=' + form.id)) return
         // because we dynamically insert required script in head, we may not have loading the library on page load
         if (typeof FormDataJson === 'undefined') {
           setTimeout(function () {
@@ -117,35 +117,35 @@
       }
     </script>
     <style type="text/css">
-        body {
-            font-family: Arial, sans-serif;
-        }
-        form {
-            display: block;
-            padding: 10px;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-        }
-        h3 {
-            margin: 0;
-            padding: 0;
-            margin-bottom: 10px;
-        }
-        .result-success {
-            background: #ceffce;
-        }
-        .result-error {
-            background: #ffc2ba;
-        }
-        .result {
-            padding-top: 10px;
-        }
-        .result-success .result {
-            color: green;
-        }
-        .result-error .result {
-            color: red;
-        }
+      body {
+        font-family: Arial, sans-serif;
+      }
+      form {
+        display: block;
+        padding: 10px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+      }
+      h3 {
+        margin: 0;
+        padding: 0;
+        margin-bottom: 10px;
+      }
+      .result-success {
+        background: #ceffce;
+      }
+      .result-error {
+        background: #ffc2ba;
+      }
+      .result {
+        padding-top: 10px;
+      }
+      .result-success .result {
+        color: green;
+      }
+      .result-error .result {
+        color: red;
+      }
     </style>
 </head>
 <body>
@@ -199,21 +199,23 @@
     <h3></h3>
     <p>Testing read toJson() of all existing input types.</p>
     <input type="button" name="button" value="button">
-    <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
-    <input type="checkbox" name="checkbox" value="checkbox unchecked">
     <input type="color" name="color" value="#ff0000">
     <input type="date" name="date" value="2020-01-03">
     <input type="datetime-local" name="datetime-local" value="2014-01-02T11:42:13.510">
+    <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
+    <input type="checkbox" name="checkbox" value="checkbox unchecked">
+    <input type="checkbox" name="chk[]" value="checkbox checked" checked>
+    <input type="checkbox" name="chk[]" value="checkbox checked2" checked>
     <input type="email" name="email" value="email@foo.bar">
     <input type="file" name="file">
+    <input type="radio" name="radio[]" value="radio unchecked1">
+    <input type="radio" name="radio[]" value="radio checked2" checked>
+    <input type="radio" name="radio[]" value="radio unchecked2">
     <input type="hidden" name="hidden" value="hidden">
     <input type="image" name="image" value="image">
     <input type="month" name="month" value="2020-01">
     <input type="number" name="number" value="666">
     <input type="password" name="password" value="1234">
-    <input type="radio" name="radio" value="radio unchecked1">
-    <input type="radio" name="radio" value="radio checked" checked>
-    <input type="radio" name="radio" value="radio unchecked2">
     <input type="range" name="range" value="6" min="1" maxlength="10">
     <input type="reset" name="reset" value="reset">
     <input type="search" name="search" value="search">
@@ -222,6 +224,8 @@
     <input type="text" name="text" value="text">
     <input type="text" name="text_depth[]" value="text">
     <input type="text" name="text_depth[]" value="text">
+    <input type="text" name="text_deeper[1][foo]" value="text">
+    <input type="text" name="text_deeper[1][bar]" value="text">
     <input type="time" name="time" value="06:06">
     <input type="url" name="url" value="https://github.com/brainfoolong/formdata-json">
     <input type="week" name="week" value="2014-W48">
@@ -249,7 +253,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#read-all'), null, '{"checkbox_checked":"checkbox checked","color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('read', document.querySelector('#read-all'), null, '{"checkbox_checked":"checkbox checked","chk":["checkbox checked","checkbox checked2"],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","file":null,"hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio[]":"radio checked2","range":"6","search":"search","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]},"select_single_text":"2","select_single_value":"2","tel":"+436666666666","text":"text","text_deeper":{"1":{"bar":"text","foo":"text"}},"text_depth":["text","text"],"textarea":"textarea","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48"}')
   })()
 </script>
 
