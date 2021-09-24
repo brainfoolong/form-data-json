@@ -7,7 +7,7 @@ const babel = require('@babel/core')
 
 const babelConf = {
   'comments': false,
-  'plugins': [__dirname + '/../node_modules/@babel/plugin-proposal-class-properties'],
+  'plugins': [__dirname + '/../node_modules/@babel/plugin-proposal-class-properties', __dirname + '/../node_modules/@babel/plugin-proposal-private-methods'],
   'presets': [
     [
       __dirname + '/../node_modules/@babel/preset-env',

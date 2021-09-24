@@ -31,9 +31,12 @@
         let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + form.getAttribute('name')
         if (!location.href.match(/(\?|\&)noverbose/)) {
           console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;' + (result ? 'color:green' : 'color:red'))
-          console.log('Expected JsonString', expected)
-          console.log('Expected Object', JSON.parse(expected))
-          console.log('Got JsonString', JSON.stringify(got))
+          console.log('Expected JsonString')
+          console.log(expected)
+          console.log('Expected Object')
+          console.log(JSON.parse(expected))
+          console.log('Got JsonString')
+          console.log(JSON.stringify(got))
           console.log('Got Object', got)
         }
         form.querySelector('h3').innerHTML = title
@@ -52,10 +55,11 @@
        * Run a test
        * @param {string} mode read|write
        * @param {HTMLFormElement|Element} form
-       * @param {FormDataJsonOptions|Object|null} options
+       * @param {Object|null} options
        * @param {string} expected Expected/Set data as json string
        */
       function runTest (mode, form, options, expected) {
+        if(form.id !== 'write-all') return
         // because we dynamically insert required script in head, we may not have loading the library on page load
         if (typeof FormDataJson === 'undefined') {
           setTimeout(function () {
@@ -65,10 +69,10 @@
         }
         let values
         if (mode === 'read') {
-          values = FormDataJson.formToJson(form, options)
+          values = FormDataJson.toJson(form, options)
         } else {
-          FormDataJson.fillFormFromJsonValues(form, JSON.parse(expected), options)
-          values = FormDataJson.formToJson(form, options)
+          FormDataJson.fromJson(form, JSON.parse(expected), options)
+          values = FormDataJson.toJson(form, options)
         }
         showTestResults(form, expected, values)
       }
@@ -77,10 +81,11 @@
        * Run a test with files
        * @param {string} mode read|write
        * @param {HTMLFormElement|Element} form
-       * @param {FormDataJsonOptions|Object|null} options
+       * @param {Object|null} options
        * @param {string} expected Expected/Set data as json string
        */
       function runTestWithFiles (mode, form, options, expected) {
+        return
         // because we dynamically insert required script in head, we may not have loading the library on page load
         if (typeof FormDataJson === 'undefined') {
           setTimeout(function () {
@@ -88,7 +93,10 @@
           }, 100)
           return
         }
-        if (options) options = new FormDataJsonOptions(options)
+        options = options || {}
+        options.filesCallback = function (values) {
+          showTestResults(form, expected, values)
+        }
         if (mode === 'read') {
           // on page startup run simulated test values
           let files = form.querySelectorAll('input[type=\'file\']')
@@ -100,9 +108,7 @@
           showTestResults(form, expected, values)
           // after user has changed files, run test again
           form.addEventListener('change', function () {
-            FormDataJson.formToJson(form, options, function (values) {
-              showTestResults(form, expected, values)
-            })
+            FormDataJson.toJson(form, options)
           }, false)
 
         } else {
@@ -191,8 +197,8 @@
 
 <form name="read-all" id="read-all">
     <h3></h3>
-    <p>Testing read formToJson() of all existing input types.</p>
-    <input type="button" name="button" value="">
+    <p>Testing read toJson() of all existing input types.</p>
+    <input type="button" name="button" value="button">
     <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
     <input type="checkbox" name="checkbox" value="checkbox unchecked">
     <input type="color" name="color" value="#ff0000">
@@ -201,7 +207,7 @@
     <input type="email" name="email" value="email@foo.bar">
     <input type="file" name="file">
     <input type="hidden" name="hidden" value="hidden">
-    <input type="image" name="image">
+    <input type="image" name="image" value="image">
     <input type="month" name="month" value="2020-01">
     <input type="number" name="number" value="666">
     <input type="password" name="password" value="1234">
@@ -249,17 +255,19 @@
 
 <form name="write-all" id="write-all">
     <h3></h3>
-    <p>Testing write fillFormFromJsonValues() of all existing input types.</p>
-    <input type="button" name="button" value="">
-    <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
+    <p>Testing write fromJson() of all existing input types.</p>
+    <input type="button" name="button" value="Button">
+    <input type="checkbox" name="checkbox_checked" value="checkbox checked">
     <input type="checkbox" name="checkbox" value="checkbox unchecked">
+    <input type="checkbox" name="chk[]" value="checkbox checked">
+    <input type="checkbox" name="chk[]" value="checkbox unchecked">
     <input type="color" name="color">
     <input type="date" name="date" value="">
     <input type="datetime-local" name="datetime-local" value="">
     <input type="email" name="email" value="">
     <input type="file" name="file">
     <input type="hidden" name="hidden" value="">
-    <input type="image" name="image">
+    <input type="image" name="image" value="">
     <input type="month" name="month" value="">
     <input type="number" name="number" value="">
     <input type="password" name="password" value="">
@@ -299,13 +307,13 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","chk":[],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","file":null,"hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
 <form name="read-files" id="read-files">
     <h3></h3>
-    <p>Testing read formToJson() with files callback. To test this with manual user input, you have to choose the
+    <p>Testing read toJson() with files callback. To test this with manual user input, you have to choose the
         test-file.gif from this directory for both single and multiple file inputs. After choosing both the test must
         turn green again.</p>
     Single: <input type="file" name="file"
