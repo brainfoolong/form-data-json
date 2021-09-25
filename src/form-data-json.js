@@ -113,15 +113,16 @@ class FormDataJson {
      */
     function isValidInput (input, options) {
 
+      // filter elements by input filter
+      if (typeof options.inputFilter !== 'function' && options.inputFilter(input) !== true) {
+        return false
+      }
+
       // ignore disabled fields
       if (!options.includeDisabled && input.disabled) {
         return false
       }
 
-      // filter elements by input filter
-      if (!FormDataJson.#checkInputFilter(input, options)) {
-        return false
-      }
       const inputType = (input.type || 'text').toLowerCase()
 
       // ignore button values
@@ -250,8 +251,11 @@ class FormDataJson {
     options = Object.assign({}, FormDataJson.defaultOptionsFromJson, options || {})
     const tree = FormDataJson.#getFieldTree(el, options)
 
-    console.log(values)
-
+    /**
+     * Recursive set values
+     * @param {*} inputs
+     * @param {*} newValues
+     */
     function recursion (inputs, newValues) {
       for (let key in inputs) {
         const row = inputs[key]
@@ -269,7 +273,6 @@ class FormDataJson {
         if (!options.clearOthers && typeof newValues[objectKey] === 'undefined') {
           continue
         }
-        console.log(objectKey)
         FormDataJson.#setInputValue(row, newValues[objectKey] || null)
       }
     }
@@ -405,51 +408,6 @@ class FormDataJson {
   }
 
   /**
-   * Set inputs recursive
-   * @param {Object<string, HTMLElement[]>} inputList
-   * @param {*} values values
-   * @param {string=} keyPrefix
-   * @private
-   */
-  static #setInputValuesRecursive (inputList, values, keyPrefix) {
-    if (!values || typeof values !== 'object') return
-
-    for (let key in values) {
-      const value = values[key]
-      const inputName = keyPrefix ? keyPrefix + '[' + key + ']' : key
-      const inputs = inputList[inputName] || null
-      if (!inputs) {
-        if (value && typeof value === 'object') {
-          FormDataJson.#setInputValuesRecursive(inputList, value, inputName)
-        }
-        continue
-      }
-      console.log(key, value)
-      continue
-
-      if (inputs[0] instanceof HTMLSelectElement) {
-        console.log(inputs[0], value)
-
-        FormDataJson.#setInputValue(inputs[0], value)
-        continue
-      }
-      // multiple inputs with same name can be input that can be a input with a checkbox, checkboxes are checked when the value matches the given value
-      if (inputs.length > 0 && inputs[0].type && FormDataJson.#checkedInputTypes.indexOf(inputs[0].type.toLowerCase()) > -1) {
-        for (let i = 0; i < inputs.length; i++) {
-          FormDataJson.#setInputValue(inputs[i], value)
-        }
-        continue
-      }
-      if (FormDataJson.#isObject(value)) {
-        // real objects are supposed to be the next level, as no input can take a real object (only arrays), so go one deeper
-        FormDataJson.fromJson(el, value, options, inputName, depth + 1)
-        continue
-      }
-      FormDataJson.#setInputValue(inputs[0], value)
-    }
-  }
-
-  /**
    * Convert any value to a string
    * A object/array/undefined will be an ampty string
    * Boolean will be 1 or 0
@@ -460,27 +418,6 @@ class FormDataJson {
     if (typeof value === 'object') return ''
     if (typeof value === 'boolean') return value ? '1' : '0'
     return value + ''
-  }
-
-  /**
-   * Check if the given value match the expected value
-   * If value is array/object than check each single key. If one does match, it returns true
-   * @param {*} value
-   * @param {*} expected
-   * @return {boolean}
-   */
-  static #matchValue (value, expected) {
-    expected = FormDataJson.#stringify(expected)
-    if (value && typeof value === 'object') {
-      for (let key in value) {
-        if (FormDataJson.#stringify(value[key]) === expected) {
-          return true
-        }
-      }
-    } else {
-      return FormDataJson.#stringify(value) === expected
-    }
-    return false
   }
 
   /**
@@ -565,22 +502,6 @@ class FormDataJson {
   }
 
   /**
-   * Get length of an object/array
-   * @param {*} arg
-   * @return {number}
-   * @private
-   */
-  static #objectLength (arg) {
-    if (FormDataJson.#isArray(arg)) return arg.length
-    if (FormDataJson.#isObject(arg)) {
-      let count = 0
-      for (let k in arg) count++
-      return count
-    }
-    return 0
-  }
-
-  /**
    * Check if arg is arr
    * @param {*} arg
    * @return {boolean}
@@ -588,18 +509,6 @@ class FormDataJson {
    */
   static #isArray (arg) {
     return typeof arg === 'object' && Object.prototype.toString.call(arg) === '[object Array]'
-  }
-
-  /**
-   * Check if given input element is allowed depending on the given filter
-   * @param {HTMLElement} element
-   * @param {Object=} options
-   * @return {boolean}
-   * @private
-   */
-  static #checkInputFilter (element, options) {
-    if (typeof options.inputFilter !== 'function') return true
-    return options.inputFilter(element) === true
   }
 
   /**
@@ -611,31 +520,9 @@ class FormDataJson {
   static #getElement (param) {
     if (typeof param === 'string') return document.querySelector(param)
     if (param instanceof HTMLElement) return param
-    if (typeof jQuery !== 'undefined' && param instanceof jQuery) param = param[0]
-    console.warn('FormDataJson: Unsupported element passed')
+    if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0]
+    console.warn('FormDataJson: Unsupported element passed. Supported is HTMLElement, a string query selector or JQuery object')
     return null
-  }
-
-  /**
-   * Take an object and make it an one dimensional object
-   * Example: {'foo' : {'bar' 1, 'name' : 'nobody'}} becomes to { 'foo[bar]' : 1, 'foo[name]' : 'nobody'}
-   * @param {Object} src
-   * @param {string=} prependKey
-   * @param {Object=} merged
-   * @return {Object}
-   * @private
-   */
-  static #flatten (src, prependKey, merged) {
-    merged = merged || {}
-    for (let i in src) {
-      const k = prependKey ? prependKey + '[' + i + ']' : i
-      if (typeof src[i] === 'object' && src[i] !== null) {
-        merged = FormDataJson.#flatten(src[i], k, merged)
-      } else {
-        merged[k] = src[i]
-      }
-    }
-    return merged
   }
 }
 
