@@ -428,25 +428,46 @@
     runTest('read', document.querySelector('#option-inputFilter'), { inputFilter: function (inputElement) { return (inputElement.type || 'text') !== 'password' } }, '{"foobar":"foobar"}')
   })()
 </script>
-<form name="option-flatList" id="option-flatList">
+<form name="option-flatList-write" id="option-flatList-write">
     <h3></h3>
-    <p>Testing option "flatList"</p>
-    <input type="hidden" name="name" value="1">
-    <input type="hidden" name="name2">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="hidden" name="name[foo]" value="name[foo]">
-    <input type="hidden" name="name[bar]" value="name[bar]">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
-    <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
-    <input type="hidden" name="name[]" value="name[]">
+    <p>Testing option "flatList" on write</p>
+    <input type="text" name="name">
+    <input type="text" name="name2">
+    <input type="text" name="name[]">
+    <input type="text" name="name[foo]">
+    <input type="text" name="name[bar]">
+    <input type="text" name="name[]">
+    <input type="text" name="name[0][sub1]">
+    <input type="text" name="name[0][sub2]">
+    <input type="text" name="name[]" >
+    <input type="checkbox" name="chk[]" value="1">
+    <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('write', document.querySelector('#option-flatList-write'), { flatList: true }, '{"name[0][sub1]":"name[0][sub1]","name[0][sub2]":"name[0][sub2]","name[]":"name[]","name[foo]":"name[foo]","name[bar]":"name[bar]","name2":"","chk[]":"1"}')
+  })()
+</script>
+<form name="option-flatList-read" id="option-flatList-read">
+    <h3></h3>
+    <p>Testing option "flatList" on read</p>
+    <input type="text" name="name" value="1">
+    <input type="text" name="name2">
+    <input type="text" name="name[]" value="name[]">
+    <input type="text" name="name[foo]" value="name[foo]">
+    <input type="text" name="name[bar]" value="name[bar]">
+    <input type="text" name="name[]" value="name[]">
+    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+    <input type="text" name="name[]" value="name[]">
     <input type="checkbox" name="chk[]" value="1" checked>
     <input type="checkbox" name="chk[]" value="2">
     <div class="result"></div>
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-flatList'), { flatList: true }, '{"name[0][sub1]":"name[0][sub1]","name[0][sub2]":"name[0][sub2]","name[]":"name[]","name[foo]":"name[foo]","name[bar]":"name[bar]","name2":"","chk[]":"1"}')
+    runTest('read', document.querySelector('#option-flatList-read'), { flatList: true }, '{"name[0][sub1]":"name[0][sub1]","name[0][sub2]":"name[0][sub2]","name[]":"name[]","name[foo]":"name[foo]","name[bar]":"name[bar]","name2":"","chk[]":"1"}')
   })()
 </script>
 <form name="option-skipEmpty" id="option-skipEmpty">
