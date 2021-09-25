@@ -40,6 +40,7 @@ class FormDataJson {
     /**
      * Does return a flat key/value list of values instead of multiple dimensions
      * This will use the original input names as key, doesn't matter how weird they are
+     * Exepected keys are similar to FormData() keys
      * @type {boolean}
      */
     'flatList': false,
@@ -64,31 +65,20 @@ class FormDataJson {
    * @type {{}}
    */
   static defaultOptionsFromJson = {
-    /**
-     * A function, where first parameter is the input field to check for, that must return true if the field should be included
-     * All other return values, as well as no return value, will skip the input field in the progress
-     * @type {function|null}
-     */
-    'inputFilter': null,
 
     /**
-     * If true, than all fields will be reset to their default values before setting the new values
+     * Does expect the given values are in a flatList, previously exported with toJson
+     * Instead of the default bevhiour with nested objects
      * @type {boolean}
      */
-    'resetForm': false,
+    'flatList': false,
 
     /**
-     * If true, than all fields will cleared empty before setting the new values
+     * If true, than all fields that are not exist in the passed values object, will be cleared/emptied
+     * Not exist means, than value must be undefined, a null will clear the field anyways
      * @type {boolean}
      */
-    'clearForm': false,
-
-    /**
-     * By default, files are read as base64 data url
-     * Possible values are: readAsDataURL, readAsBinaryString, readAsText, readAsArrayBuffer
-     * @type {string}
-     */
-    'fileReaderFunction': 'readAsDataURL'
+    'clearOthers': false
   }
 
   /**
@@ -110,101 +100,110 @@ class FormDataJson {
    * @return {Object}
    */
   static toJson (el, options) {
-    let inputs = FormDataJson.getFieldTree(el)
-    if (!inputs.length) return {}
-
-    console.log(inputs)
     options = Object.assign({}, FormDataJson.defaultOptionsToJson, options || {})
-    let returnObject = {}
-    let files = []
-    for (let k = 0; k < inputs.length; k++) {
-      const row = inputs[k]
-      const input = row.input
-      const inputType = (input.type || 'text').toLowerCase()
+    const tree = FormDataJson.#getFieldTree(el, options)
+    const returnObject = {}
+    const files = []
+
+    /**
+     * Check if given input is valid for given filters
+     * @param {HTMLElement} input
+     * @param {Object} options
+     * @return {boolean}
+     */
+    function isValidInput (input, options) {
 
       // ignore disabled fields
       if (!options.includeDisabled && input.disabled) {
-        continue
+        return false
       }
 
       // filter elements by input filter
       if (!FormDataJson.#checkInputFilter(input, options)) {
-        continue
+        return false
       }
-
-      // radio inputs are special, as multiple inputs share the same name
-      // we have already processed the same input name
-      if (inputType === 'radio') {
-        if (typeof returnObject[row.name] !== 'undefined') continue
-        returnObject[row.name] = null
-        // radio elements are supposed to have same input names, so take the value from the checked one
-        for (let i = 0; i < row.inputGroup.length; i++) {
-          let inputGroup = row.inputGroup[i]
-          if (inputGroup.checked) {
-            returnObject[row.name] = inputGroup.value
-            break
-          }
-        }
-        continue
-      }
+      const inputType = (input.type || 'text').toLowerCase()
 
       // ignore button values
       if (!options.includeButtonValues && (input instanceof HTMLButtonElement || FormDataJson.#buttonInputTypes.indexOf(inputType) > -1)) {
-        continue
-      }
-
-      let value = null
-      if (input instanceof HTMLSelectElement) {
-        let arr = []
-        for (let i = 0; i < input.options.length; i++) {
-          let option = input.options[i]
-          if (option.selected) {
-            arr.push((typeof option.value !== 'undefined' ? option.value : option.text).toString())
-          }
-        }
-        if (input.multiple) {
-          value = arr
-        } else {
-          value = arr.length ? arr[0] : null
-        }
-      } else if (FormDataJson.#checkedInputTypes.indexOf(inputType) > -1) {
-        value = input.checked ? input.value : null
-      } else {
-        value = input.value
+        return false
       }
 
       // ignore unchecked fields
-      if (!options.includeUncheckedAsNull && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1 && value === null) {
-        continue
+      if (!options.includeUncheckedAsNull && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1 && !input.checked) {
+        return false
       }
 
-      let keySplit = options.flatList ? [row.name] : row.nameWithIndex.replace(/\]/g, '').split('[')
-      // multiple selects are one level higher when ending with []
-      if (row.name.endsWith('[]') && input instanceof HTMLSelectElement && input.multiple) {
-        keySplit.pop()
-      }
+      return true
+    }
 
-      let useObject = returnObject
-      let keyParts = keySplit.length
-      for (let i = 0; i < keyParts; i++) {
-        let keyPart = keySplit[i]
-        if (i === keyParts - 1) {
-          // last level of input name array
-          if (inputType === 'file') {
-            if (options.filesCallback) {
-              files.push({ 'object': useObject, 'key': keyPart, 'input': input })
-            }
-            value = null
+    /**
+     * Recursive get values
+     * @param {Object} inputs
+     * @param {Object} values
+     */
+    function recursion (inputs, values) {
+      for (let key in inputs) {
+        const row = inputs[key]
+        const objectKey = options.flatList ? row.name : key
+        // next level
+        if (row.type === 'nested') {
+          if (options.flatList) {
+            recursion(row.tree, values)
+          } else {
+            values[key] = {}
+            recursion(row.tree, values[key])
           }
-          useObject[keyPart] = value
-        } else {
-          if (typeof useObject[keyPart] !== 'object') {
-            useObject[keyPart] = {}
-          }
-          useObject = useObject[keyPart]
+          continue
         }
+        const input = row.input
+        // check for valid inputs by given options
+        if (row.type === 'default' && !isValidInput(input, options)) {
+          continue
+        }
+        const inputType = row.inputType
+
+        if (inputType === 'file') {
+          if (options.filesCallback) {
+            files.push({ 'object': values, 'key': objectKey, 'input': input })
+          }
+          continue
+        }
+
+        let value = null
+        if (row.type === 'radio') {
+          for (let i = 0; i < row.inputs.length; i++) {
+            const radioInput = row.inputs[i]
+            // check for valid inputs by given options
+            if (!isValidInput(radioInput, options)) continue
+            if (radioInput.checked) {
+              value = radioInput.value
+              break
+            }
+          }
+        } else if (inputType === 'checkbox') {
+          value = input.checked ? input.value : null
+        } else if (input instanceof HTMLSelectElement) {
+          let arr = []
+          for (let i = 0; i < input.options.length; i++) {
+            let option = input.options[i]
+            if (option.selected) {
+              arr.push((typeof option.value !== 'undefined' ? option.value : option.text).toString())
+            }
+          }
+          if (input.multiple) {
+            value = arr
+          } else {
+            value = arr.length ? arr[0] : null
+          }
+        } else {
+          value = input.value
+        }
+        values[objectKey] = value
       }
     }
+
+    recursion(tree, returnObject)
 
     if (files.length) {
       let filesDone = 0
@@ -245,38 +244,37 @@ class FormDataJson {
    * @param {Object} values
    * @param {Object=} options
    * @param {string=} keyPrefix Internal only
-   * @param {number=} depth Internal only
    */
   static fromJson (el, values, options, keyPrefix) {
     if (!FormDataJson.#isObject(values)) return
-    el = FormDataJson.#getElement(el)
-    if (!el) return
-
     options = Object.assign({}, FormDataJson.defaultOptionsFromJson, options || {})
+    const tree = FormDataJson.#getFieldTree(el, options)
 
-    if (options.clearForm) FormDataJson.clear(el)
-    else if (options.resetForm) FormDataJson.reset(el)
+    console.log(values)
 
-    let inputs = el.querySelectorAll('select, textarea, input, button')
-    for (let i = 0; i < inputs.length; i++) {
-      let input = inputs[i]
-      if (!input.name || input.type === 'file') continue
-      let name = input.name
-      // selects and checkbox inputs accept both array/object and scalar values and can have a [] affix (to act as an array)
-      // so truncate [] from name because we don't need it
-      if (input instanceof HTMLSelectElement || input.type && FormDataJson.#checkedInputTypes.indexOf(input.type.toLowerCase()) > -1) {
-        name = name.replace(/\[\]$/g, '')
+    function recursion (inputs, newValues) {
+      for (let key in inputs) {
+        const row = inputs[key]
+        const objectKey = options.flatList ? row.name : key
+        // next level
+        if (row.type === 'nested') {
+          if (options.flatList) {
+            recursion(row.tree, newValues)
+          } else if (typeof newValues[objectKey] === 'object') {
+            recursion(row.tree, newValues[objectKey])
+          }
+          continue
+        }
+        // skip fields that are not presented in the
+        if (!options.clearOthers && typeof newValues[objectKey] === 'undefined') {
+          continue
+        }
+        console.log(objectKey)
+        FormDataJson.#setInputValue(row, newValues[objectKey] || null)
       }
-      let nameParts = name.replace(/\]/g, '').split('[')
-
-      let value = values
-      do {
-        let namePart = nameParts.shift()
-        value = value[namePart]
-      } while (value && typeof value === 'object' && nameParts.length)
-      FormDataJson.#setInputValue(input, value)
     }
 
+    recursion(tree, values)
   }
 
   /**
@@ -284,7 +282,7 @@ class FormDataJson {
    * @param {*} el
    */
   static reset (el) {
-    let inputs = FormDataJson.getFieldTree(el)
+    let inputs = FormDataJson.#getFieldTree(el)
     if (!inputs) return
     for (let inputName in inputs) {
       const row = inputs[inputName]
@@ -314,7 +312,7 @@ class FormDataJson {
    * @param {*} el
    */
   static clear (el) {
-    let inputs = FormDataJson.getFieldTree(el)
+    let inputs = FormDataJson.#getFieldTree(el)
     if (!inputs) return
 
     for (let inputName in inputs) {
@@ -338,7 +336,7 @@ class FormDataJson {
       let count = 0
       let valid = true
       for (let key in object) {
-        if (FormDataJson.#isObject(object[key])) {
+        if (FormDataJson.#isObject(object[key]) && !(object[key] instanceof Element)) {
           object[key] = FormDataJson.#arrayfy(object[key])
         }
         if (parseInt(key) !== count) {
@@ -355,24 +353,54 @@ class FormDataJson {
 
   /**
    * Set input value
-   * @param {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement} inputElement
-   * @param {*|null} value Null will unset the value
+   * @param {*} row
+   * @param {*|null} newValue Null will unset the value
    * @private
    */
-  static #setInputValue (inputElement, value) {
-    let inputType = (inputElement.type || 'text').toLowerCase()
-    if (inputElement instanceof HTMLInputElement && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1) {
-      inputElement.checked = value === true || FormDataJson.#matchValue(value, inputElement.value)
-    } else if (inputElement instanceof HTMLSelectElement) {
-      for (let i = 0; i < inputElement.options.length; i++) {
-        let option = inputElement.options[i]
-        let optionValue = typeof option.value !== 'undefined' ? option.value : option.text
-        option.selected = FormDataJson.#matchValue(value, optionValue)
+  static #setInputValue (row, newValue) {
+    if (row.type === 'radio') {
+      for (let i = 0; i < row.inputs.length; i++) {
+        const radioInput = row.inputs[i]
+        if (newValue !== null && FormDataJson.#stringify(radioInput.value) === FormDataJson.#stringify(newValue)) {
+          radioInput.checked = true
+          break
+        }
       }
-    } else if (inputElement instanceof HTMLInputElement && inputType === 'file') {
-      // cannot set file type
+      return
+    }
+
+    const input = row.input
+    const inputType = row.inputType
+
+    // ignore file input, they cannot be set
+    if (inputType === 'file') {
+      return
+    }
+
+    if (inputType === 'checkbox') {
+      input.checked = newValue === true || (newValue !== null && FormDataJson.#stringify(input.value) === FormDataJson.#stringify(newValue))
+    } else if (input instanceof HTMLSelectElement) {
+      let newValueArr = newValue
+      if (newValueArr === null || newValueArr === undefined) {
+        newValueArr = []
+      } else if (FormDataJson.#isObject(newValueArr)) {
+        newValueArr = Object.values(newValueArr)
+      } else if (!FormDataJson.#isArray(newValueArr)) {
+        newValueArr = [newValueArr]
+      }
+      for (let i = 0; i < input.options.length; i++) {
+        const option = input.options[i]
+        const optionValue = (typeof option.value !== 'undefined' ? option.value : option.text).toString()
+        option.selected = false
+        for (let j = 0; j < newValueArr.length; j++) {
+          if (optionValue === FormDataJson.#stringify(newValueArr[j])) {
+            option.selected = true
+            break
+          }
+        }
+      }
     } else {
-      inputElement.value = value
+      input.value = newValue
     }
   }
 
@@ -456,12 +484,13 @@ class FormDataJson {
   }
 
   /**
-   * Get all input fields as a multidimensional tree, as it would later appear in json data
+   * Get all input fields as a multidimensional tree, as it would later appear in json data, but with input elements as values
    * @param {*} el
+   * @param {Object=} options
    * @return {Object}
    * @private
    */
-  static getFieldTree (el) {
+  static #getFieldTree (el, options) {
     el = FormDataJson.#getElement(el)
     if (!el) {
       return []
@@ -473,6 +502,7 @@ class FormDataJson {
       const input = inputs[i]
       if (!input.name || input.name.length === 0) continue
       const inputType = (input.type || 'text').toLowerCase()
+
       let name = input.name
       const keyParts = input.name.replace(/\]/g, '').split('[')
       if (name.endsWith('[]')) {
@@ -500,14 +530,24 @@ class FormDataJson {
           keyPart = autoIncrementCounts[currentName].toString()
           autoIncrementCounts[currentName]++
         }
+        // last level
         if (keyPartsLength - 1 === j) {
-          // last level
-          useObject[keyPart] = input
-        } else {
-          if (typeof useObject[keyPart] === 'undefined') {
-            useObject[keyPart] = {}
+          // radio elements are special
+          if ((input.type || 'text').toLowerCase() === 'radio') {
+            if (typeof useObject[keyPart] === 'undefined') {
+              useObject[keyPart] = { 'type': 'radio', 'name': input.name, 'inputType': inputType, 'inputs': [] }
+            }
+            useObject[keyPart].inputs.push(input)
+          } else {
+            useObject[keyPart] = { 'type': 'default', 'name': input.name, 'inputType': inputType, 'input': input }
           }
-          useObject = useObject[keyPart]
+        } else {
+          // it could be possible, than really weird a non standard conform input names result in already
+          // existing data which we need to override here, for which the check to .tree is for
+          if (typeof useObject[keyPart] === 'undefined' || typeof useObject[keyPart].tree === 'undefined') {
+            useObject[keyPart] = { 'type': 'nested', 'tree': {} }
+          }
+          useObject = useObject[keyPart].tree
         }
       }
     }

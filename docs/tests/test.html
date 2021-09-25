@@ -37,7 +37,8 @@
           console.log(JSON.parse(expected))
           console.log('Got JsonString')
           console.log(JSON.stringify(got))
-          console.log('Got Object', got)
+          console.log('Got Object')
+          console.log(got)
         }
         form.querySelector('h3').innerHTML = title
         let html = '<div class="result">'
@@ -85,7 +86,6 @@
        * @param {string} expected Expected/Set data as json string
        */
       function runTestWithFiles (mode, form, options, expected) {
-        return
         // because we dynamically insert required script in head, we may not have loading the library on page load
         if (typeof FormDataJson === 'undefined') {
           setTimeout(function () {
@@ -253,7 +253,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#read-all'), null, '{"checkbox_checked":"checkbox checked","chk":["checkbox checked","checkbox checked2"],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","file":null,"hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio[]":"radio checked2","range":"6","search":"search","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]},"select_single_text":"2","select_single_value":"2","tel":"+436666666666","text":"text","text_deeper":{"1":{"bar":"text","foo":"text"}},"text_depth":["text","text"],"textarea":"textarea","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48"}')
+    runTest('read', document.querySelector('#read-all'), null, '{"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","checkbox_checked":"checkbox checked","chk":["checkbox checked","checkbox checked2"],"email":"email@foo.bar","radio":"radio checked2","hidden":"hidden","month":"2020-01","number":"666","password":"1234","range":"6","search":"search","tel":"+436666666666","text":"text","text_depth":["text","text"],"text_deeper":{"1":{"foo":"text","bar":"text"}},"time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
@@ -311,7 +311,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","chk":[],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","file":null,"hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","chk":[],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
