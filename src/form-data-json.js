@@ -27,6 +27,7 @@ class FormDataJson {
     /**
      * Include all unchecked radio/checkboxes as given value when they are unchecked
      * If undefined, than the unchecked field will be ignored in output
+     * @type {*}
      */
     'uncheckedValue': undefined,
 

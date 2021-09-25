@@ -38,10 +38,10 @@ async function compile () {
   let readmeFileData = fs.readFileSync(readmeFile).toString()
 
   let matchDefaultOptionsToJson = srcFileData.match(/static defaultOptionsToJson = {(.*?  )}/is)
-  matchDefaultOptionsToJson[1] = '\n' + matchDefaultOptionsToJson[1].trim().replace(/^    /gm, '') + '\n'
+  matchDefaultOptionsToJson[1] = '\n{\n' + matchDefaultOptionsToJson[1].trim().replace(/^    /gm, '') + '\n}\n'
   readmeFileData = readmeFileData.replace(/```javascript defaultOptionsToJson.*?```/is, '```javascript defaultOptionsToJson' + matchDefaultOptionsToJson[1] + '```')
   let matchDefaultOptionsFromJson = srcFileData.match(/static defaultOptionsFromJson = {(.*?  )}/is)
-  matchDefaultOptionsFromJson[1] = '\n' + matchDefaultOptionsFromJson[1].trim().replace(/^    /gm, '') + '\n'
+  matchDefaultOptionsFromJson[1] = '\n{\n' + matchDefaultOptionsFromJson[1].trim().replace(/^    /gm, '') + '\n}\n'
   readmeFileData = readmeFileData.replace(/```javascript defaultOptionsFromJson.*?```/is, '```javascript defaultOptionsFromJson' + matchDefaultOptionsFromJson[1] + '```')
 
   fs.writeFileSync(readmeFile, readmeFileData)

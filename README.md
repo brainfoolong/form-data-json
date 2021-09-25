@@ -93,6 +93,7 @@ FormDataJson.clear(document.querySelector("form"))
 ###### All default options for toJson()
 You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJson`.
 ```javascript defaultOptionsToJson
+{
 /**
  * Include all disabled field values
  * @type {boolean}
@@ -108,6 +109,7 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
 /**
  * Include all unchecked radio/checkboxes as given value when they are unchecked
  * If undefined, than the unchecked field will be ignored in output
+ * @type {*}
  */
 'uncheckedValue': undefined,
 
@@ -145,11 +147,13 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
  * @type {string}
  */
 'fileReaderFunction': 'readAsDataURL'
+}
 ```
 
 ###### All default options for fromJson()
 You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFromJson`.
 ```javascript defaultOptionsFromJson
+{
 /**
  * Does expect the given values are in a flatList, previously exported with toJson
  * Instead of the default bevhiour with nested objects
@@ -163,12 +167,14 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
  * @type {boolean}
  */
 'clearOthers': false
+}
 ```
 
 ### Migration/Changelog from v1 to v2
 * Class `FormDataJsonOptions` removed. Use bare `{}` objects now as options
 * Method `FormDataJson.flattenJsonFormValues` removed. Use `flatList = true` option in `toJson`
-* Method `FormDataJson.setInputValue` removed. No replacement. Use `fromJson` if you need to set any input value
+* Method `FormDataJson.setInputValue` removed. No direct replacement. Use `fromJson` if you need to set any input value
+* Method 3rd Parameter `formToJson/toJson` callback function has been removed and is now set into option `filesCallback`
 * Method `formToJson`  renamed to `toJson`
 * Method `fillFormFromJsonValues` renamed to `fromJson`
 * Option `unsetAllInputsOnFill` renamed to `clearOthers`
