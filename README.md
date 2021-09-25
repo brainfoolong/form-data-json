@@ -1,26 +1,29 @@
 ![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/logo-readme-github.png?1)
 
-# Form Data Json - Form input values to/from JSON
+# Form Data Json - Form input values to/from JSON (And a bit more..)
 A zero dependency, cross browser library to easily get or set form input values as/from a json object. It can handle all existing input types, including multidimensional array names and file input. It is similar to native [FormData](https://developer.mozilla.org/docs/Web/API/FormData) but have some advantages: Get data as multidimensional object, writing data into forms (not just reading), reading unchecked/disabled fields as well, reading file inputs, and some other helpful features.
+
+## Breaking Changes with from v1 to v2
+Please read migration guide bellow. v2 is a refactoring of v1 which a lot of changes/improvements and different method names.
 
 ## Installation
 Download [latest release](https://github.com/brainfoolong/form-data-json/releases/latest) and include `dist/form-data-json.min.js` into your project.
 ```html
 <script src="dist/form-data-json.min.js"></script>
 ```
-###### For a quick test without downloading
+###### CDN (Latest version automatically, do not use it in production because of breaking changes)
 ```html
-<script src="https://brainfoolong.github.io/form-data-json/lib/form-data-json.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/form-data-json-convert/dist/form-data-json.min.js"></script>
 ```
 ###### NPM
 ```
 npm install form-data-json-convert
-// import: const {FormDataJson, FormDataJsonOptions} = require('form-data-json-convert')
+// import: const FormDataJson = require('form-data-json-convert')
 ```
 
 ## Features
 * No dependency - Vanilla javascript
-* Cross Browser including IE11
+* Cross Browser including IE11 (Yes, the ugly one also)
 * Multidimensional input name support. For example: `name="entry[123][person]"`
 * Super small: ~3kB gzipped 
 
@@ -46,87 +49,127 @@ npm install form-data-json-convert
 ## How to use
 ###### Read form input values
 ```javascript
-let values = FormDataJson.formToJson(document.querySelector("form"))
+let values = FormDataJson.toJson(document.querySelector("form")) // with native element
+let values = FormDataJson.toJson("#form-id") // with selector
+let values = FormDataJson.toJson($("#form-id")) // with jQuery
 ``` 
 ###### Read form input values as a flat object (similar to native FormData() keys)
 ```javascript
-let values = FormDataJson.formToJson(document.querySelector("form"))
-values = FormDataJson.flattenJsonFormValues(values)
+let values = FormDataJson.toJson(document.querySelector("form"), {flatList: true})
 ``` 
-###### Read form input values including all inputs, even disabled inputs or unchecked checkboxes
+###### Read form input values including all inputs, even disabled inputs or unchecked checkboxes as null
 ```javascript
-let values = FormDataJson.formToJson(document.querySelector("form"), new FormDataJsonOptions({ includeDisabled: true, includeUncheckedAsNull : true }))
+let values = FormDataJson.toJson(document.querySelector("form"), {includeDisabled: true, uncheckedValue : null}})
 ```
 ###### Read with file inputs as base64 data uri
 ```javascript
-FormDataJson.formToJson(document.querySelector("form"), null, function(values){})
+FormDataJson.toJson(document.querySelector("form"), {filesCallback: function(values){}})
 ```
 ###### Read form input values but filter out, for example,  all password fields
 ```javascript
-let values = FormDataJson.formToJson(document.querySelector("form"), new FormDataJsonOptions({ inputFilter: function(inputElement) { return (inputElement.type || 'text') !== 'password' } }))
+let values = FormDataJson.toJson(document.querySelector("form"), { inputFilter: function(inputElement) { return (inputElement.type || 'text') !== 'password' } })
 ``` 
-
-###### Read a single input field
-```javascript
-let values = FormDataJson.getInputValue(document.querySelector("input"))
-```
 
 ###### Set form input values
 ```javascript
-FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'})
+FormDataJson.fromJson(document.querySelector("form"), {'name': 'BrainFooLong'})
 ```
 
-###### Set form input values and unset all other existing input values
+###### Set form input values and clear all other existing input values
 ```javascript
-FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'}, new FormDataJsonOptions({ unsetAllInputsOnFill: true }))
+FormDataJson.fromJson(document.querySelector("form"), {'name': 'BrainFooLong'}, { clearOthers: true })
 ```
 
-###### Set form input values but ignore, for example, password fields
+###### Reset all input fields to their default values
 ```javascript
-FormDataJson.fillFormFromJsonValues(document.querySelector("form"), {'name': 'BrainFooLong'}, new FormDataJsonOptions({ inputFilter: function(inputElement) { return (inputElement.type || 'text') !== 'password' } })
+FormDataJson.reset(document.querySelector("form"))
 ```
 
-###### Set a single input field
+###### Clear all input fields to empty values
 ```javascript
-let values = FormDataJson.setInputValue(document.querySelector("input"), 'foo')
+FormDataJson.clear(document.querySelector("form"))
 ```
 
-###### All options and their defaults
-You can edit this defaults to your needs. You can pass this options directly to the `new FormDataOptions({...})` instantiation.
-```javascript
-FormDataJsonOptions.defaults = {
-  /**
-   * Include all disabled inputs in result data
-   * @type {boolean}
-   */
-  includeDisabled,
+###### All default options for toJson()
+You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJson`.
+```javascript defaultOptionsToJson
+/**
+ * Include all disabled field values
+ * @type {boolean}
+ */
+'includeDisabled': false,
 
-  /**
-   * Include checkboxes that are unchecked with a null, otherwise the key will not exist in result data
-   * @type {boolean}
-   */
-  includeUncheckedAsNull,
+/**
+ * Include all button field values
+ * @type {boolean}
+ */
+'includeButtonValues': false,
 
-  /**
-   * Include all input buttons/submits values, otherwise the key they will not exist in result data
-   * @type {boolean}
-   */
-  includeButtonValues,
+/**
+ * Include all unchecked radio/checkboxes as given value when they are unchecked
+ * If undefined, than the unchecked field will be ignored in output
+ */
+'uncheckedValue': undefined,
 
-  /**
-   * Will unset all existing input fields in form when using fillFormFromJsonValues
-   * This will be helpful if you have checkboxes and want to fill from json object, but checkboxes still stay checked
-   * because the key not exist in the json data
-   * @type {boolean}
-   */
-  unsetAllInputsOnFill,
+/**
+ * A function, where first parameter is the input field to check for, that must return true if the field should be included
+ * All other return values, as well as no return value, will skip the input field in the progress
+ * @type {function|null}
+ */
+'inputFilter': null,
 
-  /**
-   * If set to a function, this will receive the current input element in progress of formToJson|fillFormFromJsonValues|unsetFormInputs
-   * It must return bool true to allow the script to progress the input element
-   * If other than true is returned, than the input will be skipped
-   * @type {FormDataJsonOptions~inputFilterCallback|null}
-   */
-  inputFilter
-}
+/**
+ * Does return a flat key/value list of values instead of multiple dimensions
+ * This will use the original input names as key, doesn't matter how weird they are
+ * Exepected keys are similar to FormData() keys
+ * @type {boolean}
+ */
+'flatList': false,
+
+/**
+ * If true, than this does skip empty fields from the output
+ * @type {boolean}
+ */
+'skipEmpty': false,
+
+/**
+ * A function the will be called when all file fields are read as base64 data uri
+ * Note: This does modify the returned object from the original call of toJson() afterwards
+ * @type {function|null}
+ */
+'filesCallback': null,
+
+/**
+ * By default, files are read as base64 data url
+ * Possible values are: readAsDataURL, readAsBinaryString, readAsText, readAsArrayBuffer
+ * @type {string}
+ */
+'fileReaderFunction': 'readAsDataURL'
 ```
+
+###### All default options for fromJson()
+You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFromJson`.
+```javascript defaultOptionsFromJson
+/**
+ * Does expect the given values are in a flatList, previously exported with toJson
+ * Instead of the default bevhiour with nested objects
+ * @type {boolean}
+ */
+'flatList': false,
+
+/**
+ * If true, than all fields that are not exist in the passed values object, will be cleared/emptied
+ * Not exist means, the value must be undefined
+ * @type {boolean}
+ */
+'clearOthers': false
+```
+
+### Migration/Changelog from v1 to v2
+* Class `FormDataJsonOptions` removed. Use bare `{}` objects now as options
+* Method `FormDataJson.flattenJsonFormValues` removed. Use `flatList = true` option in `toJson`
+* Method `FormDataJson.setInputValue` removed. No replacement. Use `fromJson` if you need to set any input value
+* Method `formToJson`  renamed to `toJson`
+* Method `fillFormFromJsonValues` renamed to `fromJson`
+* Option `unsetAllInputsOnFill` renamed to `clearOthers`
+* Option `includeUncheckedAsNull` renamed to `uncheckedValue` and now represent the value that unchecked inputs should have in output
