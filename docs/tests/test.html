@@ -29,7 +29,7 @@
         form.classList.remove('result-error')
         form.classList.add('result-' + (result ? 'success' : 'error'))
         let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + form.getAttribute('name')
-        if (!location.href.match(/(\?|\&)noverbose/)) {
+        if (!location.href.match(/(\?|\&)noverbose/) && expected) {
           console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;' + (result ? 'color:green' : 'color:red'))
           console.log('Expected JsonString')
           console.log(expected)
@@ -53,14 +53,54 @@
       }
 
       /**
-       * Run a test
+       * Show test results custom
+       * @param {HTMLFormElement|Element} form
+       * @param {boolean} result
+       **/
+      function showTestResultsCustom (form, result) {
+        form.classList.remove('result-success')
+        form.classList.remove('result-error')
+        form.classList.add('result-' + (result ? 'success' : 'error'))
+        let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + form.getAttribute('name')
+        form.querySelector('h3').innerHTML = title
+        console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;' + (result ? 'color:green' : 'color:red'))
+        let html = '<div class="result">'
+        let dateStr = new Date().toISOString()
+        if (result) {
+          html += '<div>' + dateStr + '<br/>Test successfull</div>'
+        } else {
+          html += '<div>' + dateStr + '<br/>Test error. See console log for detailed information.</div>'
+        }
+        html += '</div>'
+        form.querySelector('.result').innerHTML = html
+      }
+
+      /**
+       * Run a custom function test, when returned true it is success, otherwise it logs a error with return value
+       * @param {function} testFunction The test function - First parameter is the HtmlFormElement
+       * @param {HTMLFormElement|Element} form
+       */
+      function runTestCustom (testFunction, form) {
+        if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
+        // because we dynamically insert required script in head, we may not have loading the library on page load
+        if (typeof FormDataJson === 'undefined') {
+          setTimeout(function () {
+            runTestCustom(testFunction, form)
+          }, 100)
+          return
+        }
+        testFunction(form)
+      }
+
+      /**
+       * Run a read/write test with expected json data to be set or to read
        * @param {string} mode read|write
        * @param {HTMLFormElement|Element} form
        * @param {Object|null} options
        * @param {string} expected Expected/Set data as json string
        */
       function runTest (mode, form, options, expected) {
-        if (location.search.includes('singleTest=') && !location.search.includes('singleTest=' + form.id)) return
+        if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
         // because we dynamically insert required script in head, we may not have loading the library on page load
         if (typeof FormDataJson === 'undefined') {
           setTimeout(function () {
@@ -79,7 +119,7 @@
       }
 
       /**
-       * Run a test with files
+       * Run a test with files with expected json data to be set or to read
        * @param {string} mode read|write
        * @param {HTMLFormElement|Element} form
        * @param {Object|null} options
@@ -345,16 +385,16 @@
   })()
 </script>
 
-<form name="option-includeUncheckedAsNull" id="option-includeUncheckedAsNull">
+<form name="option-uncheckedValue" id="option-uncheckedValue">
     <h3></h3>
-    <p>Testing option "includeUncheckedAsNull".</p>
+    <p>Testing option "uncheckedValue".</p>
     <input type="checkbox" name="checked" value="1" checked>
     <input type="checkbox" name="unchecked" value="2">
     <div class="result"></div>
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-includeUncheckedAsNull'), { includeUncheckedAsNull: true }, '{"checked":"1","unchecked":null}')
+    runTest('read', document.querySelector('#option-uncheckedValue'), { uncheckedValue: null }, '{"checked":"1","unchecked":null}')
   })()
 </script>
 
@@ -375,31 +415,6 @@
   })()
 </script>
 
-<form name="option-unsetAllInputsOnFill" id="option-unsetAllInputsOnFill">
-    <h3></h3>
-    <p>Testing option "unsetAllInputsOnFill".</p>
-    <input type="checkbox" name="checked" value="1">
-    <input type="checkbox" name="unchecked" value="2">
-    <input type="button" name="button" value="Btn1">
-    <input type="text" value="foobar" name="foobar">
-    <select name="select">
-        <option>1</option>
-        <option>2</option>
-        <option value="3" selected>3</option>
-    </select>
-    <select name="select_multiple_depth[123][]" multiple>
-        <option selected>1</option>
-        <option>2</option>
-        <option value="3" selected>3</option>
-    </select>
-    <div class="result"></div>
-</form>
-<script>
-  (function () {
-    runTest('write', document.querySelector('#option-unsetAllInputsOnFill'), { unsetAllInputsOnFill: true }, '{"foobar":"","select":"1","select_multiple_depth":{"123":[]}}')
-  })()
-</script>
-
 <form name="option-inputFilter" id="option-inputFilter">
     <h3></h3>
     <p>Testing option "inputFilter" for read and write.</p>
@@ -413,5 +428,180 @@
     runTest('read', document.querySelector('#option-inputFilter'), { inputFilter: function (inputElement) { return (inputElement.type || 'text') !== 'password' } }, '{"foobar":"foobar"}')
   })()
 </script>
+<form name="option-flatList" id="option-flatList">
+    <h3></h3>
+    <p>Testing option "flatList"</p>
+    <input type="hidden" name="name" value="1">
+    <input type="hidden" name="name2">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="hidden" name="name[foo]" value="name[foo]">
+    <input type="hidden" name="name[bar]" value="name[bar]">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
+    <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="checkbox" name="chk[]" value="1" checked>
+    <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#option-flatList'), { flatList: true }, '{"name[0][sub1]":"name[0][sub1]","name[0][sub2]":"name[0][sub2]","name[]":"name[]","name[foo]":"name[foo]","name[bar]":"name[bar]","name2":"","chk[]":"1"}')
+  })()
+</script>
+<form name="option-skipEmpty" id="option-skipEmpty">
+    <h3></h3>
+    <p>Testing option "skipEmpty"</p>
+    <input type="hidden" name="name" value="1">
+    <input type="hidden" name="name2">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="hidden" name="name[foo]" value="name[foo]">
+    <input type="hidden" name="name[bar]" value="name[bar]">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
+    <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
+    <input type="hidden" name="name[]" value="name[]">
+    <input type="checkbox" name="chk[]" value="1" checked>
+    <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#option-skipEmpty'), { skipEmpty: true }, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"chk":["1"]}')
+  })()
+</script>
+<form name="option-clearOthers" id="option-clearOthers">
+    <h3></h3>
+    <p>Testing option "clearOthers"</p>
+    <input type="text" name="name1" value="1">
+    <input type="text" name="name2">
+    <input type="text" name="name[2]" value="name[]">
+    <input type="text" name="name[foo]" value="name[foo]">
+    <input type="text" name="name[bar]" value="name[bar]">
+    <input type="text" name="name[3]" value="name[]">
+    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+    <input type="text" name="name[4]" value="name[]">
+    <input type="checkbox" name="chk[]" value="1" checked>
+    <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  runTestCustom(function (form) {
+    FormDataJson.fromJson(form, { 'name1': '1' }, { clearOthers: true })
+    let newData = JSON.stringify(FormDataJson.toJson(form))
+    let expected = '{"name1":"1","name2":"","name":{"0":{"sub1":"","sub2":""},"2":"","3":"","4":"","foo":"","bar":""},"chk":[]}'
+    showTestResultsCustom(form, newData === expected)
+    if (newData !== expected) {
+      console.log('Exepected')
+      console.log(expected)
+      console.log('Got')
+      console.log(newData)
+    }
+  }, document.querySelector('#option-clearOthers'))
+</script>
+<form name="test-clear" id="test-clear">
+    <h3></h3>
+    <p>Testing form clear</p>
+    <input type="text" name="name1" value="1">
+    <input type="text" name="name2">
+    <input type="text" name="name[1]" value="name[]">
+    <input type="text" name="name[foo]" value="name[foo]">
+    <input type="text" name="name[bar]" value="name[bar]">
+    <input type="text" name="name[2]" value="name[]">
+    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+    <input type="text" name="name[3]" value="name[]">
+    <input type="checkbox" name="chk[]" value="1" checked>
+    <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTestCustom(function (form) {
+      FormDataJson.clear(form)
+      let expected = '{"name1":"","name2":"","name":{"0":{"sub1":"","sub2":""},"1":"","2":"","3":"","foo":"","bar":""},"chk":[]}'
+      let newData = JSON.stringify(FormDataJson.toJson(form))
+      showTestResultsCustom(form, expected === newData)
+      if (expected !== newData) {
+        console.log('Exepected')
+        console.log(expected)
+        console.log('Got')
+        console.log(newData)
+      }
+    }, document.querySelector('#test-clear'))
+  })()
+</script>
+<form name="test-reset" id="test-reset">
+    <h3></h3>
+    <p>Testing form reset</p>
+    <input type="text" name="name1" value="1">
+    <input type="text" name="name2">
+    <input type="text" name="name[1]" value="name[]">
+    <input type="text" name="name[foo]" value="name[foo]">
+    <input type="text" name="name[bar]" value="name[bar]">
+    <input type="text" name="name[2]" value="name[]">
+    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+    <input type="text" name="name[3]" value="name[]">
+    <input type="checkbox" name="chk[]" value="1" checked>
+    <input type="checkbox" name="chk[]" value="2">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTestCustom(function (form) {
+      let originalData = JSON.stringify(FormDataJson.toJson(form))
+      FormDataJson.clear(form)
+      FormDataJson.reset(form)
+      let newData = JSON.stringify(FormDataJson.toJson(form))
+      showTestResultsCustom(form, newData === originalData)
+      if (newData !== originalData) {
+        console.log('Exepected')
+        console.log(originalData)
+        console.log('Got')
+        console.log(newData)
+      }
+    }, document.querySelector('#test-reset'))
+  })()
+</script>
+
+<form name="testIssue-9" id="testIssue-9">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/9</p>
+    <input name="docn">
+    <input name="docdate">
+
+    <input name="client[name]">
+    <input name="client[edrpou]">
+
+    <input name="client[phone][]">
+    <input name="client[phone][]">
+    <input name="client[phone][]">
+
+
+    <input name="client[email][]">
+    <input name="client[email][]">
+
+    <select name="client[status][]" id="cars" multiple>
+        <option value="volvo">Volvo</option>
+        <option value="saab">Saab</option>
+        <option value="opel">Opel</option>
+        <option value="audi">Audi</option>
+    </select>
+
+    <input type="checkbox" name="scales[]" checked value="77">
+    <input type="checkbox" name="scales[]">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('write', document.querySelector('#testIssue-9'), {
+      skipEmpty: true,
+      clearOthers: true
+    }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":{"1":"asdf"},"email":[],"status":[]},"scales":[]}')
+  })()
+</script>
+
 </body>
 </html>

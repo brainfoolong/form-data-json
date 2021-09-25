@@ -25,10 +25,10 @@ class FormDataJson {
     'includeButtonValues': false,
 
     /**
-     * Include all unchecked radio/checkboxes as null when they are unchecked
-     * If false, than the unchecked field will be ignored in output
+     * Include all unchecked radio/checkboxes as given value when they are unchecked
+     * If undefined, than the unchecked field will be ignored in output
      */
-    'includeUnchecked': false,
+    'uncheckedValue': undefined,
 
     /**
      * A function, where first parameter is the input field to check for, that must return true if the field should be included
@@ -44,6 +44,12 @@ class FormDataJson {
      * @type {boolean}
      */
     'flatList': false,
+
+    /**
+     * If true, than this does skip empty fields from the output
+     * @type {boolean}
+     */
+    'skipEmpty': false,
 
     /**
      * A function the will be called when all file fields are read as base64 data uri
@@ -75,7 +81,7 @@ class FormDataJson {
 
     /**
      * If true, than all fields that are not exist in the passed values object, will be cleared/emptied
-     * Not exist means, than value must be undefined, a null will clear the field anyways
+     * Not exist means, the value must be undefined
      * @type {boolean}
      */
     'clearOthers': false
@@ -100,7 +106,7 @@ class FormDataJson {
    * @return {Object}
    */
   static toJson (el, options) {
-    options = Object.assign({}, FormDataJson.defaultOptionsToJson, options || {})
+    options = FormDataJson.#merge(FormDataJson.defaultOptionsToJson, options)
     const tree = FormDataJson.#getFieldTree(el, options)
     const returnObject = {}
     const files = []
@@ -114,7 +120,7 @@ class FormDataJson {
     function isValidInput (input, options) {
 
       // filter elements by input filter
-      if (typeof options.inputFilter !== 'function' && options.inputFilter(input) !== true) {
+      if (typeof options.inputFilter === 'function' && options.inputFilter(input) !== true) {
         return false
       }
 
@@ -130,8 +136,8 @@ class FormDataJson {
         return false
       }
 
-      // ignore unchecked fields
-      if (!options.includeUncheckedAsNull && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1 && !input.checked) {
+      // ignore unchecked fields when no value is given
+      if (typeof options.uncheckedValue === 'undefined' && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1 && !input.checked) {
         return false
       }
 
@@ -182,8 +188,11 @@ class FormDataJson {
               break
             }
           }
+          if (value === null) {
+            value = options.uncheckedValue
+          }
         } else if (inputType === 'checkbox') {
-          value = input.checked ? input.value : null
+          value = input.checked ? input.value : options.uncheckedValue
         } else if (input instanceof HTMLSelectElement) {
           let arr = []
           for (let i = 0; i < input.options.length; i++) {
@@ -199,6 +208,9 @@ class FormDataJson {
           }
         } else {
           value = input.value
+          if (options.skipEmpty && FormDataJson.#stringify(value) === '') {
+            continue
+          }
         }
         values[objectKey] = value
       }
@@ -248,8 +260,11 @@ class FormDataJson {
    */
   static fromJson (el, values, options, keyPrefix) {
     if (!FormDataJson.#isObject(values)) return
-    options = Object.assign({}, FormDataJson.defaultOptionsFromJson, options || {})
+    options = FormDataJson.#merge(FormDataJson.defaultOptionsFromJson, options)
     const tree = FormDataJson.#getFieldTree(el, options)
+    if (options.clearOthers) {
+      FormDataJson.clear(el)
+    }
 
     /**
      * Recursive set values
@@ -285,29 +300,51 @@ class FormDataJson {
    * @param {*} el
    */
   static reset (el) {
-    let inputs = FormDataJson.#getFieldTree(el)
-    if (!inputs) return
-    for (let inputName in inputs) {
-      const row = inputs[inputName]
-      const input = row.input
-      // ignore button elements, as reset would reset button labels, which is mostly not that what anybody want
-      if (input.type && FormDataJson.#buttonInputTypes.indexOf(input.type.toLowerCase()) > -1) {
-        continue
-      }
-      if (input.type && FormDataJson.#checkedInputTypes.indexOf(input.type.toLowerCase()) > -1) {
-        input.checked = input.defaultChecked
-      } else if (input instanceof HTMLSelectElement) {
-        const options = input.querySelectorAll('option')
-        for (let i = 0; i < options.length; i++) {
-          const option = options[i]
-          option.selected = option.defaultSelected
+    const tree = FormDataJson.#getFieldTree(el)
+
+    /**
+     * Recursive reset
+     * @param {*} inputs
+     */
+    function recursion (inputs) {
+      for (let key in inputs) {
+        const row = inputs[key]
+        // next level
+        if (row.type === 'nested') {
+          recursion(row.tree)
+          continue
         }
-      } else if (input.getAttribute('value')) {
-        input.value = input.getAttribute('value')
-      } else if (typeof input.defaultValue === 'string' || typeof input.defaultValue === 'number') {
-        input.value = input.defaultValue
+
+        if (row.type === 'radio') {
+          for (let i = 0; i < row.inputs.length; i++) {
+            const radioInput = row.inputs[i]
+            radioInput.checked = radioInput.defaultChecked
+          }
+          continue
+        }
+
+        // ignore button elements, as reset would reset button labels, which is mostly not that what anybody want
+        if (row.inputType && FormDataJson.#buttonInputTypes.indexOf(row.inputType) > -1) {
+          continue
+        }
+        const input = row.input
+        if (FormDataJson.#checkedInputTypes.indexOf(row.inputType) > -1) {
+          input.checked = input.defaultChecked
+        } else if (input instanceof HTMLSelectElement) {
+          const options = input.querySelectorAll('option')
+          for (let i = 0; i < options.length; i++) {
+            const option = options[i]
+            option.selected = option.defaultSelected
+          }
+        } else if (input.getAttribute('value')) {
+          input.value = input.getAttribute('value')
+        } else if (typeof input.defaultValue === 'string' || typeof input.defaultValue === 'number') {
+          input.value = input.defaultValue
+        }
       }
     }
+
+    recursion(tree)
   }
 
   /**
@@ -315,18 +352,31 @@ class FormDataJson {
    * @param {*} el
    */
   static clear (el) {
-    let inputs = FormDataJson.#getFieldTree(el)
-    if (!inputs) return
+    const tree = FormDataJson.#getFieldTree(el)
 
-    for (let inputName in inputs) {
-      const row = inputs[inputName]
-      const input = row.input
-      // ignore button elements, as clear would unset button labels, which is mostly not that what anybody want
-      if (input.type && FormDataJson.#buttonInputTypes.indexOf(input.type.toLowerCase()) > -1) {
-        continue
+    /**
+     * Recursive clear
+     * @param {*} inputs
+     */
+    function recursion (inputs) {
+      for (let key in inputs) {
+        const row = inputs[key]
+        // next level
+        if (row.type === 'nested') {
+          recursion(row.tree)
+          continue
+        }
+        if (row.input) {
+          // ignore button elements, as clear would unset button labels, which is mostly not that what anybody want
+          if (FormDataJson.#buttonInputTypes.indexOf(row.inputType) > -1) {
+            continue
+          }
+        }
+        FormDataJson.#setInputValue(row, null)
       }
-      FormDataJson.#setInputValue(input, null)
     }
+
+    recursion(tree)
   }
 
   /**
@@ -348,7 +398,11 @@ class FormDataJson {
         count++
       }
       if (valid) {
-        return Object.values(object)
+        let arr = []
+        for (let i in object) {
+          arr.push(object[i])
+        }
+        return arr
       }
     }
     return object
@@ -442,7 +496,7 @@ class FormDataJson {
 
       let name = input.name
       const keyParts = input.name.replace(/\]/g, '').split('[')
-      if (name.endsWith('[]')) {
+      if (name.substr(-2) === '[]') {
         if (input instanceof HTMLSelectElement && input.multiple) {
           // special for multiple selects, we skip the last empty part to fix double nested arrays
           keyParts.pop()
@@ -523,6 +577,23 @@ class FormDataJson {
     if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0]
     console.warn('FormDataJson: Unsupported element passed. Supported is HTMLElement, a string query selector or JQuery object')
     return null
+  }
+
+  /**
+   * Merge from left to right and return a new object
+   * @param {Object} a
+   * @param {Object} b
+   * @return {Object}
+   */
+  static #merge (a, b) {
+    let c = {}
+    for (let key in a) {
+      c[key] = a[key]
+    }
+    for (let key in b) {
+      c[key] = b[key]
+    }
+    return c
   }
 }
 
