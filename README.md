@@ -158,7 +158,13 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
  * Not exist means, the value must be undefined
  * @type {boolean}
  */
-'clearOthers': false
+'clearOthers': false,
+
+/**
+ * If true, when a fields value has changed, a "change" event will be fired
+ * @type {boolean}
+ */
+'triggerChangeEvent': false
 }
 ```
 
@@ -168,11 +174,11 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
 * Write all tests in `docs/tests/test.html`. Each new option must have an own test.
 
 ### Migration/Changelog from v1 to v2
-* Class `FormDataJsonOptions` removed. Use bare `{}` objects now as options
-* Method `FormDataJson.flattenJsonFormValues` removed. Use `flatList = true` option in `toJson`
-* Method `FormDataJson.setInputValue` removed. No direct replacement. Use `fromJson` if you need to set any input value
-* Method 3rd Parameter `formToJson/toJson` callback function has been removed and is now set into option `filesCallback`
-* Method `formToJson`  renamed to `toJson`
-* Method `fillFormFromJsonValues` renamed to `fromJson`
-* Option `unsetAllInputsOnFill` renamed to `clearOthers`
-* Option `includeUncheckedAsNull` renamed to `uncheckedValue` and now represent the value that unchecked inputs should have in output
+* removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
+* removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`
+* removed method `FormDataJson.setInputValue`. No direct replacement. Use `fromJson` if you need to set any input value
+* removed 3rd parameter `formToJson/toJson` callback function. It is now set into option `filesCallback`
+* renamed method `formToJson` to `toJson`
+* renamed method `fillFormFromJsonValues` to `fromJson`
+* renamed option `unsetAllInputsOnFill` to `clearOthers`
+* renamed option `includeUncheckedAsNull` to `uncheckedValue` and now represent the value that unchecked inputs should have in output

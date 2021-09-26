@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/brainfoolong/form-data-json/issues"
   },
-  "homepage": "https://brainfoolong.github.io/form-data-json/example/playground.html",
+  "homepage": "https://github.com/brainfoolong/form-data-json",
   "main": "dist/form-data-json.min.js",
   "directories": {
     "test": "docs/tests",

@@ -5,7 +5,7 @@
     <title>Test FormDataJson</title>
     <script>
       ;(function () {
-        let url = '../lib/form-data-json.min.js'
+        let url = '../scripts/form-data-json.js'
         // with debug flag we directly load original source file
         // only work in supported browsers, like chrome
         if (location.href.match(/(\?|\&)debug/)) {
@@ -439,7 +439,7 @@
     <input type="text" name="name[]">
     <input type="text" name="name[0][sub1]">
     <input type="text" name="name[0][sub2]">
-    <input type="text" name="name[]" >
+    <input type="text" name="name[]">
     <input type="checkbox" name="chk[]" value="1">
     <input type="checkbox" name="chk[]" value="2">
     <div class="result"></div>
@@ -491,6 +491,7 @@
     runTest('read', document.querySelector('#option-skipEmpty'), { skipEmpty: true }, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"chk":["1"]}')
   })()
 </script>
+
 <form name="option-clearOthers" id="option-clearOthers">
     <h3></h3>
     <p>Testing option "clearOthers"</p>
@@ -521,6 +522,26 @@
     }
   }, document.querySelector('#option-clearOthers'))
 </script>
+
+<form name="option-triggerChangeEvent" id="option-triggerChangeEvent">
+    <h3></h3>
+    <p>Testing option "triggerChangeEvent"</p>
+    <input type="text" name="name1">
+    <input type="text" name="name2">
+    <div class="result"></div>
+</form>
+<script>
+  runTestCustom(function (form) {
+    form.addEventListener('change', function (ev) {
+      if (ev.target.name === 'name1' && ev.target.value === '1') {
+        showTestResultsCustom(form, true)
+      }
+    })
+    showTestResultsCustom(form, false)
+    FormDataJson.fromJson(form, { 'name1': '1' }, { triggerChangeEvent: true })
+  }, document.querySelector('#option-triggerChangeEvent'))
+</script>
+
 <form name="test-clear" id="test-clear">
     <h3></h3>
     <p>Testing form clear</p>
@@ -553,6 +574,7 @@
     }, document.querySelector('#test-clear'))
   })()
 </script>
+
 <form name="test-reset" id="test-reset">
     <h3></h3>
     <p>Testing form reset</p>

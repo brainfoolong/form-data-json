@@ -85,20 +85,26 @@ class FormDataJson {
      * Not exist means, the value must be undefined
      * @type {boolean}
      */
-    'clearOthers': false
+    'clearOthers': false,
+
+    /**
+     * If true, when a fields value has changed, a "change" event will be fired
+     * @type {boolean}
+     */
+    'triggerChangeEvent': false
   }
 
   /**
    * All input types that are buttons
    * @type {string[]}
    */
-  static #buttonInputTypes = ['button', 'submit', 'reset', 'image']
+  static buttonInputTypes = ['button', 'submit', 'reset', 'image']
 
   /**
    * All input types that have a checked status
    * @type {string[]}
    */
-  static #checkedInputTypes = ['checkbox', 'radio']
+  static checkedInputTypes = ['checkbox', 'radio']
 
   /**
    * Get values from all form elements inside the given element
@@ -107,8 +113,8 @@ class FormDataJson {
    * @return {Object}
    */
   static toJson (el, options) {
-    options = FormDataJson.#merge(FormDataJson.defaultOptionsToJson, options)
-    const tree = FormDataJson.#getFieldTree(el, options)
+    options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, options)
+    const tree = FormDataJson.getFieldTree(el, options)
     const returnObject = {}
     const files = []
 
@@ -133,12 +139,12 @@ class FormDataJson {
       const inputType = (input.type || 'text').toLowerCase()
 
       // ignore button values
-      if (!options.includeButtonValues && (input instanceof HTMLButtonElement || FormDataJson.#buttonInputTypes.indexOf(inputType) > -1)) {
+      if (!options.includeButtonValues && (input instanceof HTMLButtonElement || FormDataJson.buttonInputTypes.indexOf(inputType) > -1)) {
         return false
       }
 
       // ignore unchecked fields when no value is given
-      if (typeof options.uncheckedValue === 'undefined' && FormDataJson.#checkedInputTypes.indexOf(inputType) > -1 && !input.checked) {
+      if (typeof options.uncheckedValue === 'undefined' && FormDataJson.checkedInputTypes.indexOf(inputType) > -1 && !input.checked) {
         return false
       }
 
@@ -209,7 +215,7 @@ class FormDataJson {
           }
         } else {
           value = input.value
-          if (options.skipEmpty && FormDataJson.#stringify(value) === '') {
+          if (options.skipEmpty && FormDataJson.stringify(value) === '') {
             continue
           }
         }
@@ -231,7 +237,7 @@ class FormDataJson {
           let reader = new FileReader()
           reader.onload = function () {
             if (row.input.multiple) {
-              if (!FormDataJson.#isArray(useObject[row.key])) {
+              if (!FormDataJson.isArray(useObject[row.key])) {
                 useObject[row.key] = []
               }
               useObject[row.key].push(reader.result)
@@ -240,16 +246,16 @@ class FormDataJson {
             }
             filesDone++
             if (filesDone === filesRequired) {
-              options.filesCallback(FormDataJson.#arrayfy(returnObject))
+              options.filesCallback(FormDataJson.arrayfy(returnObject))
             }
           }
           reader[options.fileReaderFunction](file)
         }
       }
     } else if (options.filesCallback) {
-      options.filesCallback(FormDataJson.#arrayfy(returnObject))
+      options.filesCallback(FormDataJson.arrayfy(returnObject))
     }
-    return FormDataJson.#arrayfy(returnObject)
+    return FormDataJson.arrayfy(returnObject)
   }
 
   /**
@@ -260,9 +266,9 @@ class FormDataJson {
    * @param {string=} keyPrefix Internal only
    */
   static fromJson (el, values, options, keyPrefix) {
-    if (!FormDataJson.#isObject(values)) return
-    options = FormDataJson.#merge(FormDataJson.defaultOptionsFromJson, options)
-    const tree = FormDataJson.#getFieldTree(el, options)
+    if (!FormDataJson.isObject(values)) return
+    options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options)
+    const tree = FormDataJson.getFieldTree(el, options)
     if (options.clearOthers) {
       FormDataJson.clear(el)
     }
@@ -289,7 +295,7 @@ class FormDataJson {
         if (!options.clearOthers && typeof newValues[objectKey] === 'undefined') {
           continue
         }
-        FormDataJson.#setInputValue(row, newValues[objectKey] || null)
+        FormDataJson.setInputValue(row, newValues[objectKey] || null, options.triggerChangeEvent)
       }
     }
 
@@ -301,7 +307,7 @@ class FormDataJson {
    * @param {*} el
    */
   static reset (el) {
-    const tree = FormDataJson.#getFieldTree(el)
+    const tree = FormDataJson.getFieldTree(el)
 
     /**
      * Recursive reset
@@ -325,11 +331,11 @@ class FormDataJson {
         }
 
         // ignore button elements, as reset would reset button labels, which is mostly not that what anybody want
-        if (row.inputType && FormDataJson.#buttonInputTypes.indexOf(row.inputType) > -1) {
+        if (row.inputType && FormDataJson.buttonInputTypes.indexOf(row.inputType) > -1) {
           continue
         }
         const input = row.input
-        if (FormDataJson.#checkedInputTypes.indexOf(row.inputType) > -1) {
+        if (FormDataJson.checkedInputTypes.indexOf(row.inputType) > -1) {
           input.checked = input.defaultChecked
         } else if (input instanceof HTMLSelectElement) {
           const options = input.querySelectorAll('option')
@@ -353,7 +359,7 @@ class FormDataJson {
    * @param {*} el
    */
   static clear (el) {
-    const tree = FormDataJson.#getFieldTree(el)
+    const tree = FormDataJson.getFieldTree(el)
 
     /**
      * Recursive clear
@@ -369,11 +375,11 @@ class FormDataJson {
         }
         if (row.input) {
           // ignore button elements, as clear would unset button labels, which is mostly not that what anybody want
-          if (FormDataJson.#buttonInputTypes.indexOf(row.inputType) > -1) {
+          if (FormDataJson.buttonInputTypes.indexOf(row.inputType) > -1) {
             continue
           }
         }
-        FormDataJson.#setInputValue(row, null)
+        FormDataJson.setInputValue(row, null)
       }
     }
 
@@ -384,14 +390,15 @@ class FormDataJson {
    * Make an object to array if possible
    * @param {Object} object
    * @return {*}
+   * @private
    */
-  static #arrayfy (object) {
-    if (FormDataJson.#isObject(object)) {
+  static arrayfy (object) {
+    if (FormDataJson.isObject(object)) {
       let count = 0
       let valid = true
       for (let key in object) {
-        if (FormDataJson.#isObject(object[key]) && !(object[key] instanceof Element)) {
-          object[key] = FormDataJson.#arrayfy(object[key])
+        if (FormDataJson.isObject(object[key]) && !(object[key] instanceof Element)) {
+          object[key] = FormDataJson.arrayfy(object[key])
         }
         if (parseInt(key) !== count) {
           valid = false
@@ -413,15 +420,35 @@ class FormDataJson {
    * Set input value
    * @param {*} row
    * @param {*|null} newValue Null will unset the value
+   * @param {boolean=} triggerChangeEvent
    * @private
    */
-  static #setInputValue (row, newValue) {
+  static setInputValue (row, newValue, triggerChangeEvent) {
+    const triggerChange = triggerChangeEvent ? function (el) {
+      let ev = null
+      if (typeof (Event) === 'function') {
+        ev = new Event('change', { 'bubbles': true })
+      } else {
+        ev = document.createEvent('Event')
+        ev.initEvent('change', true, true)
+      }
+      el.dispatchEvent(ev)
+    } : null
     if (row.type === 'radio') {
+      let changed = []
       for (let i = 0; i < row.inputs.length; i++) {
         const radioInput = row.inputs[i]
-        if (newValue !== null && FormDataJson.#stringify(radioInput.value) === FormDataJson.#stringify(newValue)) {
+        if (radioInput.checked) changed.push(radioInput)
+        radioInput.checked = false
+        if (newValue !== null && FormDataJson.stringify(radioInput.value) === FormDataJson.stringify(newValue)) {
+          if (!radioInput.checked) changed.push(radioInput)
           radioInput.checked = true
           break
+        }
+      }
+      if (triggerChange) {
+        for (let i in changed) {
+          triggerChange(changed[i])
         }
       }
       return
@@ -435,30 +462,39 @@ class FormDataJson {
       return
     }
 
+    let changed = false
     if (inputType === 'checkbox') {
-      input.checked = newValue === true || (newValue !== null && FormDataJson.#stringify(input.value) === FormDataJson.#stringify(newValue))
+      newValue = newValue === true || (newValue !== null && FormDataJson.stringify(input.value) === FormDataJson.stringify(newValue))
+      if (newValue !== input.checked) changed = true
+      input.checked = newValue
     } else if (input instanceof HTMLSelectElement) {
       let newValueArr = newValue
       if (newValueArr === null || newValueArr === undefined) {
         newValueArr = []
-      } else if (FormDataJson.#isObject(newValueArr)) {
+      } else if (FormDataJson.isObject(newValueArr)) {
         newValueArr = Object.values(newValueArr)
-      } else if (!FormDataJson.#isArray(newValueArr)) {
+      } else if (!FormDataJson.isArray(newValueArr)) {
         newValueArr = [newValueArr]
       }
       for (let i = 0; i < input.options.length; i++) {
         const option = input.options[i]
         const optionValue = (typeof option.value !== 'undefined' ? option.value : option.text).toString()
+        if (option.selected !== false) changed = true
         option.selected = false
         for (let j = 0; j < newValueArr.length; j++) {
-          if (optionValue === FormDataJson.#stringify(newValueArr[j])) {
+          if (optionValue === FormDataJson.stringify(newValueArr[j])) {
+            if (option.selected !== true) changed = true
             option.selected = true
             break
           }
         }
       }
     } else {
+      if (input.value !== newValue) changed = true
       input.value = newValue
+    }
+    if (changed && triggerChange) {
+      triggerChange(input)
     }
   }
 
@@ -467,8 +503,9 @@ class FormDataJson {
    * A object/array/undefined will be an ampty string
    * Boolean will be 1 or 0
    * @param {*} value
+   * @private
    */
-  static #stringify (value) {
+  static stringify (value) {
     if (value === undefined) return ''
     if (typeof value === 'object') return ''
     if (typeof value === 'boolean') return value ? '1' : '0'
@@ -482,8 +519,8 @@ class FormDataJson {
    * @return {Object}
    * @private
    */
-  static #getFieldTree (el, options) {
-    el = FormDataJson.#getElement(el)
+  static getFieldTree (el, options) {
+    el = FormDataJson.getElement(el)
     if (!el) {
       return []
     }
@@ -552,7 +589,7 @@ class FormDataJson {
    * @return {boolean}
    * @private
    */
-  static #isObject (arg) {
+  static isObject (arg) {
     return arg && typeof arg === 'object' && Object.prototype.toString.call(arg) !== '[object Array]'
   }
 
@@ -562,7 +599,7 @@ class FormDataJson {
    * @return {boolean}
    * @private
    */
-  static #isArray (arg) {
+  static isArray (arg) {
     return typeof arg === 'object' && Object.prototype.toString.call(arg) === '[object Array]'
   }
 
@@ -572,7 +609,7 @@ class FormDataJson {
    * @return {HTMLElement|null}
    * @private
    */
-  static #getElement (param) {
+  static getElement (param) {
     if (typeof param === 'string') return document.querySelector(param)
     if (param instanceof HTMLElement) return param
     if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0]
@@ -585,8 +622,9 @@ class FormDataJson {
    * @param {Object} a
    * @param {Object} b
    * @return {Object}
+   * @private
    */
-  static #merge (a, b) {
+  static merge (a, b) {
     let c = {}
     for (let key in a) {
       c[key] = a[key]

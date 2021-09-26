@@ -5,23 +5,43 @@ const fs = require('fs')
 const path = require('path')
 const babel = require('@babel/core')
 
-const babelConf = {
-  'comments': false,
-  'plugins': [__dirname + '/../node_modules/@babel/plugin-proposal-class-properties', __dirname + '/../node_modules/@babel/plugin-proposal-private-methods'],
-  'presets': [
-    [
-      __dirname + '/../node_modules/@babel/preset-env',
-      {
-        'targets': {
-          'chrome': '58',
-          'edge': '20',
-          'firefox': '68',
-          'ie': '11'
+const targets = {
+  'chrome': '58',
+  'edge': '20',
+  'firefox': '68',
+  'ie': 11
+}
+
+const plugins = [[__dirname + '/../node_modules/@babel/plugin-proposal-class-properties', { loose: true }], [__dirname + '/../node_modules/@babel/plugin-proposal-private-methods', { loose: true }]]
+
+let babelConfigs = {
+  'form-data-json.js': {
+    'comments': true,
+    'plugins': plugins,
+    'presets': [
+      [
+        __dirname + '/../node_modules/@babel/preset-env',
+        {
+          'loose': true,
+          'targets': targets
         }
-      }
-    ],
-    __dirname + '/../node_modules/babel-preset-minify'
-  ]
+      ]
+    ]
+  },
+  'form-data-json.min.js': {
+    'comments': true,
+    'plugins': plugins,
+    'presets': [
+      [
+        __dirname + '/../node_modules/@babel/preset-env',
+        {
+          'loose': true,
+          'targets': targets
+        },
+        __dirname + '/../node_modules/babel-preset-minify'
+      ]
+    ]
+  }
 }
 
 /**
@@ -29,7 +49,6 @@ const babelConf = {
  * @return {Promise<void>}
  */
 async function compile () {
-  let distFolder = __dirname + '/../dist'
   let srcFile = __dirname + '/../src/form-data-json.js'
   let readmeFile = __dirname + '/../README.md'
 
@@ -46,13 +65,20 @@ async function compile () {
 
   fs.writeFileSync(readmeFile, readmeFileData)
 
-  let contents = '// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n'
-  contents += babel.transformSync(srcFileData, babelConf).code
-  let basename = path.basename(srcFile)
-  let minFile = distFolder + '/' + basename.substr(0, basename.length - 3) + '.min.js'
-  fs.writeFileSync(minFile, contents)
-  // also copy to docs folder
-  fs.copyFileSync(minFile, __dirname + '/../docs/scripts/' + path.basename(minFile))
+  let copyToFolders = [__dirname + '/../docs/scripts/', __dirname + '/../dist/']
+
+  for (let i = 0; i < copyToFolders.length; i++) {
+    let copyToFolder = copyToFolders[i]
+
+    for (let file in babelConfigs) {
+      let contents = ''
+      if (file.endsWith('.min.js')) {
+        contents = '// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n'
+      }
+      contents += babel.transformSync(srcFileData, babelConfigs[file]).code
+      fs.writeFileSync(copyToFolder + '/' + file, contents)
+    }
+  }
 }
 
 (async function init () {
