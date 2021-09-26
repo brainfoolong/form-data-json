@@ -1,4 +1,4 @@
-### 2.0.0beta - xxx
+### 2.0.0beta - 26.09.2021
 * complete refactoring
 * removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
 * removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`
