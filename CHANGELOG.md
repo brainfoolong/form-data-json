@@ -1,3 +1,16 @@
+### 2.0.0beta - xxx
+* complete refactoring
+* Class `FormDataJsonOptions` removed. Use bare `{}` objects now as options
+* Method `FormDataJson.flattenJsonFormValues` removed. Use `flatList = true` option in `toJson`
+* Method `FormDataJson.setInputValue` removed. No direct replacement. Use `fromJson` if you need to set any input value
+* Method 3rd Parameter `formToJson/toJson` callback function has been removed and is now set into option `filesCallback`
+* Method `formToJson`  renamed to `toJson`
+* Method `fillFormFromJsonValues` renamed to `fromJson`
+* Option `unsetAllInputsOnFill` renamed to `clearOthers`
+* Option `includeUncheckedAsNull` renamed to `uncheckedValue` and now represent the value that unchecked inputs should have in output
+* Option `skipEmpty` added
+* Option `fileReaderFunction` added
+
 ### 1.3.1 - 27. July 2021
 * fixed bug that `setInputValue` will not work for `selects` when passed a non-string value
 

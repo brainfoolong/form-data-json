@@ -1,22 +1,22 @@
-![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/logo-readme-github.png?1)
+![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/img/logo-readme-github.png)
 
-# Form Data Json - Form input values to/from JSON (And a bit more..)
+# Form Data Json - Form input values to/from JSON (And a bit more...)
 A zero dependency, cross browser library to easily get or set form input values as/from a json object. It can handle all existing input types, including multidimensional array names and file input. It is similar to native [FormData](https://developer.mozilla.org/docs/Web/API/FormData) but have some advantages: Get data as multidimensional object, writing data into forms (not just reading), reading unchecked/disabled fields as well, reading file inputs, and some other helpful features.
 
-## Breaking Changes with from v1 to v2
-Please read migration guide bellow. v2 is a refactoring of v1 which a lot of changes/improvements and different method names.
+## Breaking Changes from v1 to v2
+Please [read migration guide bellow](#migrationchangelog-from-v1-to-v2). v2 is a refactoring of v1 with a lot of changes/improvements.
 
 ## Installation
 Download [latest release](https://github.com/brainfoolong/form-data-json/releases/latest) and include `dist/form-data-json.min.js` into your project.
 ```html
 <script src="dist/form-data-json.min.js"></script>
 ```
-###### CDN (Latest version automatically, do not use it in production because of breaking changes)
+###### CDN (Latest version automatically, do not use it in production because of possible breaking changes)
 ```html
 <script src="https://cdn.jsdelivr.net/npm/form-data-json-convert/dist/form-data-json.min.js"></script>
 ```
 ###### NPM
-```
+```cmd
 npm install form-data-json-convert
 // import: const FormDataJson = require('form-data-json-convert')
 ```
@@ -26,9 +26,6 @@ npm install form-data-json-convert
 * Cross Browser including IE11 (Yes, the ugly one also)
 * Multidimensional input name support. For example: `name="entry[123][person]"`
 * Super small: ~3kB gzipped 
-
-## Playground
-[Test it out here.](https://brainfoolong.github.io/form-data-json/example/playground.html)
 
 ## Supported Browser
 * Chrome
@@ -41,11 +38,6 @@ npm install form-data-json-convert
 ## What's not supported
 * Write to `<input type="file">` It's impossible in javascript to set values for file inputs, for security reasons. However, reading file input as base64 data uri string is supported.
 
-## How to contribute
-* Please write an issue before you start programming.
-* Always test the official supported browsers.
-* Write all tests in `docs/tests/test.html`. Each new option must have an own test.
-
 ## How to use
 ###### Read form input values
 ```javascript
@@ -57,7 +49,7 @@ let values = FormDataJson.toJson($("#form-id")) // with jQuery
 ```javascript
 let values = FormDataJson.toJson(document.querySelector("form"), {flatList: true})
 ``` 
-###### Read form input values including all inputs, even disabled inputs or unchecked checkboxes as null
+###### Read form input values including disabled or unchecked inputs
 ```javascript
 let values = FormDataJson.toJson(document.querySelector("form"), {includeDisabled: true, uncheckedValue : null}})
 ```
@@ -169,6 +161,11 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
 'clearOthers': false
 }
 ```
+
+## How to contribute
+* Please write an issue before you start programming.
+* Always test the official supported browsers.
+* Write all tests in `docs/tests/test.html`. Each new option must have an own test.
 
 ### Migration/Changelog from v1 to v2
 * Class `FormDataJsonOptions` removed. Use bare `{}` objects now as options
