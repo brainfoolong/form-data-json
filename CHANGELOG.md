@@ -1,3 +1,6 @@
+### 2.0.2beta - 27.09.2021
+* incorrectly compiled files
+ 
 ### 2.0.1beta - 27.09.2021
 * fixed glitch in `toJson()` doesn't respect all filter options correctly
 

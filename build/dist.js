@@ -29,7 +29,7 @@ let babelConfigs = {
     ]
   },
   'form-data-json.min.js': {
-    'comments': true,
+    'comments': false,
     'plugins': plugins,
     'presets': [
       [
@@ -37,9 +37,9 @@ let babelConfigs = {
         {
           'loose': true,
           'targets': targets
-        },
-        __dirname + '/../node_modules/babel-preset-minify'
-      ]
+        }
+      ],
+      __dirname + '/../node_modules/babel-preset-minify'
     ]
   }
 }
@@ -72,10 +72,8 @@ async function compile () {
 
     for (let file in babelConfigs) {
       let contents = ''
-      if (file.endsWith('.min.js')) {
-        contents = '// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n'
-      }
       contents += babel.transformSync(srcFileData, babelConfigs[file]).code
+      contents = contents.replace(/^\'use strict\';/mg, '\'use strict\';\n// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n')
       fs.writeFileSync(copyToFolder + '/' + file, contents)
     }
   }
