@@ -1,3 +1,6 @@
+### 2.0.1beta - 27.09.2021
+* fixed glitch in `toJson()` doesn't respect all filter options correctly
+
 ### 2.0.0beta - 26.09.2021
 * complete refactoring
 * removed class `FormDataJsonOptions`. Use bare `{}` objects now as options

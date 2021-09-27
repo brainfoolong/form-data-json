@@ -351,7 +351,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","chk":[],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","chk":["checkbox checked"],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
@@ -512,7 +512,7 @@
   runTestCustom(function (form) {
     FormDataJson.fromJson(form, { 'name1': '1' }, { clearOthers: true })
     let newData = JSON.stringify(FormDataJson.toJson(form))
-    let expected = '{"name1":"1","name2":"","name":{"0":{"sub1":"","sub2":""},"2":"","3":"","4":"","foo":"","bar":""},"chk":[]}'
+    let expected = '{"name1":"1","name2":"","name":{"0":{"sub1":"","sub2":""},"2":"","3":"","4":"","foo":"","bar":""}}'
     showTestResultsCustom(form, newData === expected)
     if (newData !== expected) {
       console.log('Exepected')
@@ -562,7 +562,7 @@
   (function () {
     runTestCustom(function (form) {
       FormDataJson.clear(form)
-      let expected = '{"name1":"","name2":"","name":{"0":{"sub1":"","sub2":""},"1":"","2":"","3":"","foo":"","bar":""},"chk":[]}'
+      let expected = '{"name1":"","name2":"","name":{"0":{"sub1":"","sub2":""},"1":"","2":"","3":"","foo":"","bar":""}}'
       let newData = JSON.stringify(FormDataJson.toJson(form))
       showTestResultsCustom(form, expected === newData)
       if (expected !== newData) {
@@ -642,7 +642,7 @@
     runTest('write', document.querySelector('#testIssue-9'), {
       skipEmpty: true,
       clearOthers: true
-    }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":{"1":"asdf"},"email":[],"status":[]},"scales":[]}')
+    }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":{"1":"asdf"},"email":[],"status":[]}}')
   })()
 </script>
 

@@ -36,17 +36,13 @@ var FormDataJson = /*#__PURE__*/function () {
    */
   FormDataJson.toJson = function toJson(el, options) {
     options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, options);
-    var tree = FormDataJson.getFieldTree(el, options);
-    var returnObject = {};
-    var files = [];
     /**
-     * Check if given input is valid for given filters
+     * Check if given input is valid for given filters based on given options
      * @param {HTMLElement} input
-     * @param {Object} options
      * @return {boolean}
      */
 
-    function isValidInput(input, options) {
+    function isValidInput(input) {
       // filter elements by input filter
       if (typeof options.inputFilter === 'function' && options.inputFilter(input) !== true) {
         return false;
@@ -70,12 +66,15 @@ var FormDataJson = /*#__PURE__*/function () {
 
       return true;
     }
+
+    var tree = FormDataJson.getFieldTree(el, isValidInput);
+    var returnObject = {};
+    var files = [];
     /**
      * Recursive get values
      * @param {Object} inputs
      * @param {Object} values
      */
-
 
     function recursion(inputs, values) {
       for (var key in inputs) {
@@ -93,12 +92,7 @@ var FormDataJson = /*#__PURE__*/function () {
           continue;
         }
 
-        var input = row.input; // check for valid inputs by given options
-
-        if (row.type === 'default' && !isValidInput(input, options)) {
-          continue;
-        }
-
+        var input = row.input;
         var inputType = row.inputType;
 
         if (inputType === 'file') {
@@ -117,9 +111,7 @@ var FormDataJson = /*#__PURE__*/function () {
 
         if (row.type === 'radio') {
           for (var i = 0; i < row.inputs.length; i++) {
-            var radioInput = row.inputs[i]; // check for valid inputs by given options
-
-            if (!isValidInput(radioInput, options)) continue;
+            var radioInput = row.inputs[i];
 
             if (radioInput.checked) {
               value = radioInput.value;
@@ -224,7 +216,7 @@ var FormDataJson = /*#__PURE__*/function () {
   FormDataJson.fromJson = function fromJson(el, values, options, keyPrefix) {
     if (!FormDataJson.isObject(values)) return;
     options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options);
-    var tree = FormDataJson.getFieldTree(el, options);
+    var tree = FormDataJson.getFieldTree(el);
 
     if (options.clearOthers) {
       FormDataJson.clear(el);
@@ -506,13 +498,13 @@ var FormDataJson = /*#__PURE__*/function () {
   /**
    * Get all input fields as a multidimensional tree, as it would later appear in json data, but with input elements as values
    * @param {*} el
-   * @param {Object=} options
+   * @param {function=} isValidInput A function to check for valid input
    * @return {Object}
    * @private
    */
   ;
 
-  FormDataJson.getFieldTree = function getFieldTree(el, options) {
+  FormDataJson.getFieldTree = function getFieldTree(el, isValidInput) {
     el = FormDataJson.getElement(el);
 
     if (!el) {
@@ -526,6 +518,7 @@ var FormDataJson = /*#__PURE__*/function () {
     for (var i = 0; i < inputs.length; i++) {
       var input = inputs[i];
       if (!input.name || input.name.length === 0) continue;
+      if (isValidInput && isValidInput(input) !== true) continue;
       var inputType = (input.type || 'text').toLowerCase();
       var name = input.name;
       var keyParts = input.name.replace(/\]/g, '').split('[');

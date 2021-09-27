@@ -114,18 +114,13 @@ class FormDataJson {
    */
   static toJson (el, options) {
     options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, options)
-    const tree = FormDataJson.getFieldTree(el, options)
-    const returnObject = {}
-    const files = []
 
     /**
-     * Check if given input is valid for given filters
+     * Check if given input is valid for given filters based on given options
      * @param {HTMLElement} input
-     * @param {Object} options
      * @return {boolean}
      */
-    function isValidInput (input, options) {
-
+    function isValidInput (input) {
       // filter elements by input filter
       if (typeof options.inputFilter === 'function' && options.inputFilter(input) !== true) {
         return false
@@ -150,6 +145,9 @@ class FormDataJson {
 
       return true
     }
+    const tree = FormDataJson.getFieldTree(el, isValidInput)
+    const returnObject = {}
+    const files = []
 
     /**
      * Recursive get values
@@ -171,10 +169,6 @@ class FormDataJson {
           continue
         }
         const input = row.input
-        // check for valid inputs by given options
-        if (row.type === 'default' && !isValidInput(input, options)) {
-          continue
-        }
         const inputType = row.inputType
 
         if (inputType === 'file') {
@@ -188,8 +182,6 @@ class FormDataJson {
         if (row.type === 'radio') {
           for (let i = 0; i < row.inputs.length; i++) {
             const radioInput = row.inputs[i]
-            // check for valid inputs by given options
-            if (!isValidInput(radioInput, options)) continue
             if (radioInput.checked) {
               value = radioInput.value
               break
@@ -268,7 +260,7 @@ class FormDataJson {
   static fromJson (el, values, options, keyPrefix) {
     if (!FormDataJson.isObject(values)) return
     options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options)
-    const tree = FormDataJson.getFieldTree(el, options)
+    const tree = FormDataJson.getFieldTree(el)
     if (options.clearOthers) {
       FormDataJson.clear(el)
     }
@@ -515,21 +507,24 @@ class FormDataJson {
   /**
    * Get all input fields as a multidimensional tree, as it would later appear in json data, but with input elements as values
    * @param {*} el
-   * @param {Object=} options
+   * @param {function=} isValidInput A function to check for valid input
    * @return {Object}
    * @private
    */
-  static getFieldTree (el, options) {
+  static getFieldTree (el, isValidInput) {
     el = FormDataJson.getElement(el)
     if (!el) {
       return []
     }
+
     let inputs = el.querySelectorAll('select, textarea, input, button')
     let inputTree = {}
     let autoIncrementCounts = {}
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i]
       if (!input.name || input.name.length === 0) continue
+      if (isValidInput && isValidInput(input) !== true) continue
+
       const inputType = (input.type || 'text').toLowerCase()
 
       let name = input.name
