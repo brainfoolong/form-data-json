@@ -40,7 +40,7 @@ class FormDataJson {
 
     /**
      * Does return an array list, with same values as native Array.from(new FormData(form))
-     * So a list entry will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
+     * A list will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
      * The input name will not be changed and the list can contain multiple equal names
      * @type {boolean}
      */

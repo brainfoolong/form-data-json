@@ -49,9 +49,9 @@ let values = FormDataJson.toJson($("#form-id")) // with jQuery
 ```javascript
 let values = FormDataJson.toJson(document.querySelector("form"), {flatList: true})
 ``` 
-###### Read form input values including disabled or unchecked inputs
+###### Read form input values including disabled
 ```javascript
-let values = FormDataJson.toJson(document.querySelector("form"), {includeDisabled: true, uncheckedValue : null}})
+let values = FormDataJson.toJson(document.querySelector("form"), {includeDisabled: true}})
 ```
 ###### Read with file inputs as base64 data uri
 ```javascript
@@ -114,7 +114,7 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
 
 /**
  * Does return an array list, with same values as native Array.from(new FormData(form))
- * So a list entry will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
+ * A list will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
  * The input name will not be changed and the list can contain multiple equal names
  * @type {boolean}
  */
