@@ -173,12 +173,8 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
 * Always test the official supported browsers.
 * Write all tests in `docs/tests/test.html`. Each new option must have an own test.
 
-### Migration/Changelog from v1 to v2
-* removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
-* removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`
-* removed method `FormDataJson.setInputValue`. No direct replacement. Use `fromJson` if you need to set any input value
-* removed 3rd parameter `formToJson/toJson` callback function. It is now set into option `filesCallback`
-* renamed method `formToJson` to `toJson`
-* renamed method `fillFormFromJsonValues` to `fromJson`
-* renamed option `unsetAllInputsOnFill` to `clearOthers`
-* renamed option `includeUncheckedAsNull` to `uncheckedValue` and now represent the value that unchecked inputs should have in output
+### Migration from v1 to v2
+
+There is a migration script to drop in, to make most existing code compatible with new stuff. You should migrate existing code as soon as possible, but if you don't have time right now, you can use the migration script. Simply include `src/migration-v1-v2.js` after `dist/form-data-json.min.js`.
+
+Goto [changelog](https://github.com/brainfoolong/form-data-json/blob/master/CHANGELOG.md#200beta---26092021) for more details of what exactly as new and old.
