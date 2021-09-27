@@ -89,6 +89,13 @@ class FormDataJson {
     'clearOthers': false,
 
     /**
+     * If true, than all fields that are not exist in the passed values object, will be reset
+     * Not exist means, the value must be undefined
+     * @type {boolean}
+     */
+    'resetOthers': false,
+
+    /**
      * If true, when a fields value has changed, a "change" event will be fired
      * @type {boolean}
      */
@@ -146,6 +153,7 @@ class FormDataJson {
 
       return true
     }
+
     const tree = FormDataJson.getFieldTree(el, isValidInput)
     const returnObject = {}
     const files = []
@@ -264,6 +272,9 @@ class FormDataJson {
     const tree = FormDataJson.getFieldTree(el)
     if (options.clearOthers) {
       FormDataJson.clear(el)
+    }
+    if (options.resetOthers) {
+      FormDataJson.reset(el)
     }
 
     /**

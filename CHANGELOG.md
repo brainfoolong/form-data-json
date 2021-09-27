@@ -1,6 +1,7 @@
 ### 2.0.3beta - 27.09.2021
 * fixed https://github.com/brainfoolong/form-data-json/issues/13 in `toJson()`
-* option `uncheckedValue` is now false by default, instead of undefined
+* changed option `uncheckedValue` is now false by default, instead of undefined
+* added option `resetOthers` for `fromJson()`
 
 ### 2.0.2beta - 27.09.2021
 * incorrectly compiled files
