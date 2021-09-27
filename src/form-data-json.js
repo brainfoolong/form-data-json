@@ -29,7 +29,7 @@ class FormDataJson {
      * If undefined, than the unchecked field will be ignored in output
      * @type {*}
      */
-    'uncheckedValue': undefined,
+    'uncheckedValue': false,
 
     /**
      * A function, where first parameter is the input field to check for, that must return true if the field should be included
@@ -39,7 +39,7 @@ class FormDataJson {
     'inputFilter': null,
 
     /**
-     * Does return a flat key/value list of values instead of multiple dimensions
+     * Does return an array list of values instead of multiple dimensions
      * This will use the original input names as key, doesn't matter how weird they are
      * Exepected keys are similar to FormData() keys
      * @type {boolean}
@@ -48,6 +48,7 @@ class FormDataJson {
 
     /**
      * If true, than this does skip empty fields from the output
+     * Empty is considered to be: an empty array (for multiple selects/checkboxes) and an empty input field (length = 0)
      * @type {boolean}
      */
     'skipEmpty': false,
@@ -545,15 +546,16 @@ class FormDataJson {
       let currentName = ''
       for (let j = 0; j < keyPartsLength; j++) {
         let keyPart = keyParts[j]
-        currentName = currentName ? currentName + '[' + keyPart + ']' : keyPart
+        let newCurrentName = currentName ? currentName + '[' + keyPart + ']' : keyPart
         // auto increment key part
         if (keyPart === '') {
-          if (typeof autoIncrementCounts[currentName] === 'undefined') {
-            autoIncrementCounts[currentName] = 0
+          if (typeof autoIncrementCounts[newCurrentName] === 'undefined') {
+            autoIncrementCounts[newCurrentName] = 0
           }
-          keyPart = autoIncrementCounts[currentName].toString()
-          autoIncrementCounts[currentName]++
+          keyPart = autoIncrementCounts[newCurrentName].toString()
+          autoIncrementCounts[newCurrentName]++
         }
+        currentName = currentName ? currentName + '[' + keyPart + ']' : keyPart
         // last level
         if (keyPartsLength - 1 === j) {
           // radio elements are special

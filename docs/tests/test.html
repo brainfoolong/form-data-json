@@ -411,7 +411,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-includeButtonValues'), { includeButtonValues: true }, '{"checked":"1","button":"Btn1","submit":"submit","reset":"reset","button_element":"Button Element"}')
+    runTest('read', document.querySelector('#option-includeButtonValues'), { includeButtonValues: true }, '{"checked":"1","button":"Btn1","submit":"submit","reset":"reset","button_element":"Button Element","submitForm":"Submit form to debug-serverside-submit.php"}')
   })()
 </script>
 
@@ -542,7 +542,7 @@
   }, document.querySelector('#option-triggerChangeEvent'))
 </script>
 
-<form name="test-clear" id="test-clear">
+<form  name="test-clear" id="test-clear">
     <h3></h3>
     <p>Testing form clear</p>
     <input type="text" name="name1" value="1">
@@ -609,7 +609,7 @@
   })()
 </script>
 
-<form name="testIssue-9" id="testIssue-9">
+<form  name="testIssue-9" id="testIssue-9">
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/9</p>
     <input name="docn">
@@ -645,6 +645,76 @@
     }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":{"1":"asdf"},"email":[],"status":[]}}')
   })()
 </script>
+
+<form  name="testIssue-13" id="testIssue-13">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13</p>
+    <input name = "client[][phone][]">
+    <input name = "client[][phone][]">
+    <input name = "client[][phone][]">
+
+
+    <input name = "client[][email][]">
+    <input name = "client[][email][]">
+
+
+    <input name = "client[][phone][]">
+    <input name = "client[][phone][]">
+
+    <input name = "client[][email][]">
+    <input name = "client[][email][]">
+    <input name = "client[][email][]">
+
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#testIssue-13'), null, '{"client":[{"phone":[""]},{"phone":[""]},{"phone":[""]},{"email":[""]},{"email":[""]},{"phone":[""]},{"phone":[""]},{"email":[""]},{"email":[""]},{"email":[""]}]}')
+  })()
+</script>
+
+<form  name="testIssue-15" id="testIssue-15">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/15</p>
+    <input type="checkbox" name="scales[]">
+    <input type="checkbox" name="scales[]" checked>
+    <input type="checkbox" name="scales[]" value="77" checked>
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#testIssue-15'), null, '{"client":{"0":{"phone":[""]},"name":""}}')
+  })()
+</script>
+
+<form  name="testIssue-13-2" id="testIssue-13-2">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13#issuecomment-927836476</p>
+    <input name = "client[name]">
+    <input name = "client[0][phone][]">
+    <div class="result"></div>
+</form>
+<script>
+  (function () {
+    runTest('read', document.querySelector('#testIssue-13-2'), null, '{"client":{"0":{"phone":[""]},"name":""}}')
+  })()
+</script>
+
+<script>
+  (function (){
+    let forms = document.querySelectorAll('form')
+    for (let i = 0; i < forms.length; i++) {
+      const form = forms[i]
+      let submitButton = document.createElement('div')
+      submitButton.innerHTML = '<br/><input type="submit" name="submitForm" value="Submit form to debug-serverside-submit.php">'
+      form.action = 'debug-serverside-submit.php'
+      form.target = '_blank'
+      form.method = 'post'
+      form.appendChild(submitButton)
+    }
+  })()
+</script>
+
 
 </body>
 </html>

@@ -177,4 +177,6 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
 
 There is a migration script to drop in, to make most existing code compatible with new stuff. You should migrate existing code as soon as possible, but if you don't have time right now, you can use the migration script. Simply include `src/migration-v1-v2.js` after `dist/form-data-json.min.js`.
 
+Warning: Returned data my still differ to v1, so use it with caution and test before you go into production.
+
 Goto [changelog](https://github.com/brainfoolong/form-data-json/blob/master/CHANGELOG.md#200beta---26092021) for more details of what exactly as new and old.
