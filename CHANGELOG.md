@@ -2,6 +2,7 @@
 * fixed https://github.com/brainfoolong/form-data-json/issues/13 in `toJson()`
 * changed option `uncheckedValue` is now false by default, instead of undefined
 * added option `resetOthers` for `fromJson()`
+* changed output of option `flatList`, it now contains an array list with same values like native `FormData()`
 
 ### 2.0.2beta - 27.09.2021
 * incorrectly compiled files
@@ -12,7 +13,7 @@
 ### 2.0.0beta - 26.09.2021
 * complete refactoring
 * removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
-* removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`
+* removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`. Note: Output still has changed significantly to v1.
 * removed method `FormDataJson.setInputValue`. No direct replacement. Use `fromJson` if you need to set any input value
 * removed 3rd parameter `formToJson/toJson` callback function. It is now set into option `filesCallback`
 * renamed method `formToJson` to `toJson`

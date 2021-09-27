@@ -4,19 +4,8 @@
     <meta charset="UTF-8">
     <title>Test FormDataJson</title>
     <script>
-      ;(function () {
-        let url = '../scripts/form-data-json.js'
-        // with debug flag we directly load original source file
-        // only work in supported browsers, like chrome
-        if (location.href.match(/(\?|\&)debug/)) {
-          url = '../../src/form-data-json.js'
-        }
-        let s = document.createElement('script')
-        s.setAttribute('src', url)
-        document.head.appendChild(s)
-      })()
-    </script>
-    <script>
+      let testQueue = []
+
       /**
        * Show test results
        * @param {HTMLFormElement|Element} form
@@ -82,14 +71,9 @@
        */
       function runTestCustom (testFunction, form) {
         if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
-        // because we dynamically insert required script in head, we may not have loading the library on page load
-        if (typeof FormDataJson === 'undefined') {
-          setTimeout(function () {
-            runTestCustom(testFunction, form)
-          }, 100)
-          return
-        }
-        testFunction(form)
+        testQueue.push(function () {
+          testFunction(form)
+        })
       }
 
       /**
@@ -101,21 +85,16 @@
        */
       function runTest (mode, form, options, expected) {
         if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
-        // because we dynamically insert required script in head, we may not have loading the library on page load
-        if (typeof FormDataJson === 'undefined') {
-          setTimeout(function () {
-            runTest(mode, form, options, expected)
-          }, 100)
-          return
-        }
-        let values
-        if (mode === 'read') {
-          values = FormDataJson.toJson(form, options)
-        } else {
-          FormDataJson.fromJson(form, JSON.parse(expected), options)
-          values = FormDataJson.toJson(form, options)
-        }
-        showTestResults(form, expected, values)
+        testQueue.push(function () {
+          let values
+          if (mode === 'read') {
+            values = FormDataJson.toJson(form, options)
+          } else {
+            FormDataJson.fromJson(form, JSON.parse(expected), options)
+            values = FormDataJson.toJson(form, options)
+          }
+          showTestResults(form, expected, values)
+        })
       }
 
       /**
@@ -126,34 +105,30 @@
        * @param {string} expected Expected/Set data as json string
        */
       function runTestWithFiles (mode, form, options, expected) {
-        // because we dynamically insert required script in head, we may not have loading the library on page load
-        if (typeof FormDataJson === 'undefined') {
-          setTimeout(function () {
-            runTestWithFiles(mode, form, options, expected)
-          }, 100)
-          return
-        }
-        options = options || {}
-        options.filesCallback = function (values) {
-          showTestResults(form, expected, values)
-        }
-        if (mode === 'read') {
-          // on page startup run simulated test values
-          let files = form.querySelectorAll('input[type=\'file\']')
-          let values = {}
-          for (let i = 0; i < files.length; i++) {
-            let input = files[i]
-            values[input.name] = JSON.parse(input.getAttribute('data-test-value'))
+        if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
+        testQueue.push(function () {
+          options = options || {}
+          options.filesCallback = function (values) {
+            showTestResults(form, expected, values)
           }
-          showTestResults(form, expected, values)
-          // after user has changed files, run test again
-          form.addEventListener('change', function () {
-            FormDataJson.toJson(form, options)
-          }, false)
+          if (mode === 'read') {
+            // on page startup run simulated test values
+            let files = form.querySelectorAll('input[type=\'file\']')
+            let values = {}
+            for (let i = 0; i < files.length; i++) {
+              let input = files[i]
+              values[input.name] = JSON.parse(input.getAttribute('data-test-value'))
+            }
+            showTestResults(form, expected, values)
+            // after user has changed files, run test again
+            form.addEventListener('change', function () {
+              FormDataJson.toJson(form, options)
+            }, false)
 
-        } else {
-          console.error('Write of file inputs is not supported')
-        }
+          } else {
+            console.error('Write of file inputs is not supported')
+          }
+        })
       }
     </script>
     <style type="text/css">
@@ -209,7 +184,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#read-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1"]}')
+    runTest('read', document.querySelector('#read-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1",false]}')
   })()
 </script>
 
@@ -226,12 +201,12 @@
     <input type="hidden" name="name[0][sub2]" value="">
     <input type="hidden" name="name[]" value="">
     <input type="checkbox" name="chk[]" value="1">
-    <input type="checkbox" name="chk[]" value="2">
+    <input type="checkbox" name="chk[]" value="2" checked>
     <div class="result"></div>
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1"]}')
+    runTest('write', document.querySelector('#write-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1",false]}')
   })()
 </script>
 
@@ -293,7 +268,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#read-all'), null, '{"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","checkbox_checked":"checkbox checked","chk":["checkbox checked","checkbox checked2"],"email":"email@foo.bar","radio":"radio checked2","hidden":"hidden","month":"2020-01","number":"666","password":"1234","range":"6","search":"search","tel":"+436666666666","text":"text","text_depth":["text","text"],"text_deeper":{"1":{"foo":"text","bar":"text"}},"time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('read', document.querySelector('#read-all'), null, '{"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","checkbox_checked":"checkbox checked","checkbox":false,"chk":["checkbox checked","checkbox checked2"],"email":"email@foo.bar","radio":"radio checked2","hidden":"hidden","month":"2020-01","number":"666","password":"1234","range":"6","search":"search","tel":"+436666666666","text":"text","text_depth":["text","text"],"text_deeper":{"1":{"foo":"text","bar":"text"}},"time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
@@ -351,7 +326,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","chk":["checkbox checked"],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","checkbox":false,"chk":["checkbox checked",false],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
@@ -411,7 +386,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-includeButtonValues'), { includeButtonValues: true }, '{"checked":"1","button":"Btn1","submit":"submit","reset":"reset","button_element":"Button Element","submitForm":"Submit form to debug-serverside-submit.php"}')
+    runTest('read', document.querySelector('#option-includeButtonValues'), { includeButtonValues: true }, '{"checked":"1","unchecked":false,"button":"Btn1","submit":"submit","reset":"reset","button_element":"Button Element","submitForm":"Submit form to debug-serverside-submit.php"}')
   })()
 </script>
 
@@ -446,7 +421,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#option-flatList-write'), { flatList: true }, '{"name[0][sub1]":"name[0][sub1]","name[0][sub2]":"name[0][sub2]","name[]":"name[]","name[foo]":"name[foo]","name[bar]":"name[bar]","name2":"","chk[]":"1"}')
+    runTest('write', document.querySelector('#option-flatList-write'), { flatList: true }, '[["name[0][sub1]","name[0][sub1]"],["name[0][sub2]","name[0][sub2]"],["name[]","name[]"],["name[]","name[]"],["name[foo]","name[foo]"],["name[bar]","name[bar]"],["name2",""],["chk[]","1"],["chk[]",false]]')
   })()
 </script>
 <form name="option-flatList-read" id="option-flatList-read">
@@ -467,7 +442,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-flatList-read'), { flatList: true }, '{"name[0][sub1]":"name[0][sub1]","name[0][sub2]":"name[0][sub2]","name[]":"name[]","name[foo]":"name[foo]","name[bar]":"name[bar]","name2":"","chk[]":"1"}')
+    runTest('read', document.querySelector('#option-flatList-read'), { flatList: true }, '[["name[0][sub1]","name[0][sub1]"],["name[0][sub2]","name[0][sub2]"],["name[]","name[]"],["name[]","name[]"],["name[foo]","name[foo]"],["name[bar]","name[bar]"],["name2",""],["chk[]","1"],["chk[]",false]]')
   })()
 </script>
 <form name="option-skipEmpty" id="option-skipEmpty">
@@ -488,7 +463,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-skipEmpty'), { skipEmpty: true }, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"chk":["1"]}')
+    runTest('read', document.querySelector('#option-skipEmpty'), { skipEmpty: true }, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"chk":["1",false]}')
   })()
 </script>
 
@@ -512,7 +487,7 @@
   runTestCustom(function (form) {
     FormDataJson.fromJson(form, { 'name1': '1' }, { clearOthers: true })
     let newData = JSON.stringify(FormDataJson.toJson(form))
-    let expected = '{"name1":"1","name2":"","name":{"0":{"sub1":"","sub2":""},"2":"","3":"","4":"","foo":"","bar":""}}'
+    let expected = '{"name1":"1","name2":"","name":{"0":{"sub1":"","sub2":""},"2":"","3":"","4":"","foo":"","bar":""},"chk":[false,false]}'
     showTestResultsCustom(form, newData === expected)
     if (newData !== expected) {
       console.log('Exepected')
@@ -535,14 +510,17 @@
     form.addEventListener('change', function (ev) {
       if (ev.target.name === 'name1' && ev.target.value === '1') {
         showTestResultsCustom(form, true)
+        clearTimeout(waitTo)
       }
     })
-    showTestResultsCustom(form, false)
+    let waitTo = setTimeout(function () {
+      showTestResultsCustom(form, false)
+    }, 300)
     FormDataJson.fromJson(form, { 'name1': '1' }, { triggerChangeEvent: true })
   }, document.querySelector('#option-triggerChangeEvent'))
 </script>
 
-<form  name="test-clear" id="test-clear">
+<form name="test-clear" id="test-clear">
     <h3></h3>
     <p>Testing form clear</p>
     <input type="text" name="name1" value="1">
@@ -562,7 +540,7 @@
   (function () {
     runTestCustom(function (form) {
       FormDataJson.clear(form)
-      let expected = '{"name1":"","name2":"","name":{"0":{"sub1":"","sub2":""},"1":"","2":"","3":"","foo":"","bar":""}}'
+      let expected = '{"name1":"","name2":"","name":{"0":{"sub1":"","sub2":""},"1":"","2":"","3":"","foo":"","bar":""},"chk":[false,false]}'
       let newData = JSON.stringify(FormDataJson.toJson(form))
       showTestResultsCustom(form, expected === newData)
       if (expected !== newData) {
@@ -609,7 +587,7 @@
   })()
 </script>
 
-<form  name="testIssue-9" id="testIssue-9">
+<form name="testIssue-9" id="testIssue-9">
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/9</p>
     <input name="docn">
@@ -642,28 +620,28 @@
     runTest('write', document.querySelector('#testIssue-9'), {
       skipEmpty: true,
       clearOthers: true
-    }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":{"1":"asdf"},"email":[],"status":[]}}')
+    }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":["asdf"]},"scales":[false,false]}')
   })()
 </script>
 
-<form  name="testIssue-13" id="testIssue-13">
+<form name="testIssue-13" id="testIssue-13">
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13</p>
-    <input name = "client[][phone][]">
-    <input name = "client[][phone][]">
-    <input name = "client[][phone][]">
+    <input name="client[][phone][]">
+    <input name="client[][phone][]">
+    <input name="client[][phone][]">
 
 
-    <input name = "client[][email][]">
-    <input name = "client[][email][]">
+    <input name="client[][email][]">
+    <input name="client[][email][]">
 
 
-    <input name = "client[][phone][]">
-    <input name = "client[][phone][]">
+    <input name="client[][phone][]">
+    <input name="client[][phone][]">
 
-    <input name = "client[][email][]">
-    <input name = "client[][email][]">
-    <input name = "client[][email][]">
+    <input name="client[][email][]">
+    <input name="client[][email][]">
+    <input name="client[][email][]">
 
     <div class="result"></div>
 </form>
@@ -673,7 +651,7 @@
   })()
 </script>
 
-<form  name="testIssue-15" id="testIssue-15">
+<form name="testIssue-15" id="testIssue-15">
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/15</p>
     <input type="checkbox" name="scales[]">
@@ -683,15 +661,15 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#testIssue-15'), null, '{"client":{"0":{"phone":[""]},"name":""}}')
+    runTest('read', document.querySelector('#testIssue-15'), null, '{"scales":[false,"on","77"]}')
   })()
 </script>
 
-<form  name="testIssue-13-2" id="testIssue-13-2">
+<form name="testIssue-13-2" id="testIssue-13-2">
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13#issuecomment-927836476</p>
-    <input name = "client[name]">
-    <input name = "client[0][phone][]">
+    <input name="client[name]">
+    <input name="client[0][phone][]">
     <div class="result"></div>
 </form>
 <script>
@@ -701,7 +679,7 @@
 </script>
 
 <script>
-  (function (){
+  (function () {
     let forms = document.querySelectorAll('form')
     for (let i = 0; i < forms.length; i++) {
       const form = forms[i]
@@ -712,9 +690,28 @@
       form.method = 'post'
       form.appendChild(submitButton)
     }
+
+    let url = '../scripts/form-data-json.js'
+    // with debug flag we directly load original source file
+    // only work in supported browsers, like chrome
+    if (location.href.match(/(\?|\&)debug/)) {
+      url = '../../src/form-data-json.js'
+    }
+    let s = document.createElement('script')
+    s.setAttribute('src', url)
+    document.head.appendChild(s)
+
+    let checkIv = setInterval(function () {
+      if (typeof FormDataJson === 'undefined') return
+      clearInterval(checkIv)
+      for (let i = 0; i < testQueue.length; i++) {
+        testQueue[i]()
+      }
+      testQueue = []
+    }, 10)
+
   })()
 </script>
-
 
 </body>
 </html>

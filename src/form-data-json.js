@@ -39,9 +39,9 @@ class FormDataJson {
     'inputFilter': null,
 
     /**
-     * Does return an array list of values instead of multiple dimensions
-     * This will use the original input names as key, doesn't matter how weird they are
-     * Exepected keys are similar to FormData() keys
+     * Does return an array list, with same values as native Array.from(new FormData(form))
+     * So a list entry will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
+     * The input name will not be changed and the list can contain multiple equal names
      * @type {boolean}
      */
     'flatList': false,
@@ -49,13 +49,15 @@ class FormDataJson {
     /**
      * If true, than this does skip empty fields from the output
      * Empty is considered to be: an empty array (for multiple selects/checkboxes) and an empty input field (length = 0)
+     * This does recursively remove keys
+     * Example: {"agb":"1", "user" : [{"name" : ""},{"name" : ""}]} will be {"agb":"1"}
      * @type {boolean}
      */
     'skipEmpty': false,
 
     /**
      * A function the will be called when all file fields are read as base64 data uri
-     * Note: This does modify the returned object from the original call of toJson() afterwards
+     * Note: If this is given, than the original return value from toJson() is null and the values are passed to this callback as first parameter
      * @type {function|null}
      */
     'filesCallback': null,
@@ -118,7 +120,7 @@ class FormDataJson {
    * Get values from all form elements inside the given element
    * @param {*} el
    * @param {Object=} options
-   * @return {Object}
+   * @return {Object|Array}
    */
   static toJson (el, options) {
     options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, options)
@@ -155,7 +157,7 @@ class FormDataJson {
     }
 
     const tree = FormDataJson.getFieldTree(el, isValidInput)
-    const returnObject = {}
+    let returnObject = options.flatList ? [] : {}
     const files = []
 
     /**
@@ -216,12 +218,83 @@ class FormDataJson {
           }
         } else {
           value = input.value
-          if (options.skipEmpty && FormDataJson.stringify(value) === '') {
-            continue
-          }
         }
-        values[objectKey] = value
+        if (options.flatList) {
+          values.push([row.name, value])
+        } else {
+          values[objectKey] = value
+        }
       }
+    }
+
+    /**
+     * Does some final cleanup before output data
+     * @return {*}
+     */
+
+    /**
+     * Make an object to array if possible
+     * @param {Object} object
+     * @return {*}
+     * @private
+     */
+    function arrayfy (object) {
+      if (FormDataJson.isObject(object)) {
+        let count = 0
+        let valid = true
+        for (let key in object) {
+          if (FormDataJson.isObject(object[key]) && !(object[key] instanceof Element)) {
+            object[key] = arrayfy(object[key])
+          }
+          if (parseInt(key) !== count) {
+            valid = false
+          }
+          count++
+        }
+        if (valid) {
+          let arr = []
+          for (let i in object) {
+            arr.push(object[i])
+          }
+          return arr
+        }
+      }
+      return object
+    }
+
+    /**
+     * Does some final cleanup before output data
+     * @return {*}
+     */
+    function output () {
+      returnObject = arrayfy(returnObject)
+      if (options.skipEmpty) returnObject = removeEmpty(returnObject) || {}
+      return returnObject
+    }
+
+    /**
+     * Recursively remove empty keys
+     * @param {Object} object
+     */
+    function removeEmpty (object) {
+      const isArray = FormDataJson.isArray(object)
+      let newObject = isArray ? [] : {}
+      let count = 0
+      for (let key in object) {
+        if (FormDataJson.isObject(object[key]) || FormDataJson.isArray(object[key])) {
+          object[key] = removeEmpty(object[key]) || ''
+        }
+        if (typeof object[key] !== 'object' && FormDataJson.stringify(object[key]) === '') {
+          continue
+        }
+        if (isArray) {
+          newObject.push(object[key])
+        } else {
+          newObject[key] = object[key]
+        }
+        count++
+      }
+      return count ? newObject : null
     }
 
     recursion(tree, returnObject)
@@ -247,29 +320,32 @@ class FormDataJson {
             }
             filesDone++
             if (filesDone === filesRequired) {
-              options.filesCallback(FormDataJson.arrayfy(returnObject))
+              options.filesCallback(output())
             }
           }
           reader[options.fileReaderFunction](file)
         }
       }
     } else if (options.filesCallback) {
-      options.filesCallback(FormDataJson.arrayfy(returnObject))
+      options.filesCallback(output())
+      return null
     }
-    return FormDataJson.arrayfy(returnObject)
+    return output()
   }
 
   /**
    * Fill given form values into all form elements inside given element
    * @param {*} el
-   * @param {Object} values
+   * @param {Object|Array} values
    * @param {Object=} options
    * @param {string=} keyPrefix Internal only
    */
   static fromJson (el, values, options, keyPrefix) {
-    if (!FormDataJson.isObject(values)) return
+    if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) return
     options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options)
     const tree = FormDataJson.getFieldTree(el)
+    const lastUsedFlatListIndex = {}
+
     if (options.clearOthers) {
       FormDataJson.clear(el)
     }
@@ -295,8 +371,22 @@ class FormDataJson {
           }
           continue
         }
-        // skip fields that are not presented in the
-        if (!options.clearOthers && typeof newValues[objectKey] === 'undefined') {
+        // flat list must search correct entry for given input name
+        if (options.flatList) {
+          for (let i in newValues) {
+            const value = newValues[i]
+            if (value && value[0] === row.name) {
+              if (lastUsedFlatListIndex[row.name] !== i) {
+                lastUsedFlatListIndex[row.name] = i
+                FormDataJson.setInputValue(row, value[1], options.triggerChangeEvent)
+                break
+              }
+            }
+          }
+          continue
+        }
+        // skip fields that are not presented in the value list
+        if (typeof newValues[objectKey] === 'undefined') {
           continue
         }
         FormDataJson.setInputValue(row, newValues[objectKey] || null, options.triggerChangeEvent)
@@ -388,36 +478,6 @@ class FormDataJson {
     }
 
     recursion(tree)
-  }
-
-  /**
-   * Make an object to array if possible
-   * @param {Object} object
-   * @return {*}
-   * @private
-   */
-  static arrayfy (object) {
-    if (FormDataJson.isObject(object)) {
-      let count = 0
-      let valid = true
-      for (let key in object) {
-        if (FormDataJson.isObject(object[key]) && !(object[key] instanceof Element)) {
-          object[key] = FormDataJson.arrayfy(object[key])
-        }
-        if (parseInt(key) !== count) {
-          valid = false
-        }
-        count++
-      }
-      if (valid) {
-        let arr = []
-        for (let i in object) {
-          arr.push(object[i])
-        }
-        return arr
-      }
-    }
-    return object
   }
 
   /**

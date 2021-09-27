@@ -103,7 +103,7 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
  * If undefined, than the unchecked field will be ignored in output
  * @type {*}
  */
-'uncheckedValue': undefined,
+'uncheckedValue': false,
 
 /**
  * A function, where first parameter is the input field to check for, that must return true if the field should be included
@@ -113,22 +113,25 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
 'inputFilter': null,
 
 /**
- * Does return a flat key/value list of values instead of multiple dimensions
- * This will use the original input names as key, doesn't matter how weird they are
- * Exepected keys are similar to FormData() keys
+ * Does return an array list, with same values as native Array.from(new FormData(form))
+ * So a list entry will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
+ * The input name will not be changed and the list can contain multiple equal names
  * @type {boolean}
  */
 'flatList': false,
 
 /**
  * If true, than this does skip empty fields from the output
+ * Empty is considered to be: an empty array (for multiple selects/checkboxes) and an empty input field (length = 0)
+ * This does recursively remove keys
+ * Example: {"agb":"1", "user" : [{"name" : ""},{"name" : ""}]} will be {"agb":"1"}
  * @type {boolean}
  */
 'skipEmpty': false,
 
 /**
  * A function the will be called when all file fields are read as base64 data uri
- * Note: This does modify the returned object from the original call of toJson() afterwards
+ * Note: If this is given, than the original return value from toJson() is null and the values are passed to this callback as first parameter
  * @type {function|null}
  */
 'filesCallback': null,
@@ -159,6 +162,13 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
  * @type {boolean}
  */
 'clearOthers': false,
+
+/**
+ * If true, than all fields that are not exist in the passed values object, will be reset
+ * Not exist means, the value must be undefined
+ * @type {boolean}
+ */
+'resetOthers': false,
 
 /**
  * If true, when a fields value has changed, a "change" event will be fired
