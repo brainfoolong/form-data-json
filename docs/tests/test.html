@@ -5,6 +5,7 @@
     <title>Test FormDataJson</title>
     <script>
       let testQueue = []
+      let executedTests = []
 
       /**
        * Show test results
@@ -39,6 +40,8 @@
         }
         html += '</div>'
         form.querySelector('.result').innerHTML = html
+        executedTests.push(result)
+        updateTitle()
       }
 
       /**
@@ -62,6 +65,8 @@
         }
         html += '</div>'
         form.querySelector('.result').innerHTML = html
+        executedTests.push(result)
+        updateTitle()
       }
 
       /**
@@ -130,6 +135,17 @@
           }
         })
       }
+
+      function updateTitle () {
+        const title = document.getElementById('all-results')
+        let success = 0
+        let error = 0
+        for (let i = 0; i < executedTests.length; i++) {
+          if (executedTests[i]) success++
+          else error++
+        }
+        title.innerHTML = '<span style="color:' + (error ? 'red' : 'green') + '">' + (executedTests.length) + ' tests executed | ' + success + ' passed | ' + error + ' with error</span>'
+      }
     </script>
     <style type="text/css">
       body {
@@ -164,6 +180,7 @@
     </style>
 </head>
 <body>
+<h1 id="all-results"></h1>
 <form name="read-array" id="read-array">
     <h3></h3>
     <p>Testing read of pretty weird array input names. This tool is designed to create auto numbered indexes if no index
@@ -587,6 +604,36 @@
   })()
 </script>
 
+<form name="test-reset2" id="test-reset2">
+    <h3></h3>
+    <p>Testing form reset2</p>
+    <input type="text" name="name1" value="1">
+    <input type="text" name="name2">
+    <input type="text" name="name3" value="name[]">
+    <div class="result"></div>
+</form>
+<script>
+
+  (function () {
+    (function () {
+      runTestCustom(function (form) {
+        let originalData = JSON.stringify(FormDataJson.toJson(form))
+        FormDataJson.fromJson(form, { 'name1': 'blub' }, { resetOthers: true })
+        FormDataJson.fromJson(form, {}, { resetOthers: true })
+        let newData = JSON.stringify(FormDataJson.toJson(form))
+        showTestResultsCustom(form, newData === originalData)
+        if (newData !== originalData) {
+          console.log('Exepected')
+          console.log(originalData)
+          console.log('Got')
+          console.log(newData)
+        }
+      }, document.querySelector('#test-reset2'))
+    })()
+  })()
+</script>
+
+
 <form name="testIssue-9" id="testIssue-9">
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/9</p>
@@ -678,40 +725,71 @@
   })()
 </script>
 
-<script>
-  (function () {
-    let forms = document.querySelectorAll('form')
-    for (let i = 0; i < forms.length; i++) {
-      const form = forms[i]
-      let submitButton = document.createElement('div')
-      submitButton.innerHTML = '<br/><input type="submit" name="submitForm" value="Submit form to debug-serverside-submit.php">'
-      form.action = 'debug-serverside-submit.php'
-      form.target = '_blank'
-      form.method = 'post'
-      form.appendChild(submitButton)
-    }
+<form name="testIssue-16" id="testIssue-16">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928159217</p>
+    <input name="client[][phone][]">
+    <input name="client[][phone][]">
+    <input name="client[][phone][]">
 
-    let url = '../scripts/form-data-json.js'
-    // with debug flag we directly load original source file
-    // only work in supported browsers, like chrome
-    if (location.href.match(/(\?|\&)debug/)) {
-      url = '../../src/form-data-json.js'
-    }
-    let s = document.createElement('script')
-    s.setAttribute('src', url)
-    document.head.appendChild(s)
 
-    let checkIv = setInterval(function () {
-      if (typeof FormDataJson === 'undefined') return
-      clearInterval(checkIv)
-      for (let i = 0; i < testQueue.length; i++) {
-        testQueue[i]()
-      }
-      testQueue = []
-    }, 10)
+    <input name="client[][email][]">
+    <input name="client[][email][]">
 
-  })()
-</script>
+
+    <input name="client[][phone][]">
+    <input name="client[][phone][]">
+
+    <input name="client[][email][]">
+    <input name="client[][email][]">
+    <input name="client[][email][]">
+
+    <select name="foo[]" multiple>
+        <option>Value1</option>
+        <option>Value2</option>
+    </select>
+    <div class="result"></div>
+    <script>
+      (function () {
+        runTest('read', document.querySelector('#testIssue-16'), { skipEmpty: true, flatList: true }, '[]')
+      })()
+    </script>
+
+
+    <script>
+      (function () {
+        let forms = document.querySelectorAll('form')
+        for (let i = 0; i < forms.length; i++) {
+          const form = forms[i]
+          let submitButton = document.createElement('div')
+          submitButton.innerHTML = '<br/><input type="submit" name="submitForm" value="Submit form to debug-serverside-submit.php">'
+          form.action = 'debug-serverside-submit.php'
+          form.target = '_blank'
+          form.method = 'post'
+          form.appendChild(submitButton)
+        }
+
+        let url = '../scripts/form-data-json.min.js'
+        // with debug flag we directly load original source file
+        // only work in supported browsers, like chrome
+        if (location.href.match(/(\?|\&)debug/)) {
+          url = '../../src/form-data-json.js'
+        }
+        let s = document.createElement('script')
+        s.setAttribute('src', url)
+        document.head.appendChild(s)
+
+        let checkIv = setInterval(function () {
+          if (typeof FormDataJson === 'undefined') return
+          clearInterval(checkIv)
+          for (let i = 0; i < testQueue.length; i++) {
+            testQueue[i]()
+          }
+          testQueue = []
+        }, 10)
+
+      })()
+    </script>
 
 </body>
 </html>

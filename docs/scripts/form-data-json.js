@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.0.3beta | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.0.4beta | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter
@@ -204,33 +204,40 @@ var FormDataJson = /*#__PURE__*/function () {
 
     function output() {
       returnObject = arrayfy(returnObject);
-      if (options.skipEmpty) returnObject = removeEmpty(returnObject) || {};
+      if (options.skipEmpty) returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {});
       return returnObject;
     }
     /**
      * Recursively remove empty keys
      * @param {Object} object
+     * @param {number} depth
      */
 
 
-    function removeEmpty(object) {
+    function removeEmpty(object, depth) {
       var isArray = FormDataJson.isArray(object);
       var newObject = isArray ? [] : {};
       var count = 0;
 
       for (var key in object) {
-        if (FormDataJson.isObject(object[key]) || FormDataJson.isArray(object[key])) {
-          object[key] = removeEmpty(object[key]) || '';
+        var value = object[key];
+
+        if (options.flatList && !depth) {
+          value = value[1];
         }
 
-        if (typeof object[key] !== 'object' && FormDataJson.stringify(object[key]) === '') {
+        if (FormDataJson.isObject(value) || FormDataJson.isArray(value)) {
+          value = removeEmpty(value, (depth || 0) + 1) || '';
+        }
+
+        if (typeof value !== 'object' && FormDataJson.stringify(value) === '') {
           continue;
         }
 
         if (isArray) {
-          newObject.push(object[key]);
+          newObject.push(value);
         } else {
-          newObject[key] = object[key];
+          newObject[key] = value;
         }
 
         count++;
