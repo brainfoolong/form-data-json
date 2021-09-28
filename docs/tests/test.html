@@ -201,7 +201,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#read-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1",false]}')
+    runTest('read', document.querySelector('#read-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1"]}')
   })()
 </script>
 
@@ -223,7 +223,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1",false]}')
+    runTest('write', document.querySelector('#write-array'), null, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"name2":"","chk":["1","2"]}')
   })()
 </script>
 
@@ -285,7 +285,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#read-all'), null, '{"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","checkbox_checked":"checkbox checked","checkbox":false,"chk":["checkbox checked","checkbox checked2"],"email":"email@foo.bar","radio":"radio checked2","hidden":"hidden","month":"2020-01","number":"666","password":"1234","range":"6","search":"search","tel":"+436666666666","text":"text","text_depth":["text","text"],"text_deeper":{"1":{"foo":"text","bar":"text"}},"time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('read', document.querySelector('#read-all'), null, '{"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","checkbox_checked":"checkbox checked","chk":["checkbox checked","checkbox checked2"],"email":"email@foo.bar","radio":"radio checked2","hidden":"hidden","month":"2020-01","number":"666","password":"1234","range":"6","search":"search","tel":"+436666666666","text":"text","text_depth":["text","text"],"text_deeper":{"1":{"foo":"text","bar":"text"}},"time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
@@ -343,7 +343,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","checkbox":false,"chk":["checkbox checked",false],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
+    runTest('write', document.querySelector('#write-all'), null, '{"checkbox_checked":"checkbox checked","chk":["checkbox checked"],"color":"#ff0000","date":"2020-01-03","datetime-local":"2014-01-02T11:42:13.510","email":"email@foo.bar","hidden":"hidden","month":"2020-01","number":"666","password":"1234","radio":"radio checked","range":"6","search":"search","tel":"+436666666666","text":"text","time":"06:06","url":"https://github.com/brainfoolong/formdata-json","week":"2014-W48","textarea":"textarea","select_single_value":"2","select_single_text":"2","select_multiple":["2","3"],"select_multiple_depth":{"123":["2","3"]}}')
   })()
 </script>
 
@@ -403,7 +403,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-includeButtonValues'), { includeButtonValues: true }, '{"checked":"1","unchecked":false,"button":"Btn1","submit":"submit","reset":"reset","button_element":"Button Element","submitForm":"Submit form to debug-serverside-submit.php"}')
+    runTest('read', document.querySelector('#option-includeButtonValues'), { includeButtonValues: true }, '{"checked":"1","button":"Btn1","submit":"submit","reset":"reset","button_element":"Button Element","submitForm":"Submit form to debug-serverside-submit.php"}')
   })()
 </script>
 
@@ -438,7 +438,7 @@
 </form>
 <script>
   (function () {
-    runTest('write', document.querySelector('#option-flatList-write'), { flatList: true }, '[["name[0][sub1]","name[0][sub1]"],["name[0][sub2]","name[0][sub2]"],["name[]","name[]"],["name[]","name[]"],["name[foo]","name[foo]"],["name[bar]","name[bar]"],["name2",""],["chk[]","1"],["chk[]",false]]')
+    runTest('write', document.querySelector('#option-flatList-write'), { flatList: true }, '[["name[0][sub1]","name[0][sub1]"],["name[0][sub2]","name[0][sub2]"],["name[]","name[]"],["name[]","name[]"],["name[foo]","name[foo]"],["name[bar]","name[bar]"],["name2",""],["chk[]","1"]]')
   })()
 </script>
 <form name="option-flatList-read" id="option-flatList-read">
@@ -459,7 +459,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-flatList-read'), { flatList: true }, '[["name[0][sub1]","name[0][sub1]"],["name[0][sub2]","name[0][sub2]"],["name[]","name[]"],["name[]","name[]"],["name[foo]","name[foo]"],["name[bar]","name[bar]"],["name2",""],["chk[]","1"],["chk[]",false]]')
+    runTest('read', document.querySelector('#option-flatList-read'), { flatList: true }, '[["name[0][sub1]","name[0][sub1]"],["name[0][sub2]","name[0][sub2]"],["name[]","name[]"],["name[]","name[]"],["name[foo]","name[foo]"],["name[bar]","name[bar]"],["name2",""],["chk[]","1"]]')
   })()
 </script>
 <form name="option-skipEmpty" id="option-skipEmpty">
@@ -480,7 +480,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#option-skipEmpty'), { skipEmpty: true }, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"chk":["1",false]}')
+    runTest('read', document.querySelector('#option-skipEmpty'), { skipEmpty: true }, '{"name":{"0":{"sub1":"name[0][sub1]","sub2":"name[0][sub2]"},"1":"name[]","2":"name[]","foo":"name[foo]","bar":"name[bar]"},"chk":["1"]}')
   })()
 </script>
 
@@ -504,7 +504,7 @@
   runTestCustom(function (form) {
     FormDataJson.fromJson(form, { 'name1': '1' }, { clearOthers: true })
     let newData = JSON.stringify(FormDataJson.toJson(form))
-    let expected = '{"name1":"1","name2":"","name":{"0":{"sub1":"","sub2":""},"2":"","3":"","4":"","foo":"","bar":""},"chk":[false,false]}'
+    let expected = '{"name1":"1","name2":"","name":{"0":{"sub1":"","sub2":""},"2":"","3":"","4":"","foo":"","bar":""}}'
     showTestResultsCustom(form, newData === expected)
     if (newData !== expected) {
       console.log('Exepected')
@@ -557,7 +557,7 @@
   (function () {
     runTestCustom(function (form) {
       FormDataJson.clear(form)
-      let expected = '{"name1":"","name2":"","name":{"0":{"sub1":"","sub2":""},"1":"","2":"","3":"","foo":"","bar":""},"chk":[false,false]}'
+      let expected = '{"name1":"","name2":"","name":{"0":{"sub1":"","sub2":""},"1":"","2":"","3":"","foo":"","bar":""}}'
       let newData = JSON.stringify(FormDataJson.toJson(form))
       showTestResultsCustom(form, expected === newData)
       if (expected !== newData) {
@@ -667,7 +667,7 @@
     runTest('write', document.querySelector('#testIssue-9'), {
       skipEmpty: true,
       clearOthers: true
-    }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":["asdf"]},"scales":[false,false]}')
+    }, '{"docn":"asdf","docdate":"addd","client":{"name":"asdf DDD","phone":["asdf"]}}')
   })()
 </script>
 
@@ -708,7 +708,7 @@
 </form>
 <script>
   (function () {
-    runTest('read', document.querySelector('#testIssue-15'), null, '{"scales":[false,"on","77"]}')
+    runTest('read', document.querySelector('#testIssue-15'), null, '{"scales":["on","77"]}')
   })()
 </script>
 

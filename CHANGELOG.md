@@ -1,3 +1,6 @@
+### 2.0.5beta - 28.09.2021
+* reverted option `uncheckedValue` to default to `undefined`. https://github.com/brainfoolong/form-data-json/issues/15
+
 ### 2.0.4beta - 27.09.2021
 * fixed https://github.com/brainfoolong/form-data-json/issues/16 in `toJson()` in combination with `skipEmpty` and `flatList`
 

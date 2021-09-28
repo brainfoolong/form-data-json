@@ -29,7 +29,7 @@ class FormDataJson {
      * If undefined, than the unchecked field will be ignored in output
      * @type {*}
      */
-    'uncheckedValue': false,
+    'uncheckedValue': undefined,
 
     /**
      * A function, where first parameter is the input field to check for, that must return true if the field should be included

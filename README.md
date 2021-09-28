@@ -51,7 +51,7 @@ let values = FormDataJson.toJson(document.querySelector("form"), {flatList: true
 ``` 
 ###### Read form input values including disabled
 ```javascript
-let values = FormDataJson.toJson(document.querySelector("form"), {includeDisabled: true}})
+let values = FormDataJson.toJson(document.querySelector("form"), {includeDisabled: true})
 ```
 ###### Read with file inputs as base64 data uri
 ```javascript
@@ -103,7 +103,7 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
  * If undefined, than the unchecked field will be ignored in output
  * @type {*}
  */
-'uncheckedValue': false,
+'uncheckedValue': undefined,
 
 /**
  * A function, where first parameter is the input field to check for, that must return true if the field should be included

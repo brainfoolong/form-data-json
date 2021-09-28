@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.0.4beta | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.0.5beta | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter
@@ -752,7 +752,7 @@ FormDataJson.defaultOptionsToJson = {
    * If undefined, than the unchecked field will be ignored in output
    * @type {*}
    */
-  'uncheckedValue': false,
+  'uncheckedValue': undefined,
 
   /**
    * A function, where first parameter is the input field to check for, that must return true if the field should be included
