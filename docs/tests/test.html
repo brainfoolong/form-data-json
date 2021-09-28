@@ -754,42 +754,81 @@
         runTest('read', document.querySelector('#testIssue-16'), { skipEmpty: true, flatList: true }, '[]')
       })()
     </script>
+</form>
+
+<form name="testIssue-16-2" id="testIssue-16-2">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928941989</p>
+    <input name = "client[name]">
+    <input name = "client[edrpou]">
+
+    <input name = "client[person][0][phone][]">
+    <input name = "client[person][0][phone][]">
+    <input name = "client[person][0][phone][]">
 
 
+    <input name = "client[person][0][email][]">
+    <input name = "client[person][0][email][]">
+
+
+    <input name = "client[person][1][phone][]">
+    <input name = "client[person][1][phone][]">
+
+    <input name = "client[person][1][email][]">
+    <input name = "client[person][1][email][]">
+    <input name = "client[person][1][email][]">
+    <select name="client[status][]"  multiple>
+        <option value="volvo">Volvo</option>
+        <option value="saab" selected>Saab</option>
+        <option value="opel">Opel</option>
+        <option value="audi">Audi</option>
+    </select>
+
+    <input type="checkbox" name="scales[]">
+    <input type="checkbox" name="scales[]" checked value="77">
+    <div class="result"></div>
     <script>
       (function () {
-        let forms = document.querySelectorAll('form')
-        for (let i = 0; i < forms.length; i++) {
-          const form = forms[i]
-          let submitButton = document.createElement('div')
-          submitButton.innerHTML = '<br/><input type="submit" name="submitForm" value="Submit form to debug-serverside-submit.php">'
-          form.action = 'debug-serverside-submit.php'
-          form.target = '_blank'
-          form.method = 'post'
-          form.appendChild(submitButton)
-        }
-
-        let url = '../scripts/form-data-json.min.js'
-        // with debug flag we directly load original source file
-        // only work in supported browsers, like chrome
-        if (location.href.match(/(\?|\&)debug/)) {
-          url = '../../src/form-data-json.js'
-        }
-        let s = document.createElement('script')
-        s.setAttribute('src', url)
-        document.head.appendChild(s)
-
-        let checkIv = setInterval(function () {
-          if (typeof FormDataJson === 'undefined') return
-          clearInterval(checkIv)
-          for (let i = 0; i < testQueue.length; i++) {
-            testQueue[i]()
-          }
-          testQueue = []
-        }, 10)
-
+        runTest('read', document.querySelector('#testIssue-16-2'), { skipEmpty: true, flatList: true }, '[["client[status][]",["saab"]],["scales[]","77"]]')
       })()
     </script>
+</form>
+
+
+<script>
+  (function () {
+    let forms = document.querySelectorAll('form')
+    for (let i = 0; i < forms.length; i++) {
+      const form = forms[i]
+      let submitButton = document.createElement('div')
+      submitButton.innerHTML = '<br/><input type="submit" name="submitForm" value="Submit form to debug-serverside-submit.php">'
+      form.action = 'debug-serverside-submit.php'
+      form.target = '_blank'
+      form.method = 'post'
+      form.appendChild(submitButton)
+    }
+
+    let url = '../scripts/form-data-json.min.js'
+    // with debug flag we directly load original source file
+    // only work in supported browsers, like chrome
+    if (location.href.match(/(\?|\&)debug/)) {
+      url = '../../src/form-data-json.js'
+    }
+    let s = document.createElement('script')
+    s.setAttribute('src', url)
+    document.head.appendChild(s)
+
+    let checkIv = setInterval(function () {
+      if (typeof FormDataJson === 'undefined') return
+      clearInterval(checkIv)
+      for (let i = 0; i < testQueue.length; i++) {
+        testQueue[i]()
+      }
+      testQueue = []
+    }, 10)
+
+  })()
+</script>
 
 </body>
 </html>

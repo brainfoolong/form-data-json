@@ -293,7 +293,7 @@ class FormDataJson {
           continue
         }
         if (isArray) {
-          newObject.push(value)
+          newObject.push(object[key])
         } else {
           newObject[key] = value
         }

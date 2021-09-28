@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.0.5beta | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.0.6beta | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter
@@ -235,7 +235,7 @@ var FormDataJson = /*#__PURE__*/function () {
         }
 
         if (isArray) {
-          newObject.push(value);
+          newObject.push(object[key]);
         } else {
           newObject[key] = value;
         }
