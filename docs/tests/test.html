@@ -759,25 +759,25 @@
 <form name="testIssue-16-2" id="testIssue-16-2">
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928941989</p>
-    <input name = "client[name]">
-    <input name = "client[edrpou]">
+    <input name="client[name]">
+    <input name="client[edrpou]">
 
-    <input name = "client[person][0][phone][]">
-    <input name = "client[person][0][phone][]">
-    <input name = "client[person][0][phone][]">
-
-
-    <input name = "client[person][0][email][]">
-    <input name = "client[person][0][email][]">
+    <input name="client[person][0][phone][]">
+    <input name="client[person][0][phone][]">
+    <input name="client[person][0][phone][]">
 
 
-    <input name = "client[person][1][phone][]">
-    <input name = "client[person][1][phone][]">
+    <input name="client[person][0][email][]">
+    <input name="client[person][0][email][]">
 
-    <input name = "client[person][1][email][]">
-    <input name = "client[person][1][email][]">
-    <input name = "client[person][1][email][]">
-    <select name="client[status][]"  multiple>
+
+    <input name="client[person][1][phone][]">
+    <input name="client[person][1][phone][]">
+
+    <input name="client[person][1][email][]">
+    <input name="client[person][1][email][]">
+    <input name="client[person][1][email][]">
+    <select name="client[status][]" multiple>
         <option value="volvo">Volvo</option>
         <option value="saab" selected>Saab</option>
         <option value="opel">Opel</option>
@@ -789,7 +789,24 @@
     <div class="result"></div>
     <script>
       (function () {
-        runTest('read', document.querySelector('#testIssue-16-2'), { skipEmpty: true, flatList: true }, '[["client[status][]",["saab"]],["scales[]","77"]]')
+        runTest('read', document.querySelector('#testIssue-16-2'), {
+          skipEmpty: true,
+          flatList: true
+        }, '[["client[status][]",["saab"]],["scales[]","77"]]')
+      })()
+    </script>
+</form>
+
+<form name="testIssue-18" id="testIssue-18">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/18</p>
+    <input name='test'>
+    <button type='submit' class="btn btn-primary" name="button_el" value="valuebutton">Test form</button>
+    <input type='submit' class="btn btn-primary" name="submit_el" value="Test form"/>
+    <div class="result"></div>
+    <script>
+      (function () {
+        runTest('read', document.querySelector('#testIssue-18'), { includeButtonValues: true }, '{"test":"","button_el":"valuebutton","submit_el":"Test form"}')
       })()
     </script>
 </form>
@@ -797,17 +814,6 @@
 
 <script>
   (function () {
-    let forms = document.querySelectorAll('form')
-    for (let i = 0; i < forms.length; i++) {
-      const form = forms[i]
-      let submitButton = document.createElement('div')
-      submitButton.innerHTML = '<br/><input type="submit" name="submitForm" value="Submit form to debug-serverside-submit.php">'
-      form.action = 'debug-serverside-submit.php'
-      form.target = '_blank'
-      form.method = 'post'
-      form.appendChild(submitButton)
-    }
-
     let url = '../scripts/form-data-json.min.js'
     // with debug flag we directly load original source file
     // only work in supported browsers, like chrome
@@ -825,6 +831,17 @@
         testQueue[i]()
       }
       testQueue = []
+      // after tests, add debug button to submit to our php serverside test script
+      let forms = document.querySelectorAll('form')
+      for (let i = 0; i < forms.length; i++) {
+        const form = forms[i]
+        let submitButton = document.createElement('div')
+        submitButton.innerHTML = '<br/><input type="submit" name="submitForm" value="Submit form to debug-serverside-submit.php">'
+        form.action = 'debug-serverside-submit.php'
+        form.target = '_blank'
+        form.method = 'post'
+        form.appendChild(submitButton)
+      }
     }, 10)
 
   })()
