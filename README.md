@@ -100,7 +100,8 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
 'uncheckedValue': undefined,
 
 /**
- * A function, where first parameter is the input field to check for, that must return true if the field should be included
+ * A function, where first parameter is the input field to check for
+ * Must return true if the field should be included
  * All other return values, as well as no return value, will skip the input field in the progress
  * @type {function|null}
  */
@@ -116,7 +117,9 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
 
 /**
  * If true, than this does skip empty fields from the output
- * Empty is considered to be: an empty array (for multiple selects/checkboxes) and an empty input field (length = 0)
+ * Empty is considered to be:
+ * An empty array (for multiple selects/checkboxes)
+ * An empty input field (length = 0)
  * This does recursively remove keys
  * Example: {"agb":"1", "user" : [{"name" : ""},{"name" : ""}]} will be {"agb":"1"}
  * @type {boolean}
@@ -124,8 +127,9 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
 'skipEmpty': false,
 
 /**
- * A function the will be called when all file fields are read as base64 data uri
- * Note: If this is given, than the original return value from toJson() is null and the values are passed to this callback as first parameter
+ * A function that will be called when all file fields are read as base64 data uri
+ * First passed parameter to this function are the form values including all file data
+ * Note: If set, the original return value from toJson() returns null
  * @type {function|null}
  */
 'filesCallback': null,
