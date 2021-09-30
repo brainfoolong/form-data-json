@@ -329,6 +329,8 @@ var FormDataJson = /*#__PURE__*/function () {
 
 
     function recursion(inputs, newValues) {
+      if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) return;
+
       for (var key in inputs) {
         var row = inputs[key];
         var objectKey = options.flatList ? row.name : key; // next level
