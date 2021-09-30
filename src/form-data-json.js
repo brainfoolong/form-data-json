@@ -364,6 +364,7 @@ class FormDataJson {
      * @param {*} newValues
      */
     function recursion (inputs, newValues) {
+      if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) return
       for (let key in inputs) {
         const row = inputs[key]
         const objectKey = options.flatList ? row.name : key

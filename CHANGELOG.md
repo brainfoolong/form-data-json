@@ -1,5 +1,5 @@
-### 2.0.6beta - TBA
-* fixed https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928941989 in `toJson()` in combination with `skipEmpty` and `flatList`
+### 2.0.6beta - 30.09.2021
+* fixed execution error when passing null `fromJson` field values in deeper dimensions
 
 ### 2.0.5beta - 28.09.2021
 * reverted option `uncheckedValue` to default to `undefined`. https://github.com/brainfoolong/form-data-json/issues/15

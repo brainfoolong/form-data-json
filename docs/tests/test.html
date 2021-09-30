@@ -613,24 +613,19 @@
     <div class="result"></div>
 </form>
 <script>
-
-  (function () {
-    (function () {
-      runTestCustom(function (form) {
-        let originalData = JSON.stringify(FormDataJson.toJson(form))
-        FormDataJson.fromJson(form, { 'name1': 'blub' }, { resetOthers: true })
-        FormDataJson.fromJson(form, {}, { resetOthers: true })
-        let newData = JSON.stringify(FormDataJson.toJson(form))
-        showTestResultsCustom(form, newData === originalData)
-        if (newData !== originalData) {
-          console.log('Exepected')
-          console.log(originalData)
-          console.log('Got')
-          console.log(newData)
-        }
-      }, document.querySelector('#test-reset2'))
-    })()
-  })()
+  runTestCustom(function (form) {
+    let originalData = JSON.stringify(FormDataJson.toJson(form))
+    FormDataJson.fromJson(form, { 'name1': 'blub' }, { resetOthers: true })
+    FormDataJson.fromJson(form, {}, { resetOthers: true })
+    let newData = JSON.stringify(FormDataJson.toJson(form))
+    showTestResultsCustom(form, newData === originalData)
+    if (newData !== originalData) {
+      console.log('Exepected')
+      console.log(originalData)
+      console.log('Got')
+      console.log(newData)
+    }
+  }, document.querySelector('#test-reset2'))
 </script>
 
 
@@ -811,6 +806,37 @@
     </script>
 </form>
 
+<form name="test-invalidSetValues" id="test-invalidSetValues">
+    <h3></h3>
+    <p>Testing to not throw errors when using invalid setValues</p>
+    <input name="client[name]" value="1">
+    <input name="client[edrpou]">
+    <input name="foo[name]">
+    <input name="foo[edrpou]">
+    <input name="test[name]">
+    <input name="test[edrpou]">
+    <div class="result"></div>
+    <script>
+      runTestCustom(function (form) {
+        try {
+          FormDataJson.fromJson(form, {
+            'client': null,
+            'foo': undefined,
+            'test': { 'foo': null }
+          })
+          FormDataJson.fromJson(form, null)
+          FormDataJson.fromJson(form, undefined)
+          FormDataJson.fromJson(form, false)
+          FormDataJson.fromJson(form, '')
+          FormDataJson.fromJson(form, function () {})
+          showTestResultsCustom(form, true)
+        } catch (e) {
+          console.error(e)
+          showTestResultsCustom(form, false)
+        }
+      }, document.querySelector('#test-invalidSetValues'))
+    </script>
+</form>
 
 <script>
   (function () {
