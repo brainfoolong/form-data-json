@@ -49,11 +49,19 @@ let values = FormDataJson.toJson(document.querySelector("form"), {includeDisable
 ```
 ###### Read with file inputs as base64 data uri
 ```javascript
-FormDataJson.toJson(document.querySelector("form"), {filesCallback: function(values){}})
+FormDataJson.toJson(document.querySelector("form"), {
+    filesCallback: function (values){
+        console.log(values)
+    }
+})
 ```
 ###### Read form input values but filter out, for example,  all password fields
 ```javascript
-let values = FormDataJson.toJson(document.querySelector("form"), { inputFilter: function(inputElement) { return (inputElement.type || 'text') !== 'password' } })
+let values = FormDataJson.toJson(document.querySelector("form"), { 
+    inputFilter: function (inputElement) { 
+        return (inputElement.type || 'text') !== 'password'
+    } 
+})
 ``` 
 
 ### Write data
