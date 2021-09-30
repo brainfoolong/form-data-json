@@ -7,7 +7,7 @@ A zero dependency, cross browser library to easily get or set/manipulate form in
 * Read unchecked/disabled fields as well
 * Read file inputs as base64, arraybuffer, etc...
 * Clear forms
-* Reset forms to their defaults)
+* Reset forms to their defaults
 * And, you don't even need a `<form>` element, we accept every container, even the `<body>`
 * Super small: ~3kB gzipped
 * Cross Browser including IE11 (Yes, the ugly one also)
@@ -181,6 +181,6 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
 
 There is a migration script to drop in, to make most existing code compatible with new stuff. You should migrate existing code as soon as possible, but if you don't have time right now, you can use the migration script. Simply include `src/migration-v1-v2.js` after `dist/form-data-json.min.js`.
 
-Warning: Returned data my still differ to v1, so use it with caution and test before you go into production.
+Warning: Returned data may still differ to v1, so use it with caution and test before you go into production. Most noticable change is that some objects are now real arrays, when possible.
 
 Goto [changelog](https://github.com/brainfoolong/form-data-json/blob/master/CHANGELOG.md#200beta---26092021) for more details of what exactly as new and old.

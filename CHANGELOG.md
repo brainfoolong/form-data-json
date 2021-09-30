@@ -1,25 +1,42 @@
-### 2.0.6beta - 30.09.2021
-* fixed execution error when passing null `fromJson` field values in deeper dimensions
+### 2.0.0 - TBA
+* complete refactoring
+* fixed many edge case issues from v1
+* removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
+* removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`. Note: Output still has changed significantly to v1.
+* changed method `FormDataJson.setInputValue` and is now considered internal only. No direct replacement. Use `fromJson` if you need to set any input value
+* removed 3rd parameter `formToJson/toJson` callback function. It is now set into option `filesCallback`
+* renamed method `formToJson` to `toJson`
+* renamed method `fillFormFromJsonValues` to `fromJson`
+* renamed option `unsetAllInputsOnFill` to `clearOthers`
+* renamed option `includeUncheckedAsNull` to `uncheckedValue` and now represent the value that unchecked inputs should have in output
+* added option `skipEmpty`
+* added option `fileReaderFunction`
+* added option `triggerChangeEvent`
+* added option `resetOthers`
+* added method `clear`
+* added method `reset`
+* added unminified compiled file
+* optimized compiled files
 
-### 2.0.5beta - 28.09.2021
+### 2.0.5beta - 28. September 2021
 * reverted option `uncheckedValue` to default to `undefined`. https://github.com/brainfoolong/form-data-json/issues/15
 
-### 2.0.4beta - 27.09.2021
+### 2.0.4beta - 27. September 2021
 * fixed https://github.com/brainfoolong/form-data-json/issues/16 in `toJson()` in combination with `skipEmpty` and `flatList`
   
-### 2.0.3beta - 27.09.2021
+### 2.0.3beta - 27. September 2021
 * fixed https://github.com/brainfoolong/form-data-json/issues/13 in `toJson()`
 * changed option `uncheckedValue` is now false by default, instead of undefined
 * added option `resetOthers` for `fromJson()`
 * changed output of option `flatList`, it now contains an array list with same values like native `FormData()`
 
-### 2.0.2beta - 27.09.2021
+### 2.0.2beta - 27. September 2021
 * incorrectly compiled files
  
-### 2.0.1beta - 27.09.2021
+### 2.0.1beta - 27. September 2021
 * fixed glitch in `toJson()` doesn't respect all filter options correctly
 
-### 2.0.0beta - 26.09.2021
+### 2.0.0beta - 26. September 2021
 * complete refactoring
 * removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
 * removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`. Note: Output still has changed significantly to v1.
