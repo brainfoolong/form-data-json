@@ -1,10 +1,19 @@
 ![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/img/logo-readme-github.png)
 
 # Form Data Json - Form input values to/from JSON (And a bit more...)
-A zero dependency, cross browser library to easily get or set form input values as/from a json object. It can handle all existing input types, including multidimensional array names and file input. It is similar to native [FormData](https://developer.mozilla.org/docs/Web/API/FormData) but have some advantages: Get data as multidimensional object, writing data into forms (not just reading), reading unchecked/disabled fields as well, reading file inputs, and some other helpful features.
+A zero dependency, cross browser library to easily get or set/manipulate form input values as/from a json object. It can handle all input types, including multidimensional array names and file input. Native [FormData](https://developer.mozilla.org/docs/Web/API/FormData) is limited to reading only, we have way more: 
+* Read data as multidimensional object or as a flat list (similar to FormData)
+* Write data into forms
+* Read unchecked/disabled fields as well
+* Read file inputs as base64, arraybuffer, etc...
+* Clear forms
+* Reset forms to their defaults)
+* And, you don't even need a `<form>` element, we accept every container, even the `<body>`
+* Super small: ~3kB gzipped
+* Cross Browser including IE11 (Yes, the ugly one also)
 
 ## Breaking Changes from v1 to v2
-Please [read migration guide bellow](#migration-from-v1-to-v2). v2 is a refactoring of v1 with a lot of changes/improvements.
+Please [read migration guide bellow](#migration-from-v1-to-v2). v2 is a refactoring of v1 with a lot of changes/improvements. Function names have changes. Returned json data has changed. There is a migration script, when you can't change your existing code on upgrade.
 
 ## Installation
 Download [latest release](https://github.com/brainfoolong/form-data-json/releases/latest) and include `dist/form-data-json.min.js` into your project.
@@ -20,32 +29,17 @@ Download [latest release](https://github.com/brainfoolong/form-data-json/release
 npm install form-data-json-convert
 // import in NodeJS: const FormDataJson = require('form-data-json-convert')
 ```
-
-## Features
-* No dependency - Vanilla javascript
-* Cross Browser including IE11 (Yes, the ugly one also)
-* Multidimensional input name support. For example: `name="entry[123][person]"`
-* Super small: ~3kB gzipped 
-
-## Supported Browser
-* Chrome
-* Firefox
-* Edge (Chromium based and Old)
-* Safari
-* IE11
-* And probably every other that we don't test
-
 ## What's not supported
 * Write to `<input type="file">` It's impossible in javascript to set values for file inputs, for security reasons. However, reading file input as base64 data uri string is supported.
 
 ## How to use
-###### Read form input values
+### Read data
 ```javascript
 let values = FormDataJson.toJson(document.querySelector("form")) // with native element
 let values = FormDataJson.toJson("#form-id") // with selector
 let values = FormDataJson.toJson($("#form-id")) // with jQuery
 ``` 
-###### Read form input values as a flat object (similar to native FormData() keys)
+###### Read form input values as a flat object (similar to native FormData())
 ```javascript
 let values = FormDataJson.toJson(document.querySelector("form"), {flatList: true})
 ``` 
@@ -62,7 +56,7 @@ FormDataJson.toJson(document.querySelector("form"), {filesCallback: function(val
 let values = FormDataJson.toJson(document.querySelector("form"), { inputFilter: function(inputElement) { return (inputElement.type || 'text') !== 'password' } })
 ``` 
 
-###### Set form input values
+### Write data
 ```javascript
 FormDataJson.fromJson(document.querySelector("form"), {'name': 'BrainFooLong'})
 ```
