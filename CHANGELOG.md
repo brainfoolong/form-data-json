@@ -1,5 +1,5 @@
 ### 2.0.0 - 04.10.2021
-* complete refactoring
+* complete refactoring - thx to https://github.com/KES777 for extensive testing
 * fixed many edge case issues from v1
 * removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
 * removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`. Note: Output still has changed significantly to v1.
