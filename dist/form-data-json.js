@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.0.6beta | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.0.0 | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter

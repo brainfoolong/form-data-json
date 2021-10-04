@@ -1,4 +1,4 @@
-### 2.0.0 - TBA
+### 2.0.0 - 04.10.2021
 * complete refactoring
 * fixed many edge case issues from v1
 * removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
