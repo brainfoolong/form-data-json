@@ -4,6 +4,7 @@
 * removed class `FormDataJsonOptions`. Use bare `{}` objects now as options
 * removed method `FormDataJson.flattenJsonFormValues`. Use `flatList = true` option in `toJson`. Note: Output still has changed significantly to v1.
 * changed method `FormDataJson.setInputValue` and is now considered internal only. No direct replacement. Use `fromJson` if you need to set any input value
+* changed returned data of `formToJson/toJson` - Now some objects will be real JS arrays, if the keys are enumerated from 0 to x without a gap
 * removed 3rd parameter `formToJson/toJson` callback function. It is now set into option `filesCallback`
 * renamed method `formToJson` to `toJson`
 * renamed method `fillFormFromJsonValues` to `fromJson`
