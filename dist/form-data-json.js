@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.0.0 | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.1.0 | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter
@@ -154,11 +154,6 @@ var FormDataJson = /*#__PURE__*/function () {
       }
     }
     /**
-     * Does some final cleanup before output data
-     * @return {*}
-     */
-
-    /**
      * Make an object to array if possible
      * @param {Object} object
      * @return {*}
@@ -166,14 +161,14 @@ var FormDataJson = /*#__PURE__*/function () {
      */
 
 
-    function arrayfy(object) {
+    function arrayify(object) {
       if (FormDataJson.isObject(object)) {
         var count = 0;
         var valid = true;
 
         for (var key in object) {
           if (FormDataJson.isObject(object[key]) && !(object[key] instanceof Element)) {
-            object[key] = arrayfy(object[key]);
+            object[key] = arrayify(object[key]);
           }
 
           if (parseInt(key) !== count) {
@@ -203,7 +198,10 @@ var FormDataJson = /*#__PURE__*/function () {
 
 
     function output() {
-      returnObject = arrayfy(returnObject);
+      if (options.arrayify) {
+        returnObject = arrayify(returnObject);
+      }
+
       if (options.skipEmpty) returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {});
       return returnObject;
     }
@@ -796,7 +794,14 @@ FormDataJson.defaultOptionsToJson = {
    * Possible values are: readAsDataURL, readAsBinaryString, readAsText, readAsArrayBuffer
    * @type {string}
    */
-  'fileReaderFunction': 'readAsDataURL'
+  'fileReaderFunction': 'readAsDataURL',
+
+  /**
+   * If true than values try to be a real Array instead of Object where possible
+   * If false than all values that are multiple (multiple select, same input names checkboxes, unnamed array indexes, etc...) will be objects
+   * @type {boolean}
+   */
+  'arrayify': true
 };
 FormDataJson.defaultOptionsFromJson = {
   /**

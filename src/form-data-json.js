@@ -71,7 +71,14 @@ class FormDataJson {
      * Possible values are: readAsDataURL, readAsBinaryString, readAsText, readAsArrayBuffer
      * @type {string}
      */
-    'fileReaderFunction': 'readAsDataURL'
+    'fileReaderFunction': 'readAsDataURL',
+
+    /**
+     * If true than values try to be a real Array instead of Object where possible
+     * If false than all values that are multiple (multiple select, same input names checkboxes, unnamed array indexes, etc...) will be objects
+     * @type {boolean}
+     */
+    'arrayify': true
   }
 
   /**
@@ -232,23 +239,18 @@ class FormDataJson {
     }
 
     /**
-     * Does some final cleanup before output data
-     * @return {*}
-     */
-
-    /**
      * Make an object to array if possible
      * @param {Object} object
      * @return {*}
      * @private
      */
-    function arrayfy (object) {
+    function arrayify (object) {
       if (FormDataJson.isObject(object)) {
         let count = 0
         let valid = true
         for (let key in object) {
           if (FormDataJson.isObject(object[key]) && !(object[key] instanceof Element)) {
-            object[key] = arrayfy(object[key])
+            object[key] = arrayify(object[key])
           }
           if (parseInt(key) !== count) {
             valid = false
@@ -271,7 +273,9 @@ class FormDataJson {
      * @return {*}
      */
     function output () {
-      returnObject = arrayfy(returnObject)
+      if (options.arrayify) {
+        returnObject = arrayify(returnObject)
+      }
       if (options.skipEmpty) returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {})
       return returnObject
     }

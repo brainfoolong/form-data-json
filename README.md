@@ -147,7 +147,14 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
  * Possible values are: readAsDataURL, readAsBinaryString, readAsText, readAsArrayBuffer
  * @type {string}
  */
-'fileReaderFunction': 'readAsDataURL'
+'fileReaderFunction': 'readAsDataURL',
+
+/**
+ * If true than values try to be a real Array instead of Object where possible
+ * If false than all values that are multiple (multiple select, same input names checkboxes, unnamed array indexes, etc...) will be objects
+ * @type {boolean}
+ */
+'arrayify': true
 }
 ```
 

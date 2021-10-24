@@ -484,6 +484,35 @@
   })()
 </script>
 
+<form name="option-arrayify" id="option-arrayify">
+    <h3></h3>
+    <p>Testing option "arrayify".</p>
+    <input type="text" name="test[]" value="test1">
+    <input type="text" name="test[]" value="test2">
+    <div class="result"></div>
+</form>
+<script>
+
+  runTestCustom(function (form) {
+    let data1 = JSON.stringify(FormDataJson.toJson(form, { arrayify: true }))
+    let data1Expected = '{"test":["test1","test2"]}'
+    let data2 = JSON.stringify(FormDataJson.toJson(form, { arrayify: false }))
+    let data2Expected = '{"test":{"0":"test1","1":"test2"}}'
+    const result = data1 === data1Expected && data2 === data2Expected
+    showTestResultsCustom(form, result)
+    if (!result) {
+      console.log('Expected 1')
+      console.log(data1Expected)
+      console.log('Got 1')
+      console.log(data1)
+      console.log('Expected 2')
+      console.log(data2Expected)
+      console.log('Got 2')
+      console.log(data2)
+    }
+  }, document.querySelector('#option-arrayify'))
+</script>
+
 <form name="option-clearOthers" id="option-clearOthers">
     <h3></h3>
     <p>Testing option "clearOthers"</p>
