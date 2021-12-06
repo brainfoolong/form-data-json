@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.1.0 | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.1.1 | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter
@@ -694,7 +694,7 @@ var FormDataJson = /*#__PURE__*/function () {
   }
   /**
    * Get html element out of given parameter
-   * @param {HTMLElement|JQuery|string} param
+   * @param {HTMLElement|JQuery|$|string} param
    * @return {HTMLElement|null}
    * @private
    */
@@ -704,7 +704,8 @@ var FormDataJson = /*#__PURE__*/function () {
     if (typeof param === 'string') return document.querySelector(param);
     if (param instanceof HTMLElement) return param;
     if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0];
-    console.warn('FormDataJson: Unsupported element passed. Supported is HTMLElement, a string query selector or JQuery object');
+    if (typeof $ !== 'undefined' && param instanceof $) return param[0];
+    console.warn('FormDataJson: Unsupported element passed. Supported is HTMLElement, a string query selector, JQuery or $ object');
     return null;
   }
   /**
