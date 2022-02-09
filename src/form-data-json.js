@@ -48,7 +48,7 @@ class FormDataJson {
     'flatList': false,
 
     /**
-     * If true, than this does skip empty fields from the output
+     * If true, then this does skip empty fields from the output
      * Empty is considered to be:
      * An empty array (for multiple selects/checkboxes)
      * An empty input field (length = 0)
@@ -284,6 +284,7 @@ class FormDataJson {
      * Recursively remove empty keys
      * @param {Object} object
      * @param {number} depth
+     * @return {Object|Array}
      */
     function removeEmpty (object, depth) {
       const isArray = FormDataJson.isArray(object)
@@ -301,7 +302,7 @@ class FormDataJson {
           continue
         }
         if (isArray) {
-          newObject.push(object[key])
+          newObject.push(options.flatList && !depth ? [object[key][0], value] : value)
         } else {
           newObject[key] = value
         }
@@ -682,7 +683,7 @@ class FormDataJson {
    * @private
    */
   static isArray (arg) {
-    return typeof arg === 'object' && Object.prototype.toString.call(arg) === '[object Array]'
+    return Array.isArray(arg)
   }
 
   /**

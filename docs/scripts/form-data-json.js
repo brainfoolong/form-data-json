@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.1.1 | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.1.2 | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter
@@ -209,6 +209,7 @@ var FormDataJson = /*#__PURE__*/function () {
      * Recursively remove empty keys
      * @param {Object} object
      * @param {number} depth
+     * @return {Object|Array}
      */
 
 
@@ -233,7 +234,7 @@ var FormDataJson = /*#__PURE__*/function () {
         }
 
         if (isArray) {
-          newObject.push(object[key]);
+          newObject.push(options.flatList && !depth ? [object[key][0], value] : value);
         } else {
           newObject[key] = value;
         }
@@ -690,7 +691,7 @@ var FormDataJson = /*#__PURE__*/function () {
   ;
 
   FormDataJson.isArray = function isArray(arg) {
-    return typeof arg === 'object' && Object.prototype.toString.call(arg) === '[object Array]';
+    return Array.isArray(arg);
   }
   /**
    * Get html element out of given parameter
@@ -772,7 +773,7 @@ FormDataJson.defaultOptionsToJson = {
   'flatList': false,
 
   /**
-   * If true, than this does skip empty fields from the output
+   * If true, then this does skip empty fields from the output
    * Empty is considered to be:
    * An empty array (for multiple selects/checkboxes)
    * An empty input field (length = 0)

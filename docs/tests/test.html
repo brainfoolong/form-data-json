@@ -867,6 +867,23 @@
     </script>
 </form>
 
+
+<form name="testIssue-25" id="testIssue-25">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/25</p>
+    <input name="_Company[id]" type="hidden">
+	<input name="_Company[_Phone][0][id]" type="hidden">
+    <input id="phone_phone" name="_Company[_Phone][0][phone]" type="text" value="22222222">
+	<input type="submit" value="Save">
+    <div class="result"></div>
+    <script>
+      (function () {
+        runTest('read', document.querySelector('#testIssue-25'), { skipEmpty: true }, '{"_Company":{"_Phone":[{"phone":"22222222"}]}}')
+      })()
+    </script>
+</form>
+
+
 <script>
   (function () {
     let url = '../scripts/form-data-json.min.js'
