@@ -340,6 +340,7 @@ class FormDataJson {
           reader[options.fileReaderFunction](file)
         }
       }
+      return null
     } else if (options.filesCallback) {
       options.filesCallback(output())
       return null

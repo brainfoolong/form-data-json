@@ -1,14 +1,14 @@
-### 2.1.2 - 2022-02-09
+### 2.1.2 and 2.1.3 - 2022-02-09
 
 * fixed issue with skipEmpty and nested input value #25
+* fixed issue with callback is empty in case of file input
 
 ### 2.1.1 - 06.December 2021
 
 * accept a `$` instance also as html element in `toJson/fromJson`, which is used by many libraries that memic jquery
   behaviour - previously only explicitly `jQuery` was supported
 
-
-* ### 2.1.0 - 24.October 2021
+### 2.1.0 - 24.October 2021
 
 * added new toJson option `arrayify` to explicitely disable array return values when needed, default is `true`
 

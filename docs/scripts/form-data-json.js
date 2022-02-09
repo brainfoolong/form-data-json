@@ -1,5 +1,5 @@
 'use strict';
-// form-data-json-convert | version: 2.1.2 | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.1.3 | url: https://github.com/brainfoolong/form-data-json
 
 /**
  * Form Data Json Converter
@@ -248,7 +248,7 @@ var FormDataJson = /*#__PURE__*/function () {
     recursion(tree, returnObject);
 
     if (files.length) {
-      (function () {
+      var _ret = function () {
         var filesDone = 0;
         var filesRequired = 0;
 
@@ -290,7 +290,13 @@ var FormDataJson = /*#__PURE__*/function () {
         for (var i = 0; i < files.length; i++) {
           _loop(i);
         }
-      })();
+
+        return {
+          v: null
+        };
+      }();
+
+      if (typeof _ret === "object") return _ret.v;
     } else if (options.filesCallback) {
       options.filesCallback(output());
       return null;
