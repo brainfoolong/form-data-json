@@ -78,7 +78,12 @@ class FormDataJson {
      * If false than all values that are multiple (multiple select, same input names checkboxes, unnamed array indexes, etc...) will be objects
      * @type {boolean}
      */
-    'arrayify': true
+    'arrayify': true,
+    /**
+    * If set, value for empty Arrays. Convert array [] to [''] if set to ''
+    * In case of use with jquery ajax to send empty array parameter
+    */
+    'emptyArrayValue': null
   }
 
   /**
@@ -308,7 +313,14 @@ class FormDataJson {
         }
         count++
       }
-      return count ? newObject : null
+      if(count) {
+        return newObject;
+      }
+      else if(isArray && options.emptyArrayValue!==null) {
+        newObject.push(options.emptyArrayValue);
+        return newObject;
+      }
+      return null;
     }
 
     recursion(tree, returnObject)
