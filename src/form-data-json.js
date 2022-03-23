@@ -612,12 +612,18 @@ class FormDataJson {
    * @private
    */
   static getFieldTree (el, isValidInput) {
-    el = FormDataJson.getElement(el)
-    if (!el) {
-      return []
+    let inputs = null;
+    if ((el instanceof NodeList || el instanceof Object) && el.length==1) { // one element should be a form
+      el = FormDataJson.getElement(el);
+      if (!el) {
+        return []
+      }
+      inputs = el.querySelectorAll('select, textarea, input, button')
+    }
+    else { // it is a list of elements
+      inputs = el;
     }
 
-    let inputs = el.querySelectorAll('select, textarea, input, button')
     let inputTree = {}
     let autoIncrementCounts = {}
     for (let i = 0; i < inputs.length; i++) {
