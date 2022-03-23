@@ -38,7 +38,6 @@ npm install form-data-json-convert
 let values = FormDataJson.toJson(document.querySelector("form")) // with native element
 let values = FormDataJson.toJson("#form-id") // with selector
 let values = FormDataJson.toJson($("#form-id")) // with jQuery
-let values = FormDataJson.toJson($(":input")) // with jQuery
 ``` 
 ###### Read form input values as a flat object (similar to native FormData())
 ```javascript
