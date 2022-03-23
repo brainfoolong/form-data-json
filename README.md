@@ -155,6 +155,11 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
  * @type {boolean}
  */
 'arrayify': true
+/**
+* If set, value for empty Arrays. Convert array [] to [''] if set to ''
+* In case of use with jquery ajax to send empty array parameter
+*/
+'emptyArrayValue': null
 }
 ```
 
