@@ -51,7 +51,7 @@ class FormDataJson {
      * If true, then this does skip empty fields from the output
      * Empty is considered to be:
      * An empty array (for multiple selects/checkboxes)
-     * An empty input field (length = 0)
+     * An empty input field (length = 0 or null)
      * This does recursively remove keys
      * Example: {"agb":"1", "user" : [{"name" : ""},{"name" : ""}]} will be {"agb":"1"}
      * @type {boolean}
@@ -294,6 +294,9 @@ class FormDataJson {
         let value = object[key]
         if (options.flatList && !depth) {
           value = value[1]
+        }
+        if (value === null || value === undefined || value === '') {
+          continue
         }
         if (FormDataJson.isObject(value) || FormDataJson.isArray(value)) {
           value = removeEmpty(value, (depth || 0) + 1) || ''

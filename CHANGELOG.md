@@ -1,3 +1,7 @@
+### 2.1.4 - 2022-12-02
+
+* fixed bug with option `skipEmpty` in select fields (https://github.com/brainfoolong/form-data-json/issues/31)
+
 ### 2.1.2 and 2.1.3 - 2022-02-09
 
 * fixed issue with skipEmpty and nested input value #25

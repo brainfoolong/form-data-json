@@ -73,7 +73,7 @@ async function compile () {
     for (let file in babelConfigs) {
       let contents = ''
       contents += babel.transformSync(srcFileData, babelConfigs[file]).code
-      contents = contents.replace(/^\'use strict\';/mg, '\'use strict\';\n// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n')
+      contents = contents.replace(/^["']use strict["'];/mg, '\'use strict\';\n// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n')
       fs.writeFileSync(copyToFolder + '/' + file, contents)
     }
   }
