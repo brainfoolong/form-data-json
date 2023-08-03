@@ -28,6 +28,22 @@ let babelConfigs = {
       ]
     ]
   },
+  'form-data-json.es6.js': {
+    'comments': true,
+    'plugins': plugins,
+    'presets': [
+      [
+        __dirname + '/../node_modules/@babel/preset-env',
+        {
+          'loose': true,
+          'targets': {
+            'node': '14'
+          },
+          'modules': false
+        }
+      ]
+    ]
+  },
   'form-data-json.min.js': {
     'comments': false,
     'plugins': plugins,
@@ -54,6 +70,7 @@ async function compile () {
 
   let packageJson = require(__dirname + '/../package.json')
   let srcFileData = fs.readFileSync(srcFile).toString()
+  srcFileData = srcFileData.replace(/\/\/ module exports.*/is, '')
   let readmeFileData = fs.readFileSync(readmeFile).toString()
 
   let matchDefaultOptionsToJson = srcFileData.match(/static defaultOptionsToJson = {(.*?  )}/is)
@@ -72,8 +89,18 @@ async function compile () {
 
     for (let file in babelConfigs) {
       let contents = ''
+      contents = '// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n'
       contents += babel.transformSync(srcFileData, babelConfigs[file]).code
-      contents = contents.replace(/^["']use strict["'];/mg, '\'use strict\';\n// ' + packageJson.name + ' | version: ' + packageJson.version + ' | url: ' + packageJson.homepage + '\n')
+      if (file.endsWith('.es6.js')) {
+        contents = contents.replace(/^class FormDataJson/mg, 'export default class FormDataJson')
+      } else {
+        contents += `
+
+// module exports
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = FormDataJson
+}`
+      }
       fs.writeFileSync(copyToFolder + '/' + file, contents)
     }
   }

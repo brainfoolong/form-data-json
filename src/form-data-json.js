@@ -1,5 +1,3 @@
-'use strict'
-
 /**
  * Form Data Json Converter
  * @link https://github.com/brainfoolong/form-data-json

@@ -1,6 +1,5 @@
-'use strict';
-// form-data-json-convert | version: 2.1.4 | url: https://github.com/brainfoolong/form-data-json
-
+// form-data-json-convert | version: 2.2.0 | url: https://github.com/brainfoolong/form-data-json
+"use strict";
 
 /**
  * Form Data Json Converter
@@ -9,22 +8,6 @@
  */
 var FormDataJson = /*#__PURE__*/function () {
   function FormDataJson() {}
-  /**
-   * Default options for toJson()
-   * @type {{}}
-   */
-  /**
-   * Default options for fromJson()
-   * @type {{}}
-   */
-  /**
-   * All input types that are buttons
-   * @type {string[]}
-   */
-  /**
-   * All input types that have a checked status
-   * @type {string[]}
-   */
   /**
    * Get values from all form elements inside the given element
    * @param {*} el
@@ -212,44 +195,39 @@ var FormDataJson = /*#__PURE__*/function () {
     }
     recursion(tree, returnObject);
     if (files.length) {
-      var _ret = function () {
-        var filesDone = 0;
-        var filesRequired = 0;
-        var _loop = function _loop(i) {
-          var row = files[i];
-          var useObject = row.object;
-          filesRequired += row.input.files.length;
-          var _loop2 = function _loop2(j) {
-            var file = row.input.files[j];
-            var reader = new FileReader();
-            reader.onload = function () {
-              if (row.input.multiple) {
-                if (!FormDataJson.isArray(useObject[row.key])) {
-                  useObject[row.key] = [];
-                }
-                useObject[row.key].push(reader.result);
-              } else {
-                useObject[row.key] = reader.result;
+      var filesDone = 0;
+      var filesRequired = 0;
+      var _loop = function _loop() {
+        var row = files[i];
+        var useObject = row.object;
+        filesRequired += row.input.files.length;
+        var _loop2 = function _loop2() {
+          var file = row.input.files[j];
+          var reader = new FileReader();
+          reader.onload = function () {
+            if (row.input.multiple) {
+              if (!FormDataJson.isArray(useObject[row.key])) {
+                useObject[row.key] = [];
               }
-              filesDone++;
-              if (filesDone === filesRequired) {
-                options.filesCallback(output());
-              }
-            };
-            reader[options.fileReaderFunction](file);
+              useObject[row.key].push(reader.result);
+            } else {
+              useObject[row.key] = reader.result;
+            }
+            filesDone++;
+            if (filesDone === filesRequired) {
+              options.filesCallback(output());
+            }
           };
-          for (var j = 0; j < row.input.files.length; j++) {
-            _loop2(j);
-          }
+          reader[options.fileReaderFunction](file);
         };
-        for (var i = 0; i < files.length; i++) {
-          _loop(i);
+        for (var j = 0; j < row.input.files.length; j++) {
+          _loop2();
         }
-        return {
-          v: null
-        };
-      }();
-      if (typeof _ret === "object") return _ret.v;
+      };
+      for (var i = 0; i < files.length; i++) {
+        _loop();
+      }
+      return null;
     } else if (options.filesCallback) {
       options.filesCallback(output());
       return null;
@@ -633,7 +611,11 @@ var FormDataJson = /*#__PURE__*/function () {
     return c;
   };
   return FormDataJson;
-}(); // module exports
+}();
+/**
+ * Default options for toJson()
+ * @type {{}}
+ */
 FormDataJson.defaultOptionsToJson = {
   /**
    * Include all disabled field values
@@ -695,6 +677,10 @@ FormDataJson.defaultOptionsToJson = {
    */
   'arrayify': true
 };
+/**
+ * Default options for fromJson()
+ * @type {{}}
+ */
 FormDataJson.defaultOptionsFromJson = {
   /**
    * Does expect the given values are in a flatList, previously exported with toJson
@@ -720,8 +706,18 @@ FormDataJson.defaultOptionsFromJson = {
    */
   'triggerChangeEvent': false
 };
+/**
+ * All input types that are buttons
+ * @type {string[]}
+ */
 FormDataJson.buttonInputTypes = ['button', 'submit', 'reset', 'image'];
+/**
+ * All input types that have a checked status
+ * @type {string[]}
+ */
 FormDataJson.checkedInputTypes = ['checkbox', 'radio'];
+
+// module exports
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = FormDataJson;
+  module.exports = FormDataJson
 }

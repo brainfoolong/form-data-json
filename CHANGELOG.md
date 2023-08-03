@@ -1,3 +1,7 @@
+### 2.2.0 - 2023-08-03
+
+* added ES6 module support with `form-data-json.es6.js`
+
 ### 2.1.4 - 2022-12-02
 
 * fixed bug with option `skipEmpty` in select fields (https://github.com/brainfoolong/form-data-json/issues/31)

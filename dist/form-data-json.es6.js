@@ -1,20 +1,17 @@
 // form-data-json-convert | version: 2.2.0 | url: https://github.com/brainfoolong/form-data-json
-"use strict";
-
 /**
  * Form Data Json Converter
  * @link https://github.com/brainfoolong/form-data-json
  * @licence MIT
  */
-var FormDataJson = /*#__PURE__*/function () {
-  function FormDataJson() {}
+export default class FormDataJson {
   /**
    * Get values from all form elements inside the given element
    * @param {*} el
    * @param {Object=} options
    * @return {Object|Array}
    */
-  FormDataJson.toJson = function toJson(el, options) {
+  static toJson(el, options) {
     options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, options);
 
     /**
@@ -32,7 +29,7 @@ var FormDataJson = /*#__PURE__*/function () {
       if (!options.includeDisabled && input.disabled) {
         return false;
       }
-      var inputType = (input.type || 'text').toLowerCase();
+      const inputType = (input.type || 'text').toLowerCase();
 
       // ignore button values
       if (!options.includeButtonValues && (input instanceof HTMLButtonElement || FormDataJson.buttonInputTypes.indexOf(inputType) > -1)) {
@@ -45,9 +42,9 @@ var FormDataJson = /*#__PURE__*/function () {
       }
       return true;
     }
-    var tree = FormDataJson.getFieldTree(el, isValidInput);
-    var returnObject = options.flatList ? [] : {};
-    var files = [];
+    const tree = FormDataJson.getFieldTree(el, isValidInput);
+    let returnObject = options.flatList ? [] : {};
+    const files = [];
 
     /**
      * Recursive get values
@@ -55,9 +52,9 @@ var FormDataJson = /*#__PURE__*/function () {
      * @param {Object} values
      */
     function recursion(inputs, values) {
-      for (var key in inputs) {
-        var row = inputs[key];
-        var objectKey = options.flatList ? row.name : key;
+      for (let key in inputs) {
+        const row = inputs[key];
+        const objectKey = options.flatList ? row.name : key;
         // next level
         if (row.type === 'nested') {
           if (options.flatList) {
@@ -68,8 +65,8 @@ var FormDataJson = /*#__PURE__*/function () {
           }
           continue;
         }
-        var input = row.input;
-        var inputType = row.inputType;
+        const input = row.input;
+        const inputType = row.inputType;
         if (inputType === 'file') {
           if (options.filesCallback) {
             files.push({
@@ -80,10 +77,10 @@ var FormDataJson = /*#__PURE__*/function () {
           }
           continue;
         }
-        var value = null;
+        let value = null;
         if (row.type === 'radio') {
-          for (var i = 0; i < row.inputs.length; i++) {
-            var radioInput = row.inputs[i];
+          for (let i = 0; i < row.inputs.length; i++) {
+            const radioInput = row.inputs[i];
             if (radioInput.checked) {
               value = radioInput.value;
               break;
@@ -95,9 +92,9 @@ var FormDataJson = /*#__PURE__*/function () {
         } else if (inputType === 'checkbox') {
           value = input.checked ? input.value : options.uncheckedValue;
         } else if (input instanceof HTMLSelectElement) {
-          var arr = [];
-          for (var _i = 0; _i < input.options.length; _i++) {
-            var option = input.options[_i];
+          let arr = [];
+          for (let i = 0; i < input.options.length; i++) {
+            let option = input.options[i];
             if (option.selected) {
               arr.push((typeof option.value !== 'undefined' ? option.value : option.text).toString());
             }
@@ -126,9 +123,9 @@ var FormDataJson = /*#__PURE__*/function () {
      */
     function arrayify(object) {
       if (FormDataJson.isObject(object)) {
-        var count = 0;
-        var valid = true;
-        for (var key in object) {
+        let count = 0;
+        let valid = true;
+        for (let key in object) {
           if (FormDataJson.isObject(object[key]) && !(object[key] instanceof Element)) {
             object[key] = arrayify(object[key]);
           }
@@ -138,8 +135,8 @@ var FormDataJson = /*#__PURE__*/function () {
           count++;
         }
         if (valid) {
-          var arr = [];
-          for (var i in object) {
+          let arr = [];
+          for (let i in object) {
             arr.push(object[i]);
           }
           return arr;
@@ -167,11 +164,11 @@ var FormDataJson = /*#__PURE__*/function () {
      * @return {Object|Array}
      */
     function removeEmpty(object, depth) {
-      var isArray = FormDataJson.isArray(object);
-      var newObject = isArray ? [] : {};
-      var count = 0;
-      for (var key in object) {
-        var value = object[key];
+      const isArray = FormDataJson.isArray(object);
+      let newObject = isArray ? [] : {};
+      let count = 0;
+      for (let key in object) {
+        let value = object[key];
         if (options.flatList && !depth) {
           value = value[1];
         }
@@ -195,15 +192,15 @@ var FormDataJson = /*#__PURE__*/function () {
     }
     recursion(tree, returnObject);
     if (files.length) {
-      var filesDone = 0;
-      var filesRequired = 0;
-      var _loop = function _loop() {
-        var row = files[i];
-        var useObject = row.object;
+      let filesDone = 0;
+      let filesRequired = 0;
+      for (let i = 0; i < files.length; i++) {
+        let row = files[i];
+        let useObject = row.object;
         filesRequired += row.input.files.length;
-        var _loop2 = function _loop2() {
-          var file = row.input.files[j];
-          var reader = new FileReader();
+        for (let j = 0; j < row.input.files.length; j++) {
+          let file = row.input.files[j];
+          let reader = new FileReader();
           reader.onload = function () {
             if (row.input.multiple) {
               if (!FormDataJson.isArray(useObject[row.key])) {
@@ -219,13 +216,7 @@ var FormDataJson = /*#__PURE__*/function () {
             }
           };
           reader[options.fileReaderFunction](file);
-        };
-        for (var j = 0; j < row.input.files.length; j++) {
-          _loop2();
         }
-      };
-      for (var i = 0; i < files.length; i++) {
-        _loop();
       }
       return null;
     } else if (options.filesCallback) {
@@ -241,12 +232,12 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {Object|Array} values
    * @param {Object=} options
    * @param {string=} keyPrefix Internal only
-   */;
-  FormDataJson.fromJson = function fromJson(el, values, options, keyPrefix) {
+   */
+  static fromJson(el, values, options, keyPrefix) {
     if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) return;
     options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options);
-    var tree = FormDataJson.getFieldTree(el);
-    var lastUsedFlatListIndex = {};
+    const tree = FormDataJson.getFieldTree(el);
+    const lastUsedFlatListIndex = {};
     if (options.clearOthers) {
       FormDataJson.clear(el);
     }
@@ -261,9 +252,9 @@ var FormDataJson = /*#__PURE__*/function () {
      */
     function recursion(inputs, newValues) {
       if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) return;
-      for (var key in inputs) {
-        var row = inputs[key];
-        var objectKey = options.flatList ? row.name : key;
+      for (let key in inputs) {
+        const row = inputs[key];
+        const objectKey = options.flatList ? row.name : key;
         // next level
         if (row.type === 'nested') {
           if (options.flatList) {
@@ -275,8 +266,8 @@ var FormDataJson = /*#__PURE__*/function () {
         }
         // flat list must search correct entry for given input name
         if (options.flatList) {
-          for (var i in newValues) {
-            var value = newValues[i];
+          for (let i in newValues) {
+            const value = newValues[i];
             if (value && value[0] === row.name) {
               if (lastUsedFlatListIndex[row.name] !== i) {
                 lastUsedFlatListIndex[row.name] = i;
@@ -300,25 +291,25 @@ var FormDataJson = /*#__PURE__*/function () {
   /**
    * Reset all input fields in the given element to their default values
    * @param {*} el
-   */;
-  FormDataJson.reset = function reset(el) {
-    var tree = FormDataJson.getFieldTree(el);
+   */
+  static reset(el) {
+    const tree = FormDataJson.getFieldTree(el);
 
     /**
      * Recursive reset
      * @param {*} inputs
      */
     function recursion(inputs) {
-      for (var key in inputs) {
-        var row = inputs[key];
+      for (let key in inputs) {
+        const row = inputs[key];
         // next level
         if (row.type === 'nested') {
           recursion(row.tree);
           continue;
         }
         if (row.type === 'radio') {
-          for (var i = 0; i < row.inputs.length; i++) {
-            var radioInput = row.inputs[i];
+          for (let i = 0; i < row.inputs.length; i++) {
+            const radioInput = row.inputs[i];
             radioInput.checked = radioInput.defaultChecked;
           }
           continue;
@@ -328,13 +319,13 @@ var FormDataJson = /*#__PURE__*/function () {
         if (row.inputType && FormDataJson.buttonInputTypes.indexOf(row.inputType) > -1) {
           continue;
         }
-        var input = row.input;
+        const input = row.input;
         if (FormDataJson.checkedInputTypes.indexOf(row.inputType) > -1) {
           input.checked = input.defaultChecked;
         } else if (input instanceof HTMLSelectElement) {
-          var options = input.querySelectorAll('option');
-          for (var _i2 = 0; _i2 < options.length; _i2++) {
-            var option = options[_i2];
+          const options = input.querySelectorAll('option');
+          for (let i = 0; i < options.length; i++) {
+            const option = options[i];
             option.selected = option.defaultSelected;
           }
         } else if (input.getAttribute('value')) {
@@ -350,17 +341,17 @@ var FormDataJson = /*#__PURE__*/function () {
   /**
    * Clear all input fields (to empty, unchecked, unselected) in the given element
    * @param {*} el
-   */;
-  FormDataJson.clear = function clear(el) {
-    var tree = FormDataJson.getFieldTree(el);
+   */
+  static clear(el) {
+    const tree = FormDataJson.getFieldTree(el);
 
     /**
      * Recursive clear
      * @param {*} inputs
      */
     function recursion(inputs) {
-      for (var key in inputs) {
-        var row = inputs[key];
+      for (let key in inputs) {
+        const row = inputs[key];
         // next level
         if (row.type === 'nested') {
           recursion(row.tree);
@@ -384,10 +375,10 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {*|null} newValue Null will unset the value
    * @param {boolean=} triggerChangeEvent
    * @private
-   */;
-  FormDataJson.setInputValue = function setInputValue(row, newValue, triggerChangeEvent) {
-    var triggerChange = triggerChangeEvent ? function (el) {
-      var ev = null;
+   */
+  static setInputValue(row, newValue, triggerChangeEvent) {
+    const triggerChange = triggerChangeEvent ? function (el) {
+      let ev = null;
       if (typeof Event === 'function') {
         ev = new Event('change', {
           'bubbles': true
@@ -399,38 +390,38 @@ var FormDataJson = /*#__PURE__*/function () {
       el.dispatchEvent(ev);
     } : null;
     if (row.type === 'radio') {
-      var _changed = [];
-      for (var i = 0; i < row.inputs.length; i++) {
-        var radioInput = row.inputs[i];
-        if (radioInput.checked) _changed.push(radioInput);
+      let changed = [];
+      for (let i = 0; i < row.inputs.length; i++) {
+        const radioInput = row.inputs[i];
+        if (radioInput.checked) changed.push(radioInput);
         radioInput.checked = false;
         if (newValue !== null && FormDataJson.stringify(radioInput.value) === FormDataJson.stringify(newValue)) {
-          if (!radioInput.checked) _changed.push(radioInput);
+          if (!radioInput.checked) changed.push(radioInput);
           radioInput.checked = true;
           break;
         }
       }
       if (triggerChange) {
-        for (var _i3 in _changed) {
-          triggerChange(_changed[_i3]);
+        for (let i in changed) {
+          triggerChange(changed[i]);
         }
       }
       return;
     }
-    var input = row.input;
-    var inputType = row.inputType;
+    const input = row.input;
+    const inputType = row.inputType;
 
     // ignore file input, they cannot be set
     if (inputType === 'file') {
       return;
     }
-    var changed = false;
+    let changed = false;
     if (inputType === 'checkbox') {
       newValue = newValue === true || newValue !== null && FormDataJson.stringify(input.value) === FormDataJson.stringify(newValue);
       if (newValue !== input.checked) changed = true;
       input.checked = newValue;
     } else if (input instanceof HTMLSelectElement) {
-      var newValueArr = newValue;
+      let newValueArr = newValue;
       if (newValueArr === null || newValueArr === undefined) {
         newValueArr = [];
       } else if (FormDataJson.isObject(newValueArr)) {
@@ -438,12 +429,12 @@ var FormDataJson = /*#__PURE__*/function () {
       } else if (!FormDataJson.isArray(newValueArr)) {
         newValueArr = [newValueArr];
       }
-      for (var _i4 = 0; _i4 < input.options.length; _i4++) {
-        var option = input.options[_i4];
-        var optionValue = (typeof option.value !== 'undefined' ? option.value : option.text).toString();
+      for (let i = 0; i < input.options.length; i++) {
+        const option = input.options[i];
+        const optionValue = (typeof option.value !== 'undefined' ? option.value : option.text).toString();
         if (option.selected !== false) changed = true;
         option.selected = false;
-        for (var j = 0; j < newValueArr.length; j++) {
+        for (let j = 0; j < newValueArr.length; j++) {
           if (optionValue === FormDataJson.stringify(newValueArr[j])) {
             if (option.selected !== true) changed = true;
             option.selected = true;
@@ -466,8 +457,8 @@ var FormDataJson = /*#__PURE__*/function () {
    * Boolean will be 1 or 0
    * @param {*} value
    * @private
-   */;
-  FormDataJson.stringify = function stringify(value) {
+   */
+  static stringify(value) {
     if (value === undefined) return '';
     if (typeof value === 'object') return '';
     if (typeof value === 'boolean') return value ? '1' : '0';
@@ -480,22 +471,22 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {function=} isValidInput A function to check for valid input
    * @return {Object}
    * @private
-   */;
-  FormDataJson.getFieldTree = function getFieldTree(el, isValidInput) {
+   */
+  static getFieldTree(el, isValidInput) {
     el = FormDataJson.getElement(el);
     if (!el) {
       return [];
     }
-    var inputs = el.querySelectorAll('select, textarea, input, button');
-    var inputTree = {};
-    var autoIncrementCounts = {};
-    for (var i = 0; i < inputs.length; i++) {
-      var input = inputs[i];
+    let inputs = el.querySelectorAll('select, textarea, input, button');
+    let inputTree = {};
+    let autoIncrementCounts = {};
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
       if (!input.name || input.name.length === 0) continue;
       if (isValidInput && isValidInput(input) !== true) continue;
-      var inputType = (input.type || 'text').toLowerCase();
-      var name = input.name;
-      var keyParts = input.name.replace(/\]/g, '').split('[');
+      const inputType = (input.type || 'text').toLowerCase();
+      let name = input.name;
+      const keyParts = input.name.replace(/\]/g, '').split('[');
       if (name.substr(-2) === '[]') {
         if (input instanceof HTMLSelectElement && input.multiple) {
           // special for multiple selects, we skip the last empty part to fix double nested arrays
@@ -506,12 +497,12 @@ var FormDataJson = /*#__PURE__*/function () {
           keyParts.pop();
         }
       }
-      var keyPartsLength = keyParts.length;
-      var useObject = inputTree;
-      var currentName = '';
-      for (var j = 0; j < keyPartsLength; j++) {
-        var keyPart = keyParts[j];
-        var newCurrentName = currentName ? currentName + '[' + keyPart + ']' : keyPart;
+      const keyPartsLength = keyParts.length;
+      let useObject = inputTree;
+      let currentName = '';
+      for (let j = 0; j < keyPartsLength; j++) {
+        let keyPart = keyParts[j];
+        let newCurrentName = currentName ? currentName + '[' + keyPart + ']' : keyPart;
         // auto increment key part
         if (keyPart === '') {
           if (typeof autoIncrementCounts[newCurrentName] === 'undefined') {
@@ -563,8 +554,8 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {*} arg
    * @return {boolean}
    * @private
-   */;
-  FormDataJson.isObject = function isObject(arg) {
+   */
+  static isObject(arg) {
     return arg && typeof arg === 'object' && Object.prototype.toString.call(arg) !== '[object Array]';
   }
 
@@ -573,8 +564,8 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {*} arg
    * @return {boolean}
    * @private
-   */;
-  FormDataJson.isArray = function isArray(arg) {
+   */
+  static isArray(arg) {
     return Array.isArray(arg);
   }
 
@@ -583,8 +574,8 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {HTMLElement|JQuery|$|string} param
    * @return {HTMLElement|null}
    * @private
-   */;
-  FormDataJson.getElement = function getElement(param) {
+   */
+  static getElement(param) {
     if (typeof param === 'string') return document.querySelector(param);
     if (param instanceof HTMLElement) return param;
     if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0];
@@ -599,19 +590,18 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {Object} b
    * @return {Object}
    * @private
-   */;
-  FormDataJson.merge = function merge(a, b) {
-    var c = {};
-    for (var key in a) {
+   */
+  static merge(a, b) {
+    let c = {};
+    for (let key in a) {
       c[key] = a[key];
     }
-    for (var _key in b) {
-      c[_key] = b[_key];
+    for (let key in b) {
+      c[key] = b[key];
     }
     return c;
-  };
-  return FormDataJson;
-}();
+  }
+}
 /**
  * Default options for toJson()
  * @type {{}}
@@ -716,8 +706,3 @@ FormDataJson.buttonInputTypes = ['button', 'submit', 'reset', 'image'];
  * @type {string[]}
  */
 FormDataJson.checkedInputTypes = ['checkbox', 'radio'];
-
-// module exports
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = FormDataJson
-}

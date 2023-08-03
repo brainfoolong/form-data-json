@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test FormDataJson ES6 Module</title>
+</head>
+<body>
+<h3 style="color:red">Failed loading ES6 module</h3>
+<form name="test" id="test" style="display: none">
+    <input type="email" name="email_enabled" value="notdisabled@foo.bar">
+    <input type="email" name="email_disabled" value="disabled@foo.bar" disabled>
+</form>
+<script type="module">
+  let url = '../scripts/form-data-json.es6.js'
+  // with debug flag we directly load original source file
+  // only work in supported browsers, like chrome
+  if (location.href.match(/(\?|\&)debug/)) {
+    url = '../../src/form-data-json.es6.js'
+  }
+
+  import FormDataJson from '../scripts/form-data-json.es6.js'
+
+  const value = FormDataJson.toJson('#test', { includeDisabled: true })
+  const results = document.querySelector('h3')
+  if (value.email_enabled && value.email_disabled) {
+    results.style.color = 'green'
+    results.innerText = 'Successfully loaded ES6 module'
+  }
+
+</script>
+
+</body>
+</html>

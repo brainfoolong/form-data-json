@@ -1,7 +1,11 @@
 ![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/img/logo-readme-github.png)
 
 # Form Data Json - Form input values to/from JSON (And a bit more...)
-A zero dependency, cross browser library to easily get or set/manipulate form input values as/from a json object. It can handle all input types, including multidimensional array names and file input. Native [FormData](https://developer.mozilla.org/docs/Web/API/FormData) is limited to reading only, we have way more: 
+
+A zero dependency, cross browser library to easily get or set/manipulate form input values as/from a json object. It can
+handle all input types, including multidimensional array names and file input.
+Native [FormData](https://developer.mozilla.org/docs/Web/API/FormData) is limited to reading only, we have way more:
+
 * Read data as multidimensional object or as a flat list (similar to FormData)
 * Write data into forms
 * Read unchecked/disabled fields as well
@@ -13,76 +17,110 @@ A zero dependency, cross browser library to easily get or set/manipulate form in
 * Cross Browser including IE11 (Yes, the ugly one also)
 
 ## Installation
-Download [latest release](https://github.com/brainfoolong/form-data-json/releases/latest) and include `dist/form-data-json.min.js` into your project.
+
+Download [latest release](https://github.com/brainfoolong/form-data-json/releases/latest) and
+include `dist/form-data-json.min.js` into your project.
+
 ```html
+
 <script src="dist/form-data-json.min.js"></script>
 ```
+
 ###### CDN (Latest version automatically, do not use it in production because of possible breaking changes)
+
 ```html
+
 <script src="https://cdn.jsdelivr.net/npm/form-data-json-convert/dist/form-data-json.min.js"></script>
 ```
+
 ###### NPM
+
 ```cmd
 npm install form-data-json-convert
 // import in NodeJS: const FormDataJson = require('form-data-json-convert')
 ```
+
+###### ES6 Module
+
+```cmd
+import FormDataJson from 'pathtodistfolder/form-data-json.es6.js'
+```
+
 ## What's not supported
-* Write to `<input type="file">` It's impossible in javascript to set values for file inputs, for security reasons. However, reading file input as base64 data uri string is supported.
+
+* Write to `<input type="file">` It's impossible in javascript to set values for file inputs, for security reasons.
+  However, reading file input as base64 data uri string is supported.
 
 ## How to use
+
 ### Read data
+
 ```javascript
 let values = FormDataJson.toJson(document.querySelector("form")) // with native element
 let values = FormDataJson.toJson("#form-id") // with selector
 let values = FormDataJson.toJson($("#form-id")) // with jQuery
 ``` 
+
 ###### Read form input values as a flat object (similar to native FormData())
+
 ```javascript
-let values = FormDataJson.toJson(document.querySelector("form"), {flatList: true})
+let values = FormDataJson.toJson(document.querySelector("form"), { flatList: true })
 ``` 
+
 ###### Read form input values including disabled
+
 ```javascript
-let values = FormDataJson.toJson(document.querySelector("form"), {includeDisabled: true})
+let values = FormDataJson.toJson(document.querySelector("form"), { includeDisabled: true })
 ```
+
 ###### Read with file inputs as base64 data uri
+
 ```javascript
 FormDataJson.toJson(document.querySelector("form"), {
-    filesCallback: function (values){
-        console.log(values)
-    }
+  filesCallback: function (values) {
+    console.log(values)
+  }
 })
 ```
-###### Read form input values but filter out, for example,  all password fields
+
+###### Read form input values but filter out, for example, all password fields
+
 ```javascript
-let values = FormDataJson.toJson(document.querySelector("form"), { 
-    inputFilter: function (inputElement) { 
-        return (inputElement.type || 'text') !== 'password'
-    } 
+let values = FormDataJson.toJson(document.querySelector("form"), {
+  inputFilter: function (inputElement) {
+    return (inputElement.type || 'text') !== 'password'
+  }
 })
 ``` 
 
 ### Write data
+
 ```javascript
-FormDataJson.fromJson(document.querySelector("form"), {'name': 'BrainFooLong'})
+FormDataJson.fromJson(document.querySelector("form"), { 'name': 'BrainFooLong' })
 ```
 
 ###### Set form input values and clear all other existing input values
+
 ```javascript
-FormDataJson.fromJson(document.querySelector("form"), {'name': 'BrainFooLong'}, { clearOthers: true })
+FormDataJson.fromJson(document.querySelector("form"), { 'name': 'BrainFooLong' }, { clearOthers: true })
 ```
 
 ###### Reset all input fields to their default values
+
 ```javascript
 FormDataJson.reset(document.querySelector("form"))
 ```
 
 ###### Clear all input fields to empty values
+
 ```javascript
 FormDataJson.clear(document.querySelector("form"))
 ```
 
 ###### All default options for toJson()
+
 You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJson`.
+
 ```javascript defaultOptionsToJson
 {
 /**
@@ -156,7 +194,9 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
 ```
 
 ###### All default options for fromJson()
+
 You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFromJson`.
+
 ```javascript defaultOptionsFromJson
 {
 /**
@@ -189,6 +229,7 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsFro
 ```
 
 ## How to contribute
+
 * Please write an issue before you start programming.
 * Always test the official supported browsers.
 * Write all tests in `docs/tests/test.html`. Each new option must have an own test.
