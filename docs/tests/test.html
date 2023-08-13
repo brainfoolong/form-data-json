@@ -884,13 +884,32 @@
     <h3></h3>
     <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/25</p>
     <input name="_Company[id]" type="hidden">
-	<input name="_Company[_Phone][0][id]" type="hidden">
+    <input name="_Company[_Phone][0][id]" type="hidden">
     <input id="phone_phone" name="_Company[_Phone][0][phone]" type="text" value="22222222">
-	<input type="submit" value="Save">
+    <input type="submit" value="Save">
     <div class="result"></div>
     <script>
       (function () {
         runTest('read', document.querySelector('#testIssue-25'), { skipEmpty: true }, '{"_Company":{"_Phone":[{"phone":"22222222"}]}}')
+      })()
+    </script>
+</form>
+
+<form name="testIssue-35" id="testIssue-35">
+    <h3></h3>
+    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/35</p>
+
+    Email1<input name="communication1[preference][]" type="checkbox" value="email">
+    SMS1<input name="communication1[preference][]" type="checkbox" value="sms">
+    Letter1<input name="communication1[preference][]" type="checkbox" value="letter">
+
+    Email2<input name="communication2[preference][]" type="checkbox" value="email">
+    SMS2<input name="communication2[preference][]" type="checkbox" value="sms">
+    Letter2<input name="communication2[preference][]" type="checkbox" value="letter">
+    <div class="result"></div>
+    <script>
+      (function () {
+        runTest('write', document.querySelector('#testIssue-35'), null, '{"communication1":{"preference":["email","sms"]},"communication2":{"preference":["email","letter"]}}')
       })()
     </script>
 </form>

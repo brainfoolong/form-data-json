@@ -1,3 +1,7 @@
+### 2.2.1 - 2023-08-13
+
+* fixed set checkbox checked with array values on implicit names https://github.com/brainfoolong/form-data-json/issues/35
+
 ### 2.2.0 - 2023-08-03
 
 * added ES6 module support with `form-data-json.es6.js`

@@ -174,17 +174,17 @@ class FormDataJson {
      * @param {Object} inputs
      * @param {Object} values
      */
-    function recursion (inputs, values) {
+    function recursiveGetInputValues (inputs, values) {
       for (let key in inputs) {
         const row = inputs[key]
         const objectKey = options.flatList ? row.name : key
         // next level
         if (row.type === 'nested') {
           if (options.flatList) {
-            recursion(row.tree, values)
+            recursiveGetInputValues(row.tree, values)
           } else {
             values[key] = {}
-            recursion(row.tree, values[key])
+            recursiveGetInputValues(row.tree, values[key])
           }
           continue
         }
@@ -312,7 +312,7 @@ class FormDataJson {
       return count ? newObject : null
     }
 
-    recursion(tree, returnObject)
+    recursiveGetInputValues(tree, returnObject)
 
     if (files.length) {
       let filesDone = 0
@@ -374,7 +374,7 @@ class FormDataJson {
      * @param {*} inputs
      * @param {*} newValues
      */
-    function recursion (inputs, newValues) {
+    function resursiveSetInputValues (inputs, newValues) {
       if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) return
       for (let key in inputs) {
         const row = inputs[key]
@@ -382,9 +382,26 @@ class FormDataJson {
         // next level
         if (row.type === 'nested') {
           if (options.flatList) {
-            recursion(row.tree, newValues)
+            resursiveSetInputValues(row.tree, newValues)
           } else if (typeof newValues[objectKey] === 'object') {
-            recursion(row.tree, newValues[objectKey])
+            // check for a very special case of array checkbox values using autoIncrement names and value to set is given an array
+            // the array contains the values to be checked in a random order, that's because we need to check this specially
+            const newSubValues = newValues[objectKey]
+            let newTree = row.tree
+            if (FormDataJson.isArray(newSubValues)) {
+              newTree = {}
+              for (let subTreeKey in row.tree) {
+                const subRow = row.tree[subTreeKey]
+                if (subRow.autoIncrementInputs) {
+                  if (subRow.input.type.toLowerCase() === 'checkbox' && newSubValues.indexOf(subRow.input.value) > -1) {
+                    subRow.input.checked = true
+                    continue
+                  }
+                }
+                newTree[subTreeKey] = subRow
+              }
+            }
+            resursiveSetInputValues(newTree, newSubValues)
           }
           continue
         }
@@ -410,7 +427,7 @@ class FormDataJson {
       }
     }
 
-    recursion(tree, values)
+    resursiveSetInputValues(tree, values)
   }
 
   /**
@@ -424,12 +441,12 @@ class FormDataJson {
      * Recursive reset
      * @param {*} inputs
      */
-    function recursion (inputs) {
+    function recursiveResetInputValues (inputs) {
       for (let key in inputs) {
         const row = inputs[key]
         // next level
         if (row.type === 'nested') {
-          recursion(row.tree)
+          recursiveResetInputValues(row.tree)
           continue
         }
 
@@ -462,7 +479,7 @@ class FormDataJson {
       }
     }
 
-    recursion(tree)
+    recursiveResetInputValues(tree)
   }
 
   /**
@@ -476,12 +493,12 @@ class FormDataJson {
      * Recursive clear
      * @param {*} inputs
      */
-    function recursion (inputs) {
+    function recursiveClearInputValues (inputs) {
       for (let key in inputs) {
         const row = inputs[key]
         // next level
         if (row.type === 'nested') {
-          recursion(row.tree)
+          recursiveClearInputValues(row.tree)
           continue
         }
         if (row.input) {
@@ -494,7 +511,7 @@ class FormDataJson {
       }
     }
 
-    recursion(tree)
+    recursiveClearInputValues(tree)
   }
 
   /**
@@ -618,7 +635,8 @@ class FormDataJson {
 
       let name = input.name
       const keyParts = input.name.replace(/\]/g, '').split('[')
-      if (name.substr(-2) === '[]') {
+      const isAutoIncrement = name.substr(-2) === '[]'
+      if (isAutoIncrement) {
         if (input instanceof HTMLSelectElement && input.multiple) {
           // special for multiple selects, we skip the last empty part to fix double nested arrays
           keyParts.pop()
@@ -649,14 +667,27 @@ class FormDataJson {
           // radio elements are special
           if ((input.type || 'text').toLowerCase() === 'radio') {
             if (typeof useObject[keyPart] === 'undefined') {
-              useObject[keyPart] = { 'type': 'radio', 'name': input.name, 'inputType': inputType, 'inputs': [] }
+              useObject[keyPart] = {
+                'type': 'radio',
+                'name': input.name,
+                'inputType': inputType,
+                'inputs': [],
+                'autoIncrementInputs': 0
+              }
             }
+            if (isAutoIncrement) useObject[keyPart].autoIncrementInputs = 1
             useObject[keyPart].inputs.push(input)
           } else {
-            useObject[keyPart] = { 'type': 'default', 'name': input.name, 'inputType': inputType, 'input': input }
+            useObject[keyPart] = {
+              'type': 'default',
+              'name': input.name,
+              'inputType': inputType,
+              'input': input,
+              'autoIncrementInputs': isAutoIncrement ? 1 : 0
+            }
           }
         } else {
-          // it could be possible, than really weird a non standard conform input names result in already
+          // it could be possible, then really weird a non-standard conform input names result in already
           // existing data which we need to override here, for which the check to .tree is for
           if (typeof useObject[keyPart] === 'undefined' || typeof useObject[keyPart].tree === 'undefined') {
             useObject[keyPart] = { 'type': 'nested', 'tree': {} }
