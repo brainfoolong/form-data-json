@@ -1,4 +1,4 @@
-// form-data-json-convert | version: 2.2.1 | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.2.2 | url: https://github.com/brainfoolong/form-data-json
 /**
  * Form Data Json Converter
  * @link https://github.com/brainfoolong/form-data-json

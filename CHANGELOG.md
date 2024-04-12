@@ -1,3 +1,7 @@
+### 2.2.2 - 2024-04-12
+
+* added form-data-json.d.ts for better typescript autocompletion support (thx to @kurybr - https://github.com/brainfoolong/form-data-json/issues/36)
+
 ### 2.2.1 - 2023-08-13
 
 * fixed set checkbox checked with array values on implicit names https://github.com/brainfoolong/form-data-json/issues/35
