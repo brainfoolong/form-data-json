@@ -4,6 +4,7 @@ declare module 'form-data-json-convert' {
 	  includeButtonValues?: boolean;
 	  uncheckedValue?: any;
 	  inputFilter?: ((inputElement: HTMLInputElement) => boolean) | null;
+	  processFieldValue?: ((inputElement: HTMLInputElement) => any) | null;
 	  flatList?: boolean;
 	  skipEmpty?: boolean;
 	  filesCallback?: ((values: any) => void) | null;
