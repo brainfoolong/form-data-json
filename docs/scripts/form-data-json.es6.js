@@ -107,8 +107,8 @@ export default class FormDataJson {
         } else {
           value = input.value;
         }
-        if (typeof options.processFieldValues === 'function' && options.processFieldValues(input)) {
-          value = options.processFieldValues(input);
+        if (typeof options.processFieldValue === 'function' && options.processFieldValue(input)) {
+          value = options.processFieldValue(input);
         }
         if (options.flatList) {
           values.push([row.name, value]);
@@ -661,7 +661,7 @@ FormDataJson.defaultOptionsToJson = {
    * All other return values, as well as no return value, will keep the original value of the input field.
    * @type {function|null}
    */
-  'processFieldValues': null,
+  'processFieldValue': null,
   /**
    * Does return an array list, with same values as native Array.from(new FormData(form))
    * A list will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]

@@ -173,7 +173,7 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
  * All other return values, as well as no return value, will keep the original value of the input field.
  * @type {function|null}
  */
-'processFieldValues': null,
+'processFieldValue': null,
 
 
 /**
