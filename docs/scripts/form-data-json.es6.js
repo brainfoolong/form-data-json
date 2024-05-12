@@ -107,6 +107,9 @@ export default class FormDataJson {
         } else {
           value = input.value;
         }
+        if (typeof options.processFieldValues === 'function' && options.processFieldValues(input)) {
+          value = options.processFieldValues(input);
+        }
         if (options.flatList) {
           values.push([row.name, value]);
         } else {
@@ -651,6 +654,14 @@ FormDataJson.defaultOptionsToJson = {
    * @type {function|null}
    */
   'inputFilter': null,
+  /**
+   * A function that processes each field's value based on custom logic.
+   * The first parameter is the input field to process.
+   * Must return the processed value of the field, which could be in any desired format.
+   * All other return values, as well as no return value, will keep the original value of the input field.
+   * @type {function|null}
+   */
+  'processFieldValues': null,
   /**
    * Does return an array list, with same values as native Array.from(new FormData(form))
    * A list will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]

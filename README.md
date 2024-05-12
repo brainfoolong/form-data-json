@@ -93,6 +93,21 @@ let values = FormDataJson.toJson(document.querySelector("form"), {
 })
 ``` 
 
+###### Read and manipulate form input values, such as currency fields or masked fields
+
+```javascript
+let values = FormDataJson.toJson(document.querySelector("form"), {
+  processFieldValue: function (inputElement) {
+    if(inputElement.name === 'currency') { 
+      // Remove all non-numeric characters to convert the string to a number
+      const amount = inputElement.value.replace(/[^\d.-]/g, '');
+      return Number(amount);
+    }
+  }
+})
+``` 
+
+
 ### Write data
 
 ```javascript
@@ -149,6 +164,17 @@ You can edit this defaults globally by modifying `FormDataJson.defaultOptionsToJ
  * @type {function|null}
  */
 'inputFilter': null,
+
+
+/**
+ * A function that processes each field's value based on custom logic.
+ * The first parameter is the input field to process.
+ * Must return the processed value of the field, which could be in any desired format.
+ * All other return values, as well as no return value, will keep the original value of the input field.
+ * @type {function|null}
+ */
+'processFieldValues': null,
+
 
 /**
  * Does return an array list, with same values as native Array.from(new FormData(form))

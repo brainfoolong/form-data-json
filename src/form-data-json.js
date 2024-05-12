@@ -37,6 +37,17 @@ class FormDataJson {
      */
     'inputFilter': null,
 
+
+    /**
+     * A function that processes each field's value based on custom logic.
+     * The first parameter is the input field to process.
+     * Must return the processed value of the field, which could be in any desired format.
+     * All other return values, as well as no return value, will keep the original value of the input field.
+     * @type {function|null}
+     */
+    'processFieldValue': null,
+
+
     /**
      * Does return an array list, with same values as native Array.from(new FormData(form))
      * A list will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
@@ -131,7 +142,7 @@ class FormDataJson {
    * @param {Object=} options
    * @return {Object|Array}
    */
-  static toJson (el, options) {
+  static toJson(el, options) {
     options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, options)
 
     /**
@@ -139,7 +150,7 @@ class FormDataJson {
      * @param {HTMLElement} input
      * @return {boolean}
      */
-    function isValidInput (input) {
+    function isValidInput(input) {
       // filter elements by input filter
       if (typeof options.inputFilter === 'function' && options.inputFilter(input) !== true) {
         return false
@@ -174,7 +185,7 @@ class FormDataJson {
      * @param {Object} inputs
      * @param {Object} values
      */
-    function recursiveGetInputValues (inputs, values) {
+    function recursiveGetInputValues(inputs, values) {
       for (let key in inputs) {
         const row = inputs[key]
         const objectKey = options.flatList ? row.name : key
@@ -199,6 +210,8 @@ class FormDataJson {
         }
 
         let value = null
+
+
         if (row.type === 'radio') {
           for (let i = 0; i < row.inputs.length; i++) {
             const radioInput = row.inputs[i]
@@ -228,6 +241,11 @@ class FormDataJson {
         } else {
           value = input.value
         }
+
+        if (typeof options.processFieldValue === 'function' && options.processFieldValue(input)) {
+          value = options.processFieldValue(input);
+        }
+
         if (options.flatList) {
           values.push([row.name, value])
         } else {
@@ -242,7 +260,7 @@ class FormDataJson {
      * @return {*}
      * @private
      */
-    function arrayify (object) {
+    function arrayify(object) {
       if (FormDataJson.isObject(object)) {
         let count = 0
         let valid = true
@@ -270,7 +288,7 @@ class FormDataJson {
      * Does some final cleanup before output data
      * @return {*}
      */
-    function output () {
+    function output() {
       if (options.arrayify) {
         returnObject = arrayify(returnObject)
       }
@@ -284,7 +302,7 @@ class FormDataJson {
      * @param {number} depth
      * @return {Object|Array}
      */
-    function removeEmpty (object, depth) {
+    function removeEmpty(object, depth) {
       const isArray = FormDataJson.isArray(object)
       let newObject = isArray ? [] : {}
       let count = 0
@@ -356,7 +374,7 @@ class FormDataJson {
    * @param {Object=} options
    * @param {string=} keyPrefix Internal only
    */
-  static fromJson (el, values, options, keyPrefix) {
+  static fromJson(el, values, options, keyPrefix) {
     if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) return
     options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options)
     const tree = FormDataJson.getFieldTree(el)
@@ -374,7 +392,7 @@ class FormDataJson {
      * @param {*} inputs
      * @param {*} newValues
      */
-    function resursiveSetInputValues (inputs, newValues) {
+    function resursiveSetInputValues(inputs, newValues) {
       if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) return
       for (let key in inputs) {
         const row = inputs[key]
@@ -434,14 +452,14 @@ class FormDataJson {
    * Reset all input fields in the given element to their default values
    * @param {*} el
    */
-  static reset (el) {
+  static reset(el) {
     const tree = FormDataJson.getFieldTree(el)
 
     /**
      * Recursive reset
      * @param {*} inputs
      */
-    function recursiveResetInputValues (inputs) {
+    function recursiveResetInputValues(inputs) {
       for (let key in inputs) {
         const row = inputs[key]
         // next level
@@ -486,14 +504,14 @@ class FormDataJson {
    * Clear all input fields (to empty, unchecked, unselected) in the given element
    * @param {*} el
    */
-  static clear (el) {
+  static clear(el) {
     const tree = FormDataJson.getFieldTree(el)
 
     /**
      * Recursive clear
      * @param {*} inputs
      */
-    function recursiveClearInputValues (inputs) {
+    function recursiveClearInputValues(inputs) {
       for (let key in inputs) {
         const row = inputs[key]
         // next level
@@ -521,7 +539,7 @@ class FormDataJson {
    * @param {boolean=} triggerChangeEvent
    * @private
    */
-  static setInputValue (row, newValue, triggerChangeEvent) {
+  static setInputValue(row, newValue, triggerChangeEvent) {
     const triggerChange = triggerChangeEvent ? function (el) {
       let ev = null
       if (typeof (Event) === 'function') {
@@ -603,7 +621,7 @@ class FormDataJson {
    * @param {*} value
    * @private
    */
-  static stringify (value) {
+  static stringify(value) {
     if (value === undefined) return ''
     if (typeof value === 'object') return ''
     if (typeof value === 'boolean') return value ? '1' : '0'
@@ -617,7 +635,7 @@ class FormDataJson {
    * @return {Object}
    * @private
    */
-  static getFieldTree (el, isValidInput) {
+  static getFieldTree(el, isValidInput) {
     el = FormDataJson.getElement(el)
     if (!el) {
       return []
@@ -705,7 +723,7 @@ class FormDataJson {
    * @return {boolean}
    * @private
    */
-  static isObject (arg) {
+  static isObject(arg) {
     return arg && typeof arg === 'object' && Object.prototype.toString.call(arg) !== '[object Array]'
   }
 
@@ -715,7 +733,7 @@ class FormDataJson {
    * @return {boolean}
    * @private
    */
-  static isArray (arg) {
+  static isArray(arg) {
     return Array.isArray(arg)
   }
 
@@ -725,7 +743,7 @@ class FormDataJson {
    * @return {HTMLElement|null}
    * @private
    */
-  static getElement (param) {
+  static getElement(param) {
     if (typeof param === 'string') return document.querySelector(param)
     if (param instanceof HTMLElement) return param
     if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0]
@@ -741,7 +759,7 @@ class FormDataJson {
    * @return {Object}
    * @private
    */
-  static merge (a, b) {
+  static merge(a, b) {
     let c = {}
     for (let key in a) {
       c[key] = a[key]
