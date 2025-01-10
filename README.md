@@ -46,6 +46,9 @@ npm install form-data-json-convert
 import FormDataJson from 'pathtodistfolder/form-data-json.es6.js'
 ```
 
+## Demo
+[Check it out here](https://brainfoolong.github.io/form-data-json)
+
 ## What's not supported
 
 * Write to `<input type="file">` It's impossible in javascript to set values for file inputs, for security reasons.
