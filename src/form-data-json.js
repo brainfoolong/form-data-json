@@ -274,7 +274,9 @@ class FormDataJson {
       if (options.arrayify) {
         returnObject = arrayify(returnObject)
       }
-      if (options.skipEmpty) returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {})
+      if (options.skipEmpty) {
+        returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {})
+      }
       return returnObject
     }
 
@@ -357,7 +359,9 @@ class FormDataJson {
    * @param {string=} keyPrefix Internal only
    */
   static fromJson (el, values, options, keyPrefix) {
-    if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) return
+    if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) {
+      return
+    }
     options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options)
     const tree = FormDataJson.getFieldTree(el)
     const lastUsedFlatListIndex = {}
@@ -375,7 +379,9 @@ class FormDataJson {
      * @param {*} newValues
      */
     function resursiveSetInputValues (inputs, newValues) {
-      if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) return
+      if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) {
+        return
+      }
       for (let key in inputs) {
         const row = inputs[key]
         const objectKey = options.flatList ? row.name : key
@@ -536,10 +542,14 @@ class FormDataJson {
       let changed = []
       for (let i = 0; i < row.inputs.length; i++) {
         const radioInput = row.inputs[i]
-        if (radioInput.checked) changed.push(radioInput)
+        if (radioInput.checked) {
+          changed.push(radioInput)
+        }
         radioInput.checked = false
         if (newValue !== null && FormDataJson.stringify(radioInput.value) === FormDataJson.stringify(newValue)) {
-          if (!radioInput.checked) changed.push(radioInput)
+          if (!radioInput.checked) {
+            changed.push(radioInput)
+          }
           radioInput.checked = true
           break
         }
@@ -563,7 +573,9 @@ class FormDataJson {
     let changed = false
     if (inputType === 'checkbox') {
       newValue = newValue === true || (newValue !== null && FormDataJson.stringify(input.value) === FormDataJson.stringify(newValue))
-      if (newValue !== input.checked) changed = true
+      if (newValue !== input.checked) {
+        changed = true
+      }
       input.checked = newValue
     } else if (input instanceof HTMLSelectElement) {
       let newValueArr = newValue
@@ -574,21 +586,30 @@ class FormDataJson {
       } else if (!FormDataJson.isArray(newValueArr)) {
         newValueArr = [newValueArr]
       }
+      const oldSelectedOptionIds = []
+      const newSelectedOptionIds = []
       for (let i = 0; i < input.options.length; i++) {
         const option = input.options[i]
         const optionValue = (typeof option.value !== 'undefined' ? option.value : option.text).toString()
-        if (option.selected !== false) changed = true
+        if (option.selected !== false) {
+          oldSelectedOptionIds.push(i)
+        }
         option.selected = false
         for (let j = 0; j < newValueArr.length; j++) {
           if (optionValue === FormDataJson.stringify(newValueArr[j])) {
-            if (option.selected !== true) changed = true
             option.selected = true
             break
           }
         }
+        if (option.selected !== false) {
+          newSelectedOptionIds.push(i)
+        }
       }
+      changed = JSON.stringify(oldSelectedOptionIds) !== JSON.stringify(newSelectedOptionIds)
     } else {
-      if (input.value !== newValue) changed = true
+      if (input.value !== newValue) {
+        changed = true
+      }
       input.value = newValue
     }
     if (changed && triggerChange) {
@@ -604,9 +625,15 @@ class FormDataJson {
    * @private
    */
   static stringify (value) {
-    if (value === undefined) return ''
-    if (typeof value === 'object') return ''
-    if (typeof value === 'boolean') return value ? '1' : '0'
+    if (value === undefined) {
+      return ''
+    }
+    if (typeof value === 'object') {
+      return ''
+    }
+    if (typeof value === 'boolean') {
+      return value ? '1' : '0'
+    }
     return value + ''
   }
 
@@ -628,8 +655,12 @@ class FormDataJson {
     let autoIncrementCounts = {}
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i]
-      if (!input.name || input.name.length === 0) continue
-      if (isValidInput && isValidInput(input) !== true) continue
+      if (!input.name || input.name.length === 0) {
+        continue
+      }
+      if (isValidInput && isValidInput(input) !== true) {
+        continue
+      }
 
       const inputType = (input.type || 'text').toLowerCase()
 
@@ -675,7 +706,9 @@ class FormDataJson {
                 'autoIncrementInputs': 0
               }
             }
-            if (isAutoIncrement) useObject[keyPart].autoIncrementInputs = 1
+            if (isAutoIncrement) {
+              useObject[keyPart].autoIncrementInputs = 1
+            }
             useObject[keyPart].inputs.push(input)
           } else {
             useObject[keyPart] = {
@@ -726,10 +759,18 @@ class FormDataJson {
    * @private
    */
   static getElement (param) {
-    if (typeof param === 'string') return document.querySelector(param)
-    if (param instanceof HTMLElement) return param
-    if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0]
-    if (typeof $ !== 'undefined' && param instanceof $) return param[0]
+    if (typeof param === 'string') {
+      return document.querySelector(param)
+    }
+    if (param instanceof HTMLElement) {
+      return param
+    }
+    if (typeof jQuery !== 'undefined' && param instanceof jQuery) {
+      return param[0]
+    }
+    if (typeof $ !== 'undefined' && param instanceof $) {
+      return param[0]
+    }
     console.warn('FormDataJson: Unsupported element passed. Supported is HTMLElement, a string query selector, JQuery or $ object')
     return null
   }

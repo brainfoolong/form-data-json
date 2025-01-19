@@ -40,7 +40,7 @@ npm install form-data-json-convert
 // import in NodeJS: const FormDataJson = require('form-data-json-convert')
 ```
 
-###### ES6 Module
+###### ES6 Module in Browser
 
 ```cmd
 import FormDataJson from 'pathtodistfolder/form-data-json.es6.js'

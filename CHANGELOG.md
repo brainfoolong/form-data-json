@@ -1,3 +1,8 @@
+### 2.2.3 - 2025-01-14
+
+* optimized change trigger for selects (fired to often) https://github.com/brainfoolong/form-data-json/issues/43
+
+
 ### 2.2.2 - 2024-04-12
 
 * added form-data-json.d.ts for better typescript autocompletion support (thx to @kurybr - https://github.com/brainfoolong/form-data-json/issues/36)

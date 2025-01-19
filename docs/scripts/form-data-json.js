@@ -1,4 +1,4 @@
-// form-data-json-convert | version: 2.2.2 | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 2.2.3 | url: https://github.com/brainfoolong/form-data-json
 "use strict";
 
 /**
@@ -156,7 +156,9 @@ var FormDataJson = /*#__PURE__*/function () {
       if (options.arrayify) {
         returnObject = arrayify(returnObject);
       }
-      if (options.skipEmpty) returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {});
+      if (options.skipEmpty) {
+        returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {});
+      }
       return returnObject;
     }
 
@@ -243,7 +245,9 @@ var FormDataJson = /*#__PURE__*/function () {
    * @param {string=} keyPrefix Internal only
    */;
   FormDataJson.fromJson = function fromJson(el, values, options, keyPrefix) {
-    if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) return;
+    if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) {
+      return;
+    }
     options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options);
     var tree = FormDataJson.getFieldTree(el);
     var lastUsedFlatListIndex = {};
@@ -260,7 +264,9 @@ var FormDataJson = /*#__PURE__*/function () {
      * @param {*} newValues
      */
     function resursiveSetInputValues(inputs, newValues) {
-      if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) return;
+      if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) {
+        return;
+      }
       for (var key in inputs) {
         var row = inputs[key];
         var objectKey = options.flatList ? row.name : key;
@@ -419,10 +425,14 @@ var FormDataJson = /*#__PURE__*/function () {
       var _changed = [];
       for (var i = 0; i < row.inputs.length; i++) {
         var radioInput = row.inputs[i];
-        if (radioInput.checked) _changed.push(radioInput);
+        if (radioInput.checked) {
+          _changed.push(radioInput);
+        }
         radioInput.checked = false;
         if (newValue !== null && FormDataJson.stringify(radioInput.value) === FormDataJson.stringify(newValue)) {
-          if (!radioInput.checked) _changed.push(radioInput);
+          if (!radioInput.checked) {
+            _changed.push(radioInput);
+          }
           radioInput.checked = true;
           break;
         }
@@ -444,7 +454,9 @@ var FormDataJson = /*#__PURE__*/function () {
     var changed = false;
     if (inputType === 'checkbox') {
       newValue = newValue === true || newValue !== null && FormDataJson.stringify(input.value) === FormDataJson.stringify(newValue);
-      if (newValue !== input.checked) changed = true;
+      if (newValue !== input.checked) {
+        changed = true;
+      }
       input.checked = newValue;
     } else if (input instanceof HTMLSelectElement) {
       var newValueArr = newValue;
@@ -455,21 +467,30 @@ var FormDataJson = /*#__PURE__*/function () {
       } else if (!FormDataJson.isArray(newValueArr)) {
         newValueArr = [newValueArr];
       }
+      var oldSelectedOptionIds = [];
+      var newSelectedOptionIds = [];
       for (var _i4 = 0; _i4 < input.options.length; _i4++) {
         var option = input.options[_i4];
         var optionValue = (typeof option.value !== 'undefined' ? option.value : option.text).toString();
-        if (option.selected !== false) changed = true;
+        if (option.selected !== false) {
+          oldSelectedOptionIds.push(_i4);
+        }
         option.selected = false;
         for (var j = 0; j < newValueArr.length; j++) {
           if (optionValue === FormDataJson.stringify(newValueArr[j])) {
-            if (option.selected !== true) changed = true;
             option.selected = true;
             break;
           }
         }
+        if (option.selected !== false) {
+          newSelectedOptionIds.push(_i4);
+        }
       }
+      changed = JSON.stringify(oldSelectedOptionIds) !== JSON.stringify(newSelectedOptionIds);
     } else {
-      if (input.value !== newValue) changed = true;
+      if (input.value !== newValue) {
+        changed = true;
+      }
       input.value = newValue;
     }
     if (changed && triggerChange) {
@@ -485,9 +506,15 @@ var FormDataJson = /*#__PURE__*/function () {
    * @private
    */;
   FormDataJson.stringify = function stringify(value) {
-    if (value === undefined) return '';
-    if (typeof value === 'object') return '';
-    if (typeof value === 'boolean') return value ? '1' : '0';
+    if (value === undefined) {
+      return '';
+    }
+    if (typeof value === 'object') {
+      return '';
+    }
+    if (typeof value === 'boolean') {
+      return value ? '1' : '0';
+    }
     return value + '';
   }
 
@@ -508,8 +535,12 @@ var FormDataJson = /*#__PURE__*/function () {
     var autoIncrementCounts = {};
     for (var i = 0; i < inputs.length; i++) {
       var input = inputs[i];
-      if (!input.name || input.name.length === 0) continue;
-      if (isValidInput && isValidInput(input) !== true) continue;
+      if (!input.name || input.name.length === 0) {
+        continue;
+      }
+      if (isValidInput && isValidInput(input) !== true) {
+        continue;
+      }
       var inputType = (input.type || 'text').toLowerCase();
       var name = input.name;
       var keyParts = input.name.replace(/\]/g, '').split('[');
@@ -552,7 +583,9 @@ var FormDataJson = /*#__PURE__*/function () {
                 'autoIncrementInputs': 0
               };
             }
-            if (isAutoIncrement) useObject[keyPart].autoIncrementInputs = 1;
+            if (isAutoIncrement) {
+              useObject[keyPart].autoIncrementInputs = 1;
+            }
             useObject[keyPart].inputs.push(input);
           } else {
             useObject[keyPart] = {
@@ -606,10 +639,18 @@ var FormDataJson = /*#__PURE__*/function () {
    * @private
    */;
   FormDataJson.getElement = function getElement(param) {
-    if (typeof param === 'string') return document.querySelector(param);
-    if (param instanceof HTMLElement) return param;
-    if (typeof jQuery !== 'undefined' && param instanceof jQuery) return param[0];
-    if (typeof $ !== 'undefined' && param instanceof $) return param[0];
+    if (typeof param === 'string') {
+      return document.querySelector(param);
+    }
+    if (param instanceof HTMLElement) {
+      return param;
+    }
+    if (typeof jQuery !== 'undefined' && param instanceof jQuery) {
+      return param[0];
+    }
+    if (typeof $ !== 'undefined' && param instanceof $) {
+      return param[0];
+    }
     console.warn('FormDataJson: Unsupported element passed. Supported is HTMLElement, a string query selector, JQuery or $ object');
     return null;
   }
