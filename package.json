@@ -6,16 +6,9 @@
     "type": "git",
     "url": "git+https://github.com/brainfoolong/form-data-json.git"
   },
-  "version": "2.2.3",
+  "version": "3.0.0",
   "scripts": {
-    "dist": "node build/dist.js"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.22.9",
-    "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-private-methods": "^7.18.6",
-    "@babel/preset-env": "^7.22.9",
-    "babel-preset-minify": "^0.5.2"
+    "dist": "node ./node_modules/typescript/bin/tsc --project tsconfig.json && node build/dist.js"
   },
   "bugs": {
     "url": "https://github.com/brainfoolong/form-data-json/issues"
@@ -38,5 +31,14 @@
     "input",
     "serializejson"
   ],
-  "author": "BrainFooLong"
+  "author": "BrainFooLong",
+  "devDependencies": {
+    "@babel/core": "^7.22.9",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "@babel/preset-env": "^7.22.9",
+    "babel-preset-minify": "^0.5.2",
+    "typescript": "^5.8.2",
+    "express": "^4.21.2"
+  }
 }

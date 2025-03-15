@@ -1,203 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Test FormDataJson</title>
-    <script>
-      let testQueue = []
-      let executedTests = []
+  <meta charset="UTF-8">
+  <title>Test FormDataJson</title>
+  <script>
+    let testQueue = []
+    let executedTests = []
 
-      /**
-       * Show test results
-       * @param {HTMLFormElement|Element} form
-       * @param {string} expected Expected values a json string
-       * @param {Object} got Got values as object
-       **/
-      function showTestResults (form, expected, got) {
-        let result = expected === JSON.stringify(got)
-        form.classList.remove('result-success')
-        form.classList.remove('result-error')
-        form.classList.add('result-' + (result ? 'success' : 'error'))
-        let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + form.getAttribute('name')
-        if (!location.href.match(/(\?|\&)noverbose/) && expected) {
-          console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;' + (result ? 'color:green' : 'color:red'))
-          console.log('Expected JsonString')
-          console.log(expected)
-          console.log('Expected Object')
-          console.log(JSON.parse(expected))
-          console.log('Got JsonString')
-          console.log(JSON.stringify(got))
-          console.log('Got Object')
-          console.log(got)
-        }
-        form.querySelector('h3').innerHTML = title
-        let html = '<div class="result">'
-        let dateStr = new Date().toISOString()
-        if (result) {
-          html += '<div>' + dateStr + '<br/>Test successfull</div>'
-        } else {
-          html += '<div>' + dateStr + '<br/>Test error. See console log for detailed information.</div>'
-        }
-        html += '</div>'
-        form.querySelector('.result').innerHTML = html
-        executedTests.push(result)
-        updateTitle()
-      }
-
-      /**
-       * Show test results custom
-       * @param {HTMLFormElement|Element} form
-       * @param {boolean} result
-       **/
-      function showTestResultsCustom (form, result) {
-        form.classList.remove('result-success')
-        form.classList.remove('result-error')
-        form.classList.add('result-' + (result ? 'success' : 'error'))
-        let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + form.getAttribute('name')
-        form.querySelector('h3').innerHTML = title
+    /**
+     * Show test results
+     * @param {HTMLFormElement|Element} form
+     * @param {string} expected Expected values a json string
+     * @param {Object} got Got values as object
+     **/
+    function showTestResults (form, expected, got) {
+      let result = expected === JSON.stringify(got)
+      form.classList.remove('result-success')
+      form.classList.remove('result-error')
+      form.classList.add('result-' + (result ? 'success' : 'error'))
+      let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + (form.getAttribute('name') || form.getAttribute('data-test-id'))
+      if (!location.href.match(/(\?|\&)noverbose/) && expected) {
         console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;' + (result ? 'color:green' : 'color:red'))
-        let html = '<div class="result">'
-        let dateStr = new Date().toISOString()
-        if (result) {
-          html += '<div>' + dateStr + '<br/>Test successfull</div>'
-        } else {
-          html += '<div>' + dateStr + '<br/>Test error. See console log for detailed information.</div>'
-        }
-        html += '</div>'
-        form.querySelector('.result').innerHTML = html
-        executedTests.push(result)
-        updateTitle()
+        console.log('Expected JsonString')
+        console.log(expected)
+        console.log('Expected Object')
+        console.log(JSON.parse(expected))
+        console.log('Got JsonString')
+        console.log(JSON.stringify(got))
+        console.log('Got Object')
+        console.log(got)
       }
+      form.querySelector('h3').innerHTML = title
+      let html = '<div class="result">'
+      let dateStr = new Date().toISOString()
+      if (result) {
+        html += '<div>' + dateStr + '<br/>Test successfull</div>'
+      } else {
+        html += '<div>' + dateStr + '<br/>Test error. See console log for detailed information.</div>'
+      }
+      html += '</div>'
+      form.querySelector('.result').innerHTML = html
+      executedTests.push(result)
+      updateTitle()
+    }
 
-      /**
-       * Run a custom function test, when returned true it is success, otherwise it logs a error with return value
-       * @param {function} testFunction The test function - First parameter is the HtmlFormElement
-       * @param {HTMLFormElement|Element} form
-       */
-      function runTestCustom (testFunction, form) {
-        if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
-        testQueue.push(function () {
+    /**
+     * Show test results custom
+     * @param {HTMLFormElement|Element} form
+     * @param {boolean} result
+     **/
+    function showTestResultsCustom (form, result) {
+      form.classList.remove('result-success')
+      form.classList.remove('result-error')
+      form.classList.add('result-' + (result ? 'success' : 'error'))
+      let title = 'Test ' + (result ? 'Success' : 'Error') + ' ' + form.getAttribute('name')
+      form.querySelector('h3').innerHTML = title
+      console.log('%c' + title, 'font-size:16px; font-weight:bold; text-decoration:underline;' + (result ? 'color:green' : 'color:red'))
+      let html = '<div class="result">'
+      let dateStr = new Date().toISOString()
+      if (result) {
+        html += '<div>' + dateStr + '<br/>Test successfull</div>'
+      } else {
+        html += '<div>' + dateStr + '<br/>Test error. See console log for detailed information.</div>'
+      }
+      html += '</div>'
+      form.querySelector('.result').innerHTML = html
+      executedTests.push(result)
+      updateTitle()
+    }
+
+    /**
+     * Run a custom function test, when returned true it is success, otherwise it logs a error with return value
+     * @param {function} testFunction The test function - First parameter is the HtmlFormElement
+     * @param {HTMLFormElement|Element} form
+     */
+    function runTestCustom (testFunction, form) {
+      if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) {
+        return
+      }
+      testQueue.push(function () {
+        try {
           testFunction(form)
-        })
-      }
+        } catch (e) {
+          console.error(e)
+          showTestResultsCustom(form, false)
+        }
+      })
+    }
 
-      /**
-       * Run a read/write test with expected json data to be set or to read
-       * @param {string} mode read|write
-       * @param {HTMLFormElement|Element} form
-       * @param {Object|null} options
-       * @param {string} expected Expected/Set data as json string
-       */
-      function runTest (mode, form, options, expected) {
-        if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
-        testQueue.push(function () {
-          let values
-          if (mode === 'read') {
-            values = FormDataJson.toJson(form, options)
-          } else {
-            FormDataJson.fromJson(form, JSON.parse(expected), options)
-            values = FormDataJson.toJson(form, options)
+    /**
+     * Run a read/write test with expected json data to be set or to read
+     * @param {string} mode read|write
+     * @param {HTMLFormElement|Element} form
+     * @param {Object|null} options
+     * @param {string} expected Expected/Set data as json string
+     */
+    function runTest (mode, form, options, expected) {
+      if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) {
+        return
+      }
+      testQueue.push(function () {
+        let values
+        if (mode === 'read') {
+          values = FormDataJson.toJson(form, options)
+        } else {
+          FormDataJson.fromJson(form, JSON.parse(expected), options)
+          values = FormDataJson.toJson(form, options)
+        }
+        showTestResults(form.closest('.test-container') || form, expected, values)
+      })
+    }
+
+    /**
+     * Run a test with files with expected json data to be set or to read
+     * @param {string} mode read|write
+     * @param {HTMLFormElement|Element} form
+     * @param {Object|null} options
+     * @param {string} expected Expected/Set data as json string
+     */
+    function runTestWithFiles (mode, form, options, expected) {
+      if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) {
+        return
+      }
+      testQueue.push(function () {
+        options = options || {}
+        options.filesCallback = function (values) {
+          showTestResults(form, expected, values)
+        }
+        if (mode === 'read') {
+          // on page startup run simulated test values
+          let files = form.querySelectorAll('input[type=\'file\']')
+          let values = {}
+          for (let i = 0; i < files.length; i++) {
+            let input = files[i]
+            values[input.name] = JSON.parse(input.getAttribute('data-test-value'))
           }
           showTestResults(form, expected, values)
-        })
-      }
+          // after user has changed files, run test again
+          form.addEventListener('change', function () {
+            FormDataJson.toJson(form, options)
+          }, false)
 
-      /**
-       * Run a test with files with expected json data to be set or to read
-       * @param {string} mode read|write
-       * @param {HTMLFormElement|Element} form
-       * @param {Object|null} options
-       * @param {string} expected Expected/Set data as json string
-       */
-      function runTestWithFiles (mode, form, options, expected) {
-        if (location.search.match(/singleTest=/) && !location.search.match(new RegExp('singleTest=' + form.id))) return
-        testQueue.push(function () {
-          options = options || {}
-          options.filesCallback = function (values) {
-            showTestResults(form, expected, values)
-          }
-          if (mode === 'read') {
-            // on page startup run simulated test values
-            let files = form.querySelectorAll('input[type=\'file\']')
-            let values = {}
-            for (let i = 0; i < files.length; i++) {
-              let input = files[i]
-              values[input.name] = JSON.parse(input.getAttribute('data-test-value'))
-            }
-            showTestResults(form, expected, values)
-            // after user has changed files, run test again
-            form.addEventListener('change', function () {
-              FormDataJson.toJson(form, options)
-            }, false)
-
-          } else {
-            console.error('Write of file inputs is not supported')
-          }
-        })
-      }
-
-      function updateTitle () {
-        const title = document.getElementById('all-results')
-        let success = 0
-        let error = 0
-        for (let i = 0; i < executedTests.length; i++) {
-          if (executedTests[i]) success++
-          else error++
+        } else {
+          console.error('Write of file inputs is not supported')
         }
-        title.innerHTML = '<span style="color:' + (error ? 'red' : 'green') + '">' + (executedTests.length) + ' tests executed | ' + success + ' passed | ' + error + ' with error</span>'
+      })
+    }
+
+    function updateTitle () {
+      const title = document.getElementById('all-results')
+      let success = 0
+      let error = 0
+      for (let i = 0; i < executedTests.length; i++) {
+        if (executedTests[i]) {
+          success++
+        } else {
+          error++
+        }
       }
-    </script>
-    <style type="text/css">
-      body {
-        font-family: Arial, sans-serif;
-      }
-      form {
-        display: block;
-        padding: 10px;
-        border: 1px solid #ddd;
-        margin-bottom: 10px;
-      }
-      h3 {
-        margin: 0;
-        padding: 0;
-        margin-bottom: 10px;
-      }
-      .result-success {
-        background: #ceffce;
-      }
-      .result-error {
-        background: #ffc2ba;
-      }
-      .result {
-        padding-top: 10px;
-      }
-      .result-success .result {
-        color: green;
-      }
-      .result-error .result {
-        color: red;
-      }
-    </style>
+      title.innerHTML = '<span style="color:' + (error ? 'red' : 'green') + '">' + (executedTests.length) + ' tests executed | ' + success + ' passed | ' + error + ' with error</span>'
+    }
+  </script>
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+    }
+    form {
+      display: block;
+      padding: 10px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+    }
+    h3 {
+      margin: 0;
+      padding: 0;
+      margin-bottom: 10px;
+    }
+    .result-success {
+      background: #ceffce;
+    }
+    .result-error {
+      background: #ffc2ba;
+    }
+    .result {
+      padding-top: 10px;
+    }
+    .result-success .result {
+      color: green;
+    }
+    .result-error .result {
+      color: red;
+    }
+  </style>
 </head>
 <body>
 <h1 id="all-results"></h1>
 <form name="read-array" id="read-array">
-    <h3></h3>
-    <p>Testing read of pretty weird array input names. This tool is designed to create auto numbered indexes if no index
-        is
-        provided. If multiple equal keys exist, values will be overriden in dom order.</p>
-    <input type="hidden" name="name" value="1">
-    <input type="hidden" name="name2">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="hidden" name="name[foo]" value="name[foo]">
-    <input type="hidden" name="name[bar]" value="name[bar]">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
-    <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="checkbox" name="chk[]" value="1" checked>
-    <input type="checkbox" name="chk[]" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing read of pretty weird array input names. This tool is designed to create auto numbered indexes if no index
+    is
+    provided. If multiple equal keys exist, values will be overriden in dom order.</p>
+  <input type="hidden" name="name" value="1">
+  <input type="hidden" name="name2">
+  <input type="hidden" name="name[]" value="name[]">
+  <input type="hidden" name="name[foo]" value="name[foo]">
+  <input type="hidden" name="name[bar]" value="name[bar]">
+  <input type="hidden" name="name[]" value="name[]">
+  <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
+  <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
+  <input type="hidden" name="name[]" value="name[]">
+  <input type="checkbox" name="chk[]" value="1" checked>
+  <input type="checkbox" name="chk[]" value="2">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -206,20 +220,20 @@
 </script>
 
 <form name="write-array" id="write-array">
-    <h3></h3>
-    <p>Testing write of pretty weird array input names.</p>
-    <input type="hidden" name="name" value="">
-    <input type="hidden" name="name2">
-    <input type="hidden" name="name[]" value="">
-    <input type="hidden" name="name[foo]" value="">
-    <input type="hidden" name="name[bar]" value="">
-    <input type="hidden" name="name[]" value="">
-    <input type="hidden" name="name[0][sub1]" value="">
-    <input type="hidden" name="name[0][sub2]" value="">
-    <input type="hidden" name="name[]" value="">
-    <input type="checkbox" name="chk[]" value="1">
-    <input type="checkbox" name="chk[]" value="2" checked>
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing write of pretty weird array input names.</p>
+  <input type="hidden" name="name" value="">
+  <input type="hidden" name="name2">
+  <input type="hidden" name="name[]" value="">
+  <input type="hidden" name="name[foo]" value="">
+  <input type="hidden" name="name[bar]" value="">
+  <input type="hidden" name="name[]" value="">
+  <input type="hidden" name="name[0][sub1]" value="">
+  <input type="hidden" name="name[0][sub2]" value="">
+  <input type="hidden" name="name[]" value="">
+  <input type="checkbox" name="chk[]" value="1">
+  <input type="checkbox" name="chk[]" value="2" checked>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -228,60 +242,60 @@
 </script>
 
 <form name="read-all" id="read-all">
-    <h3></h3>
-    <p>Testing read toJson() of all existing input types.</p>
-    <input type="button" name="button" value="button">
-    <input type="color" name="color" value="#ff0000">
-    <input type="date" name="date" value="2020-01-03">
-    <input type="datetime-local" name="datetime-local" value="2014-01-02T11:42:13.51">
-    <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
-    <input type="checkbox" name="checkbox" value="checkbox unchecked">
-    <input type="checkbox" name="chk[]" value="checkbox checked" checked>
-    <input type="checkbox" name="chk[]" value="checkbox checked2" checked>
-    <input type="email" name="email" value="email@foo.bar">
-    <input type="file" name="file">
-    <input type="radio" name="radio[]" value="radio unchecked1">
-    <input type="radio" name="radio[]" value="radio checked2" checked>
-    <input type="radio" name="radio[]" value="radio unchecked2">
-    <input type="hidden" name="hidden" value="hidden">
-    <input type="image" name="image" value="image">
-    <input type="month" name="month" value="2020-01">
-    <input type="number" name="number" value="666">
-    <input type="password" name="password" value="1234">
-    <input type="range" name="range" value="6" min="1" maxlength="10">
-    <input type="reset" name="reset" value="reset">
-    <input type="search" name="search" value="search">
-    <input type="submit" name="submit" value="submit">
-    <input type="tel" name="tel" value="+436666666666">
-    <input type="text" name="text" value="text">
-    <input type="text" name="text_depth[]" value="text">
-    <input type="text" name="text_depth[]" value="text">
-    <input type="text" name="text_deeper[1][foo]" value="text">
-    <input type="text" name="text_deeper[1][bar]" value="text">
-    <input type="time" name="time" value="06:06">
-    <input type="url" name="url" value="https://github.com/brainfoolong/formdata-json">
-    <input type="week" name="week" value="2014-W48">
-    <button value="Button Element" name="button_element"></button>
-    <textarea name="textarea">textarea</textarea>
-    <select name="select_single_value">
-        <option value="1">1</option>
-        <option value="2" selected>2</option>
-    </select>
-    <select name="select_single_text">
-        <option>1</option>
-        <option selected>2</option>
-    </select>
-    <select name="select_multiple[]" multiple>
-        <option>1</option>
-        <option selected>2</option>
-        <option value="3" selected>3</option>
-    </select>
-    <select name="select_multiple_depth[123][]" multiple>
-        <option>1</option>
-        <option selected>2</option>
-        <option value="3" selected>3</option>
-    </select>
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing read toJson() of all existing input types.</p>
+  <input type="button" name="button" value="button">
+  <input type="color" name="color" value="#ff0000">
+  <input type="date" name="date" value="2020-01-03">
+  <input type="datetime-local" name="datetime-local" value="2014-01-02T11:42:13.51">
+  <input type="checkbox" name="checkbox_checked" value="checkbox checked" checked>
+  <input type="checkbox" name="checkbox" value="checkbox unchecked">
+  <input type="checkbox" name="chk[]" value="checkbox checked" checked>
+  <input type="checkbox" name="chk[]" value="checkbox checked2" checked>
+  <input type="email" name="email" value="email@foo.bar">
+  <input type="file" name="file">
+  <input type="radio" name="radio[]" value="radio unchecked1">
+  <input type="radio" name="radio[]" value="radio checked2" checked>
+  <input type="radio" name="radio[]" value="radio unchecked2">
+  <input type="hidden" name="hidden" value="hidden">
+  <input type="image" name="image" value="image">
+  <input type="month" name="month" value="2020-01">
+  <input type="number" name="number" value="666">
+  <input type="password" name="password" value="1234">
+  <input type="range" name="range" value="6" min="1" maxlength="10">
+  <input type="reset" name="reset" value="reset">
+  <input type="search" name="search" value="search">
+  <input type="submit" name="submit" value="submit">
+  <input type="tel" name="tel" value="+436666666666">
+  <input type="text" name="text" value="text">
+  <input type="text" name="text_depth[]" value="text">
+  <input type="text" name="text_depth[]" value="text">
+  <input type="text" name="text_deeper[1][foo]" value="text">
+  <input type="text" name="text_deeper[1][bar]" value="text">
+  <input type="time" name="time" value="06:06">
+  <input type="url" name="url" value="https://github.com/brainfoolong/formdata-json">
+  <input type="week" name="week" value="2014-W48">
+  <button value="Button Element" name="button_element"></button>
+  <textarea name="textarea">textarea</textarea>
+  <select name="select_single_value">
+    <option value="1">1</option>
+    <option value="2" selected>2</option>
+  </select>
+  <select name="select_single_text">
+    <option>1</option>
+    <option selected>2</option>
+  </select>
+  <select name="select_multiple[]" multiple>
+    <option>1</option>
+    <option selected>2</option>
+    <option value="3" selected>3</option>
+  </select>
+  <select name="select_multiple_depth[123][]" multiple>
+    <option>1</option>
+    <option selected>2</option>
+    <option value="3" selected>3</option>
+  </select>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -290,56 +304,56 @@
 </script>
 
 <form name="write-all" id="write-all">
-    <h3></h3>
-    <p>Testing write fromJson() of all existing input types.</p>
-    <input type="button" name="button" value="Button">
-    <input type="checkbox" name="checkbox_checked" value="checkbox checked">
-    <input type="checkbox" name="checkbox" value="checkbox unchecked">
-    <input type="checkbox" name="chk[]" value="checkbox checked">
-    <input type="checkbox" name="chk[]" value="checkbox unchecked">
-    <input type="color" name="color">
-    <input type="date" name="date" value="">
-    <input type="datetime-local" name="datetime-local" value="">
-    <input type="email" name="email" value="">
-    <input type="file" name="file">
-    <input type="hidden" name="hidden" value="">
-    <input type="image" name="image" value="">
-    <input type="month" name="month" value="">
-    <input type="number" name="number" value="">
-    <input type="password" name="password" value="">
-    <input type="radio" name="radio" value="radio unchecked1">
-    <input type="radio" name="radio" value="radio checked" checked>
-    <input type="radio" name="radio" value="radio unchecked2">
-    <input type="range" name="range" value="" min="1" maxlength="10">
-    <input type="reset" name="reset" value="reset">
-    <input type="search" name="search" value="">
-    <input type="submit" name="submit" value="submit">
-    <input type="tel" name="tel" value="">
-    <input type="text" name="text" value="">
-    <input type="time" name="time" value="">
-    <input type="url" name="url" value="">
-    <input type="week" name="week" value="">
-    <button value="Button Element" name="button_element"></button>
-    <textarea name="textarea"></textarea>
-    <select name="select_single_value">
-        <option value="1">1</option>
-        <option value="2">2</option>
-    </select>
-    <select name="select_single_text">
-        <option>1</option>
-        <option>2</option>
-    </select>
-    <select name="select_multiple[]" multiple>
-        <option>1</option>
-        <option>2</option>
-        <option value="3">3</option>
-    </select>
-    <select name="select_multiple_depth[123][]" multiple>
-        <option>1</option>
-        <option>2</option>
-        <option value="3">3</option>
-    </select>
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing write fromJson() of all existing input types.</p>
+  <input type="button" name="button" value="Button">
+  <input type="checkbox" name="checkbox_checked" value="checkbox checked">
+  <input type="checkbox" name="checkbox" value="checkbox unchecked">
+  <input type="checkbox" name="chk[]" value="checkbox checked">
+  <input type="checkbox" name="chk[]" value="checkbox unchecked">
+  <input type="color" name="color">
+  <input type="date" name="date" value="">
+  <input type="datetime-local" name="datetime-local" value="">
+  <input type="email" name="email" value="">
+  <input type="file" name="file">
+  <input type="hidden" name="hidden" value="">
+  <input type="image" name="image" value="">
+  <input type="month" name="month" value="">
+  <input type="number" name="number" value="">
+  <input type="password" name="password" value="">
+  <input type="radio" name="radio" value="radio unchecked1">
+  <input type="radio" name="radio" value="radio checked" checked>
+  <input type="radio" name="radio" value="radio unchecked2">
+  <input type="range" name="range" value="" min="1" maxlength="10">
+  <input type="reset" name="reset" value="reset">
+  <input type="search" name="search" value="">
+  <input type="submit" name="submit" value="submit">
+  <input type="tel" name="tel" value="">
+  <input type="text" name="text" value="">
+  <input type="time" name="time" value="">
+  <input type="url" name="url" value="">
+  <input type="week" name="week" value="">
+  <button value="Button Element" name="button_element"></button>
+  <textarea name="textarea"></textarea>
+  <select name="select_single_value">
+    <option value="1">1</option>
+    <option value="2">2</option>
+  </select>
+  <select name="select_single_text">
+    <option>1</option>
+    <option>2</option>
+  </select>
+  <select name="select_multiple[]" multiple>
+    <option>1</option>
+    <option>2</option>
+    <option value="3">3</option>
+  </select>
+  <select name="select_multiple_depth[123][]" multiple>
+    <option>1</option>
+    <option>2</option>
+    <option value="3">3</option>
+  </select>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -348,15 +362,15 @@
 </script>
 
 <form name="read-files" id="read-files">
-    <h3></h3>
-    <p>Testing read toJson() with files callback. To test this with manual user input, you have to choose the
-        test-file.gif from this directory for both single and multiple file inputs. After choosing both the test must
-        turn green again.</p>
-    Single: <input type="file" name="file"
-                   data-test-value='"data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="'><br/>
-    Multiple: <input type="file" name="files" multiple
-                     data-test-value='["data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="]'>
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing read toJson() with files callback. To test this with manual user input, you have to choose the
+    test-file.gif from this directory for both single and multiple file inputs. After choosing both the test must
+    turn green again.</p>
+  Single: <input type="file" name="file"
+                 data-test-value='"data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="'><br/>
+  Multiple: <input type="file" name="files" multiple
+                   data-test-value='["data:image/gif;base64,R0lGODdhAQABAPAAAPUAAMlFJiH5BAEAAAEALAAAAAABAAEAAAICRAEAOw=="]'>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -365,11 +379,11 @@
 </script>
 
 <form name="option-includeDisabled" id="option-includeDisabled">
-    <h3></h3>
-    <p>Testing option "includeDisabled".</p>
-    <input type="email" name="email_enabled" value="notdisabled@foo.bar">
-    <input type="email" name="email_disabled" value="disabled@foo.bar" disabled>
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "includeDisabled".</p>
+  <input type="email" name="email_enabled" value="notdisabled@foo.bar">
+  <input type="email" name="email_disabled" value="disabled@foo.bar" disabled>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -378,11 +392,11 @@
 </script>
 
 <form name="option-uncheckedValue" id="option-uncheckedValue">
-    <h3></h3>
-    <p>Testing option "uncheckedValue".</p>
-    <input type="checkbox" name="checked" value="1" checked>
-    <input type="checkbox" name="unchecked" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "uncheckedValue".</p>
+  <input type="checkbox" name="checked" value="1" checked>
+  <input type="checkbox" name="unchecked" value="2">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -391,15 +405,15 @@
 </script>
 
 <form name="option-includeButtonValues" id="option-includeButtonValues">
-    <h3></h3>
-    <p>Testing option "includeButtonValues".</p>
-    <input type="checkbox" name="checked" value="1" checked>
-    <input type="checkbox" name="unchecked" value="2">
-    <input type="button" name="button" value="Btn1">
-    <input type="submit" name="submit" value="submit">
-    <input type="reset" name="reset" value="reset">
-    <button value="Button Element" name="button_element"></button>
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "includeButtonValues".</p>
+  <input type="checkbox" name="checked" value="1" checked>
+  <input type="checkbox" name="unchecked" value="2">
+  <input type="button" name="button" value="Btn1">
+  <input type="submit" name="submit" value="submit">
+  <input type="reset" name="reset" value="reset">
+  <button value="Button Element" name="button_element"></button>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -408,11 +422,11 @@
 </script>
 
 <form name="option-inputFilter" id="option-inputFilter">
-    <h3></h3>
-    <p>Testing option "inputFilter" for read and write.</p>
-    <input type="password" name="pw" value="1">
-    <input type="text" value="" name="foobar">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "inputFilter" for read and write.</p>
+  <input type="password" name="pw" value="1">
+  <input type="text" value="" name="foobar">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -421,20 +435,20 @@
   })()
 </script>
 <form name="option-flatList-write" id="option-flatList-write">
-    <h3></h3>
-    <p>Testing option "flatList" on write</p>
-    <input type="text" name="name">
-    <input type="text" name="name2">
-    <input type="text" name="name[]">
-    <input type="text" name="name[foo]">
-    <input type="text" name="name[bar]">
-    <input type="text" name="name[]">
-    <input type="text" name="name[0][sub1]">
-    <input type="text" name="name[0][sub2]">
-    <input type="text" name="name[]">
-    <input type="checkbox" name="chk[]" value="1">
-    <input type="checkbox" name="chk[]" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "flatList" on write</p>
+  <input type="text" name="name">
+  <input type="text" name="name2">
+  <input type="text" name="name[]">
+  <input type="text" name="name[foo]">
+  <input type="text" name="name[bar]">
+  <input type="text" name="name[]">
+  <input type="text" name="name[0][sub1]">
+  <input type="text" name="name[0][sub2]">
+  <input type="text" name="name[]">
+  <input type="checkbox" name="chk[]" value="1">
+  <input type="checkbox" name="chk[]" value="2">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -442,20 +456,20 @@
   })()
 </script>
 <form name="option-flatList-read" id="option-flatList-read">
-    <h3></h3>
-    <p>Testing option "flatList" on read</p>
-    <input type="text" name="name" value="1">
-    <input type="text" name="name2">
-    <input type="text" name="name[]" value="name[]">
-    <input type="text" name="name[foo]" value="name[foo]">
-    <input type="text" name="name[bar]" value="name[bar]">
-    <input type="text" name="name[]" value="name[]">
-    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
-    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
-    <input type="text" name="name[]" value="name[]">
-    <input type="checkbox" name="chk[]" value="1" checked>
-    <input type="checkbox" name="chk[]" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "flatList" on read</p>
+  <input type="text" name="name" value="1">
+  <input type="text" name="name2">
+  <input type="text" name="name[]" value="name[]">
+  <input type="text" name="name[foo]" value="name[foo]">
+  <input type="text" name="name[bar]" value="name[bar]">
+  <input type="text" name="name[]" value="name[]">
+  <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+  <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+  <input type="text" name="name[]" value="name[]">
+  <input type="checkbox" name="chk[]" value="1" checked>
+  <input type="checkbox" name="chk[]" value="2">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -463,32 +477,32 @@
   })()
 </script>
 <form name="option-skipEmpty" id="option-skipEmpty">
-    <h3></h3>
-    <p>Testing option "skipEmpty"</p>
-    <select name="selectEmpty1">
-    </select>
-    <select name="selectEmpty2">
-        <option value="" selected>None</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-    </select>
-    <select name="selectEmpty3[foo]">
-        <option value="" selected>None</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-    </select>
-    <input type="hidden" name="name" value="1">
-    <input type="hidden" name="name2">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="hidden" name="name[foo]" value="name[foo]">
-    <input type="hidden" name="name[bar]" value="name[bar]">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
-    <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
-    <input type="hidden" name="name[]" value="name[]">
-    <input type="checkbox" name="chk[]" value="1" checked>
-    <input type="checkbox" name="chk[]" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "skipEmpty"</p>
+  <select name="selectEmpty1">
+  </select>
+  <select name="selectEmpty2">
+    <option value="" selected>None</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+  </select>
+  <select name="selectEmpty3[foo]">
+    <option value="" selected>None</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+  </select>
+  <input type="hidden" name="name" value="1">
+  <input type="hidden" name="name2">
+  <input type="hidden" name="name[]" value="name[]">
+  <input type="hidden" name="name[foo]" value="name[foo]">
+  <input type="hidden" name="name[bar]" value="name[bar]">
+  <input type="hidden" name="name[]" value="name[]">
+  <input type="hidden" name="name[0][sub1]" value="name[0][sub1]">
+  <input type="hidden" name="name[0][sub2]" value="name[0][sub2]">
+  <input type="hidden" name="name[]" value="name[]">
+  <input type="checkbox" name="chk[]" value="1" checked>
+  <input type="checkbox" name="chk[]" value="2">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -497,11 +511,11 @@
 </script>
 
 <form name="option-arrayify" id="option-arrayify">
-    <h3></h3>
-    <p>Testing option "arrayify".</p>
-    <input type="text" name="test[]" value="test1">
-    <input type="text" name="test[]" value="test2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "arrayify".</p>
+  <input type="text" name="test[]" value="test1">
+  <input type="text" name="test[]" value="test2">
+  <div class="result"></div>
 </form>
 <script>
 
@@ -526,20 +540,20 @@
 </script>
 
 <form name="option-clearOthers" id="option-clearOthers">
-    <h3></h3>
-    <p>Testing option "clearOthers"</p>
-    <input type="text" name="name1" value="1">
-    <input type="text" name="name2">
-    <input type="text" name="name[2]" value="name[]">
-    <input type="text" name="name[foo]" value="name[foo]">
-    <input type="text" name="name[bar]" value="name[bar]">
-    <input type="text" name="name[3]" value="name[]">
-    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
-    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
-    <input type="text" name="name[4]" value="name[]">
-    <input type="checkbox" name="chk[]" value="1" checked>
-    <input type="checkbox" name="chk[]" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "clearOthers"</p>
+  <input type="text" name="name1" value="1">
+  <input type="text" name="name2">
+  <input type="text" name="name[2]" value="name[]">
+  <input type="text" name="name[foo]" value="name[foo]">
+  <input type="text" name="name[bar]" value="name[bar]">
+  <input type="text" name="name[3]" value="name[]">
+  <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+  <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+  <input type="text" name="name[4]" value="name[]">
+  <input type="checkbox" name="chk[]" value="1" checked>
+  <input type="checkbox" name="chk[]" value="2">
+  <div class="result"></div>
 </form>
 <script>
   runTestCustom(function (form) {
@@ -557,11 +571,11 @@
 </script>
 
 <form name="option-triggerChangeEvent" id="option-triggerChangeEvent">
-    <h3></h3>
-    <p>Testing option "triggerChangeEvent"</p>
-    <input type="text" name="name1">
-    <input type="text" name="name2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing option "triggerChangeEvent"</p>
+  <input type="text" name="name1">
+  <input type="text" name="name2">
+  <div class="result"></div>
 </form>
 <script>
   runTestCustom(function (form) {
@@ -579,20 +593,20 @@
 </script>
 
 <form name="test-clear" id="test-clear">
-    <h3></h3>
-    <p>Testing form clear</p>
-    <input type="text" name="name1" value="1">
-    <input type="text" name="name2">
-    <input type="text" name="name[1]" value="name[]">
-    <input type="text" name="name[foo]" value="name[foo]">
-    <input type="text" name="name[bar]" value="name[bar]">
-    <input type="text" name="name[2]" value="name[]">
-    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
-    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
-    <input type="text" name="name[3]" value="name[]">
-    <input type="checkbox" name="chk[]" value="1" checked>
-    <input type="checkbox" name="chk[]" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing form clear</p>
+  <input type="text" name="name1" value="1">
+  <input type="text" name="name2">
+  <input type="text" name="name[1]" value="name[]">
+  <input type="text" name="name[foo]" value="name[foo]">
+  <input type="text" name="name[bar]" value="name[bar]">
+  <input type="text" name="name[2]" value="name[]">
+  <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+  <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+  <input type="text" name="name[3]" value="name[]">
+  <input type="checkbox" name="chk[]" value="1" checked>
+  <input type="checkbox" name="chk[]" value="2">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -612,20 +626,20 @@
 </script>
 
 <form name="test-reset" id="test-reset">
-    <h3></h3>
-    <p>Testing form reset</p>
-    <input type="text" name="name1" value="1">
-    <input type="text" name="name2">
-    <input type="text" name="name[1]" value="name[]">
-    <input type="text" name="name[foo]" value="name[foo]">
-    <input type="text" name="name[bar]" value="name[bar]">
-    <input type="text" name="name[2]" value="name[]">
-    <input type="text" name="name[0][sub1]" value="name[0][sub1]">
-    <input type="text" name="name[0][sub2]" value="name[0][sub2]">
-    <input type="text" name="name[3]" value="name[]">
-    <input type="checkbox" name="chk[]" value="1" checked>
-    <input type="checkbox" name="chk[]" value="2">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing form reset</p>
+  <input type="text" name="name1" value="1">
+  <input type="text" name="name2">
+  <input type="text" name="name[1]" value="name[]">
+  <input type="text" name="name[foo]" value="name[foo]">
+  <input type="text" name="name[bar]" value="name[bar]">
+  <input type="text" name="name[2]" value="name[]">
+  <input type="text" name="name[0][sub1]" value="name[0][sub1]">
+  <input type="text" name="name[0][sub2]" value="name[0][sub2]">
+  <input type="text" name="name[3]" value="name[]">
+  <input type="checkbox" name="chk[]" value="1" checked>
+  <input type="checkbox" name="chk[]" value="2">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -646,12 +660,12 @@
 </script>
 
 <form name="test-reset2" id="test-reset2">
-    <h3></h3>
-    <p>Testing form reset2</p>
-    <input type="text" name="name1" value="1">
-    <input type="text" name="name2">
-    <input type="text" name="name3" value="name[]">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing form reset2</p>
+  <input type="text" name="name1" value="1">
+  <input type="text" name="name2">
+  <input type="text" name="name3" value="name[]">
+  <div class="result"></div>
 </form>
 <script>
   runTestCustom(function (form) {
@@ -671,32 +685,32 @@
 
 
 <form name="testIssue-9" id="testIssue-9">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/9</p>
-    <input name="docn">
-    <input name="docdate">
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/9</p>
+  <input name="docn">
+  <input name="docdate">
 
-    <input name="client[name]">
-    <input name="client[edrpou]">
+  <input name="client[name]">
+  <input name="client[edrpou]">
 
-    <input name="client[phone][]">
-    <input name="client[phone][]">
-    <input name="client[phone][]">
+  <input name="client[phone][]">
+  <input name="client[phone][]">
+  <input name="client[phone][]">
 
 
-    <input name="client[email][]">
-    <input name="client[email][]">
+  <input name="client[email][]">
+  <input name="client[email][]">
 
-    <select name="client[status][]" id="cars" multiple>
-        <option value="volvo">Volvo</option>
-        <option value="saab">Saab</option>
-        <option value="opel">Opel</option>
-        <option value="audi">Audi</option>
-    </select>
+  <select name="client[status][]" id="cars" multiple>
+    <option value="volvo">Volvo</option>
+    <option value="saab">Saab</option>
+    <option value="opel">Opel</option>
+    <option value="audi">Audi</option>
+  </select>
 
-    <input type="checkbox" name="scales[]" checked value="77">
-    <input type="checkbox" name="scales[]">
-    <div class="result"></div>
+  <input type="checkbox" name="scales[]" checked value="77">
+  <input type="checkbox" name="scales[]">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -708,25 +722,25 @@
 </script>
 
 <form name="testIssue-13" id="testIssue-13">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13</p>
-    <input name="client[][phone][]">
-    <input name="client[][phone][]">
-    <input name="client[][phone][]">
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13</p>
+  <input name="client[][phone][]">
+  <input name="client[][phone][]">
+  <input name="client[][phone][]">
 
 
-    <input name="client[][email][]">
-    <input name="client[][email][]">
+  <input name="client[][email][]">
+  <input name="client[][email][]">
 
 
-    <input name="client[][phone][]">
-    <input name="client[][phone][]">
+  <input name="client[][phone][]">
+  <input name="client[][phone][]">
 
-    <input name="client[][email][]">
-    <input name="client[][email][]">
-    <input name="client[][email][]">
+  <input name="client[][email][]">
+  <input name="client[][email][]">
+  <input name="client[][email][]">
 
-    <div class="result"></div>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -735,12 +749,12 @@
 </script>
 
 <form name="testIssue-15" id="testIssue-15">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/15</p>
-    <input type="checkbox" name="scales[]">
-    <input type="checkbox" name="scales[]" checked>
-    <input type="checkbox" name="scales[]" value="77" checked>
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/15</p>
+  <input type="checkbox" name="scales[]">
+  <input type="checkbox" name="scales[]" checked>
+  <input type="checkbox" name="scales[]" value="77" checked>
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -749,11 +763,11 @@
 </script>
 
 <form name="testIssue-13-2" id="testIssue-13-2">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13#issuecomment-927836476</p>
-    <input name="client[name]">
-    <input name="client[0][phone][]">
-    <div class="result"></div>
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/13#issuecomment-927836476</p>
+  <input name="client[name]">
+  <input name="client[0][phone][]">
+  <div class="result"></div>
 </form>
 <script>
   (function () {
@@ -762,157 +776,172 @@
 </script>
 
 <form name="testIssue-16" id="testIssue-16">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928159217</p>
-    <input name="client[][phone][]">
-    <input name="client[][phone][]">
-    <input name="client[][phone][]">
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928159217</p>
+  <input name="client[][phone][]">
+  <input name="client[][phone][]">
+  <input name="client[][phone][]">
 
 
-    <input name="client[][email][]">
-    <input name="client[][email][]">
+  <input name="client[][email][]">
+  <input name="client[][email][]">
 
 
-    <input name="client[][phone][]">
-    <input name="client[][phone][]">
+  <input name="client[][phone][]">
+  <input name="client[][phone][]">
 
-    <input name="client[][email][]">
-    <input name="client[][email][]">
-    <input name="client[][email][]">
+  <input name="client[][email][]">
+  <input name="client[][email][]">
+  <input name="client[][email][]">
 
-    <select name="foo[]" multiple>
-        <option>Value1</option>
-        <option>Value2</option>
-    </select>
-    <div class="result"></div>
-    <script>
-      (function () {
-        runTest('read', document.querySelector('#testIssue-16'), { skipEmpty: true, flatList: true }, '[]')
-      })()
-    </script>
+  <select name="foo[]" multiple>
+    <option>Value1</option>
+    <option>Value2</option>
+  </select>
+  <div class="result"></div>
+  <script>
+    (function () {
+      runTest('read', document.querySelector('#testIssue-16'), { skipEmpty: true, flatList: true }, '[]')
+    })()
+  </script>
 </form>
 
 <form name="testIssue-16-2" id="testIssue-16-2">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928941989</p>
-    <input name="client[name]">
-    <input name="client[edrpou]">
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/16#issuecomment-928941989</p>
+  <input name="client[name]">
+  <input name="client[edrpou]">
 
-    <input name="client[person][0][phone][]">
-    <input name="client[person][0][phone][]">
-    <input name="client[person][0][phone][]">
-
-
-    <input name="client[person][0][email][]">
-    <input name="client[person][0][email][]">
+  <input name="client[person][0][phone][]">
+  <input name="client[person][0][phone][]">
+  <input name="client[person][0][phone][]">
 
 
-    <input name="client[person][1][phone][]">
-    <input name="client[person][1][phone][]">
+  <input name="client[person][0][email][]">
+  <input name="client[person][0][email][]">
 
-    <input name="client[person][1][email][]">
-    <input name="client[person][1][email][]">
-    <input name="client[person][1][email][]">
-    <select name="client[status][]" multiple>
-        <option value="volvo">Volvo</option>
-        <option value="saab" selected>Saab</option>
-        <option value="opel">Opel</option>
-        <option value="audi">Audi</option>
-    </select>
 
-    <input type="checkbox" name="scales[]">
-    <input type="checkbox" name="scales[]" checked value="77">
-    <div class="result"></div>
-    <script>
-      (function () {
-        runTest('read', document.querySelector('#testIssue-16-2'), {
-          skipEmpty: true,
-          flatList: true
-        }, '[["client[status][]",["saab"]],["scales[]","77"]]')
-      })()
-    </script>
+  <input name="client[person][1][phone][]">
+  <input name="client[person][1][phone][]">
+
+  <input name="client[person][1][email][]">
+  <input name="client[person][1][email][]">
+  <input name="client[person][1][email][]">
+  <select name="client[status][]" multiple>
+    <option value="volvo">Volvo</option>
+    <option value="saab" selected>Saab</option>
+    <option value="opel">Opel</option>
+    <option value="audi">Audi</option>
+  </select>
+
+  <input type="checkbox" name="scales[]">
+  <input type="checkbox" name="scales[]" checked value="77">
+  <div class="result"></div>
+  <script>
+    (function () {
+      runTest('read', document.querySelector('#testIssue-16-2'), {
+        skipEmpty: true,
+        flatList: true
+      }, '[["client[status][]",["saab"]],["scales[]","77"]]')
+    })()
+  </script>
 </form>
 
 <form name="testIssue-18" id="testIssue-18">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/18</p>
-    <input name='test'>
-    <button type='submit' class="btn btn-primary" name="button_el" value="valuebutton">Test form</button>
-    <input type='submit' class="btn btn-primary" name="submit_el" value="Test form"/>
-    <div class="result"></div>
-    <script>
-      (function () {
-        runTest('read', document.querySelector('#testIssue-18'), { includeButtonValues: true }, '{"test":"","button_el":"valuebutton","submit_el":"Test form"}')
-      })()
-    </script>
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/18</p>
+  <input name='test'>
+  <button type='submit' class="btn btn-primary" name="button_el" value="valuebutton">Test form</button>
+  <input type='submit' class="btn btn-primary" name="submit_el" value="Test form"/>
+  <div class="result"></div>
+  <script>
+    (function () {
+      runTest('read', document.querySelector('#testIssue-18'), { includeButtonValues: true }, '{"test":"","button_el":"valuebutton","submit_el":"Test form"}')
+    })()
+  </script>
 </form>
 
 <form name="test-invalidSetValues" id="test-invalidSetValues">
-    <h3></h3>
-    <p>Testing to not throw errors when using invalid setValues</p>
-    <input name="client[name]" value="1">
-    <input name="client[edrpou]">
-    <input name="foo[name]">
-    <input name="foo[edrpou]">
-    <input name="test[name]">
-    <input name="test[edrpou]">
-    <div class="result"></div>
-    <script>
-      runTestCustom(function (form) {
-        try {
-          FormDataJson.fromJson(form, {
-            'client': null,
-            'foo': undefined,
-            'test': { 'foo': null }
-          })
-          FormDataJson.fromJson(form, null)
-          FormDataJson.fromJson(form, undefined)
-          FormDataJson.fromJson(form, false)
-          FormDataJson.fromJson(form, '')
-          FormDataJson.fromJson(form, function () {})
-          showTestResultsCustom(form, true)
-        } catch (e) {
-          console.error(e)
-          showTestResultsCustom(form, false)
-        }
-      }, document.querySelector('#test-invalidSetValues'))
-    </script>
+  <h3></h3>
+  <p>Testing to not throw errors when using invalid setValues</p>
+  <input name="client[name]" value="1">
+  <input name="client[edrpou]">
+  <input name="foo[name]">
+  <input name="foo[edrpou]">
+  <input name="test[name]">
+  <input name="test[edrpou]">
+  <div class="result"></div>
+  <script>
+    runTestCustom(function (form) {
+      try {
+        FormDataJson.fromJson(form, {
+          'client': null,
+          'foo': undefined,
+          'test': { 'foo': null }
+        })
+        FormDataJson.fromJson(form, null)
+        FormDataJson.fromJson(form, undefined)
+        FormDataJson.fromJson(form, false)
+        FormDataJson.fromJson(form, '')
+        FormDataJson.fromJson(form, function () {})
+        showTestResultsCustom(form, true)
+      } catch (e) {
+        console.error(e)
+        showTestResultsCustom(form, false)
+      }
+    }, document.querySelector('#test-invalidSetValues'))
+  </script>
 </form>
 
 
 <form name="testIssue-25" id="testIssue-25">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/25</p>
-    <input name="_Company[id]" type="hidden">
-    <input name="_Company[_Phone][0][id]" type="hidden">
-    <input id="phone_phone" name="_Company[_Phone][0][phone]" type="text" value="22222222">
-    <input type="submit" value="Save">
-    <div class="result"></div>
-    <script>
-      (function () {
-        runTest('read', document.querySelector('#testIssue-25'), { skipEmpty: true }, '{"_Company":{"_Phone":[{"phone":"22222222"}]}}')
-      })()
-    </script>
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/25</p>
+  <input name="_Company[id]" type="hidden">
+  <input name="_Company[_Phone][0][id]" type="hidden">
+  <input id="phone_phone" name="_Company[_Phone][0][phone]" type="text" value="22222222">
+  <input type="submit" value="Save">
+  <div class="result"></div>
+  <script>
+    (function () {
+      runTest('read', document.querySelector('#testIssue-25'), { skipEmpty: true }, '{"_Company":{"_Phone":[{"phone":"22222222"}]}}')
+    })()
+  </script>
 </form>
 
 <form name="testIssue-35" id="testIssue-35">
-    <h3></h3>
-    <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/35</p>
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/35</p>
 
-    Email1<input name="communication1[preference][]" type="checkbox" value="email">
-    SMS1<input name="communication1[preference][]" type="checkbox" value="sms">
-    Letter1<input name="communication1[preference][]" type="checkbox" value="letter">
+  Email1<input name="communication1[preference][]" type="checkbox" value="email">
+  SMS1<input name="communication1[preference][]" type="checkbox" value="sms">
+  Letter1<input name="communication1[preference][]" type="checkbox" value="letter">
 
-    Email2<input name="communication2[preference][]" type="checkbox" value="email">
-    SMS2<input name="communication2[preference][]" type="checkbox" value="sms">
-    Letter2<input name="communication2[preference][]" type="checkbox" value="letter">
-    <div class="result"></div>
-    <script>
-      (function () {
-        runTest('write', document.querySelector('#testIssue-35'), null, '{"communication1":{"preference":["email","sms"]},"communication2":{"preference":["email","letter"]}}')
-      })()
-    </script>
+  Email2<input name="communication2[preference][]" type="checkbox" value="email">
+  SMS2<input name="communication2[preference][]" type="checkbox" value="sms">
+  Letter2<input name="communication2[preference][]" type="checkbox" value="letter">
+  <div class="result"></div>
+  <script>
+    (function () {
+      runTest('write', document.querySelector('#testIssue-35'), null, '{"communication1":{"preference":["email","sms"]},"communication2":{"preference":["email","letter"]}}')
+    })()
+  </script>
 </form>
+
+<div data-test-id="testIssue-44" class="test-container">
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/44</p>
+
+  <form id="testIssue-44" name="testIssue-44"></form>
+  Email <input name="email" type="email" value="" form="testIssue-44">
+  <div class="result"></div>
+  <script>
+    (function () {
+      runTest('write', document.querySelector('#testIssue-44'), null, '{"email":"test@foo.bar"}')
+      runTest('read', document.querySelector('#testIssue-44'), null, '{"email":"test@foo.bar"}')
+    })()
+  </script>
+</div>
 
 
 <script>
@@ -921,14 +950,16 @@
     // with debug flag we directly load original source file
     // only work in supported browsers, like chrome
     if (location.href.match(/(\?|\&)debug/)) {
-      url = '../../src/form-data-json.js'
+      url = '../../dist/form-data-json.js'
     }
     let s = document.createElement('script')
     s.setAttribute('src', url)
     document.head.appendChild(s)
 
     let checkIv = setInterval(function () {
-      if (typeof FormDataJson === 'undefined') return
+      if (typeof FormDataJson === 'undefined') {
+        return
+      }
       clearInterval(checkIv)
       for (let i = 0; i < testQueue.length; i++) {
         testQueue[i]()

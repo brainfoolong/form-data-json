@@ -1,239 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Form Data Json - Form input values to/from JSON (And a bit more...)</title>
-    <script src="scripts/form-data-json.min.js"></script>
-    <script src="scripts/highlight.min.js"></script>
-    <link rel="stylesheet" href="stylesheets/a11y-dark.css" media="all" type="text/css">
-    <style>
-      body {
-        background: #1f262b;
-        color: #d4e8ff;
-        font-size: 16px;
-        line-height: 1.6;
-        text-align: center;
-        font-family: "Roboto", Arial, sans-serif;
+  <meta charset="UTF-8">
+  <title>Form Data Json - Form input values to/from JSON (And a bit more...)</title>
+  <script src="scripts/form-data-json.min.js"></script>
+  <script src="scripts/highlight.min.js"></script>
+  <link rel="stylesheet" href="stylesheets/a11y-dark.css" media="all" type="text/css">
+  <style>
+    body {
+      background: #1f262b;
+      color: #d4e8ff;
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: center;
+      font-family: "Roboto", Arial, sans-serif;
+    }
+    .page {
+      margin: 0 auto;
+      max-width: 1600px;
+      padding: 20px;
+      text-align: left;
+    }
+
+    article {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      padding: 0;
+      margin: 0;
+    }
+
+    h2 {
+      padding: 0;
+      margin: 0;
+      font-weight: 100;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      padding: 0;
+      padding-bottom: 10px;
+      margin: 0;
+      font-weight: 100;
+      margin-bottom: 10px;
+      border-bottom: 3px solid rgba(0, 0, 0, 0.15);
+    }
+
+    h4 {
+      padding: 0;
+      margin: 0;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      color: #aaa;
+    }
+
+
+    input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='button']),
+    textarea,
+    select {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      border-radius: 5px;
+      display: block;
+      color: white;
+      font-family: "Roboto", Arial, sans-serif;
+      box-sizing: border-box;
+      width: 100%;
+      border: 5px solid rgba(0, 0, 0, 0.05);
+      margin: 5px 0;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .example-box {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .form {
+      min-width: 300px;
+      flex: 1 1 auto;
+    }
+    .results {
+      min-width: 300px;
+      flex: 1 1 auto;
+    }
+
+    .field {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    pre {
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .result {
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    a, a:hover, a:active, a:visited {
+      color: #00a3d4;
+    }
+
+    .button {
+      background: #1e5c72;
+      padding: 10px;
+      border-radius: 5px;
+      display: inline-block;
+      color: white !important;
+      box-sizing: border-box;
+      width: auto;
+      border: 5px solid rgba(0, 0, 0, 0.05);
+      font-size: 16px;
+      line-height: 1.6;
+      cursor: pointer;
+    }
+  </style>
+  <script>
+    function addToJsonExample (id, options) {
+      const container = document.getElementById(id)
+      const form = container.querySelector('.form')
+      const code = container.querySelector('.code')
+      const result = container.querySelector('.result')
+
+      let codeStr = 'FormDataJson.toJson("#' + id + '"'
+      if (options) {
+        codeStr += ', ' + JSON.stringify(options, null, 2)
       }
-      .page {
-        margin: 0 auto;
-        max-width: 950px;
-        padding: 20px;
-        text-align: left;
+      codeStr += ')'
+      code.innerHTML = codeStr
+
+      function updateResult () {
+        result.innerHTML = JSON.stringify(eval(codeStr), null, 2)
+        hljs.highlightElement(result)
       }
 
-      h1 {
-        padding: 0;
-        margin: 0;
-      }
+      updateResult()
 
-      h2 {
-        padding: 0;
-        margin: 0;
-        font-weight: 100;
-        margin-bottom: 20px;
-      }
-
-      h3 {
-        padding: 0;
-        padding-bottom: 10px;
-        margin: 0;
-        font-weight: 100;
-        margin-bottom: 10px;
-        border-bottom: 3px solid rgba(0, 0, 0, 0.15);
-      }
-
-      h4 {
-        padding: 0;
-        margin: 0;
-        margin-top: 10px;
-        margin-bottom: 5px;
-        color: #aaa;
-      }
-
-
-      input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='button']),
-      textarea,
-      select {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 10px;
-        border-radius: 5px;
-        display: block;
-        color: white;
-        font-family: "Roboto", Arial, sans-serif;
-        box-sizing: border-box;
-        width: 100%;
-        border: 5px solid rgba(0, 0, 0, 0.05);
-        margin: 5px 0;
-        font-size: 16px;
-        line-height: 1.6;
-      }
-
-      .example-box {
-        align-items: center;
-      }
-
-      .form {
-        margin-bottom: 10px;
-      }
-
-      .field {
-        display: block;
-        margin-bottom: 5px;
-      }
-
-      pre {
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.05);
-      }
-      .result {
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.05);
-      }
-      a, a:hover, a:active, a:visited {
-        color: #00a3d4;
-      }
-
-      .button {
-        background: #1e5c72;
-        padding: 10px;
-        border-radius: 5px;
-        display: inline-block;
-        color: white !important;
-        box-sizing: border-box;
-        width: auto;
-        border: 5px solid rgba(0, 0, 0, 0.05);
-        font-size: 16px;
-        line-height: 1.6;
-        cursor: pointer;
-      }
-    </style>
-    <script>
-      function addToJsonExample (id, options) {
-        const container = document.getElementById(id)
-        const form = container.querySelector('.form')
-        const code = container.querySelector('.code')
-        const result = container.querySelector('.result')
-
-        let codeStr = 'FormDataJson.toJson("#' + id + '"'
-        if (options) {
-          codeStr += ', ' + JSON.stringify(options, null, 2)
-        }
-        codeStr += ')'
-        code.innerHTML = codeStr
-
-        function updateResult () {
-          result.innerHTML = JSON.stringify(eval(codeStr), null, 2)
-          hljs.highlightElement(result)
-        }
-
-        updateResult()
-
-        form.addEventListener('change', updateResult, false)
-        form.addEventListener('input', updateResult, false)
-      }
-    </script>
+      form.addEventListener('change', updateResult, false)
+      form.addEventListener('input', updateResult, false)
+    }
+  </script>
 </head>
 <body>
 
-
 <div class="page">
-    <img src="img/logo-readme-github.png"
-         alt="Form Data Json - Form input values to/from JSON (And a bit more...)"><br/><br/>
-    <h2>Form input values to/from JSON (And a bit more...)</h2><br/>
-    <nav>
-        <a href="https://github.com/brainfoolong/form-data-json" class="button" target="_blank">on Github / Readme</a>
-        <a href="https://github.com/brainfoolong/form-data-json#read-data" class="button" target="_blank">More
-            examples</a>
-        <a href="https://github.com/brainfoolong/form-data-json#all-default-options-for-tojson" class="button"
-           target="_blank">All Options</a>
-        <a href="https://github.com/brainfoolong/form-data-json/releases" class="button" target="_blank">Download</a>
-        <a href="https://github.com/brainfoolong/form-data-json/issues" class="button" target="_blank">Issue Tracker</a>
-    </nav>
-    <br/><br/>
-    <article id="basic">
-        <h3><a href="#basic">Getting started - basic example</a></h3>
-        <div class="example-box">
-            <h4>Form</h4>
-            <div class="form">
-                <form>
-                    <label class="field">
-                        <span class="label">First Name ([name='firstName'])</span>
-                        <input type="text" name="firstName" value="Jane">
-                    </label>
-                    <label class="field">
-                        <span class="label">Last Name ([name='lastName'])</span>
-                        <input type="text" name="lastName" value="Doe">
-                    </label>
-                    <label class="field">
-                        <span class="label">E-Mail ([name='email'])</span>
-                        <input type="email" name="email" value="janedoe@jandoe.org">
-                    </label>
-                    <label class="field">
-                        <span class="label">Password ([name='password'])</span>
-                        <input type="password" name="password" value="hiddensecret">
-                    </label>
-                    <label class="field">
-                        <span class="label">My Answer 1 ([name='answer[1]'])</span>
-                        <input type="text" name="answer[1]" value="You've asked me once">
-                    </label>
-                    <label class="field">
-                        <span class="label">How deep are we going with the array? ([name='deep[deeper][deepest][6]'])</span>
-                        <input type="text" name="deep[deeper][deepest][6]" value="As deep as you want">
-                    </label>
-                    <label class="field">
-                        <span class="label">How old are you? ([name='age'])</span>
-                        <input type="number" name="age" value="33">
-                    </label>
-                    <label class="field">
-                        <span class="label">Why are you here? ([name='reasons[]'])</span>
-                        <select name="reasons[]" multiple="" size="3">
-                            <option value="google" selected="">Google</option>
-                            <option value="luck">Luck</option>
-                            <option value="duno" selected="">Duno</option>
-                        </select>
-                    </label>
-                    <label class="field">
-                        <span class="label">How satisfied are you? ([name='satisfied'])</span>
-                        <input type="radio" name="satisfied" value="1"> 1
-                        <input type="radio" name="satisfied" value="2" checked=""> 2
-                        <input type="radio" name="satisfied" value="3"> 3
-                    </label>
-                    <label class="field">
-                        <span class="label">Your avatar color ([name='color'])</span>
-                        <input type="color" name="color" value="#559922">
-                    </label>
-                    <label class="field">
-                        <span class="label">Do you have a file for us? ([name='file'])</span>
-                        <input type="file" name="file">
-                    </label>
-                    <label class="field">
-                        <span class="label">This is disabled ([name='disabled'])</span>
-                        <input type="text" name="disabled" value="Sorry, you can't edit this" disabled="">
-                    </label>
-                    <label class="field">
-                        <span class="label">Are you happy with the result? ([name='result'])</span>
-                        <input type="checkbox" name="result" value="1" checked="">
-                    </label>
-                    <label class="field">
-                        <span class="label">Du you heard of me before? ([name='heardOfMe'])</span>
-                        <input type="checkbox" name="heardOfMe" value="1">
-                    </label>
-                    <label class="field">
-                        <span class="label">This is just a button with no reason ([name='buttonEmpty'])</span>
-                        <input type="button" class="button" name="buttonEmpty" value="Click on me does nothing">
-                    </label>
-                </form>
-            </div>
-            <h4>Code</h4>
-            <pre><code class="language-javascript code"></code></pre>
-            <h4>Result (Live when form is changed)</h4>
-            <pre><code class="language-json result"></code></pre>
-        </div>
-        <script>
-          addToJsonExample('basic')
-        </script>
-    </article>
+  <img src="img/logo-readme-github.png"
+       alt="Form Data Json - Form input values to/from JSON (And a bit more...)"><br/><br/>
+  <h2>Form input values to/from JSON (And a bit more...)</h2><br/>
+  <nav>
+    <a href="https://github.com/brainfoolong/form-data-json" class="button" target="_blank">on Github / Readme</a>
+    <a href="https://github.com/brainfoolong/form-data-json#read-data" class="button" target="_blank">More
+      examples</a>
+    <a href="https://github.com/brainfoolong/form-data-json#all-default-options-for-tojson" class="button"
+       target="_blank">All Options</a>
+    <a href="https://github.com/brainfoolong/form-data-json/releases" class="button" target="_blank">Download</a>
+    <a href="https://github.com/brainfoolong/form-data-json/issues" class="button" target="_blank">Issue Tracker</a>
+  </nav>
+  <br/><br/>
+  <article id="basic">
+    <h3><a href="#basic">Getting started - basic example</a></h3>
+    <div class="example-box">
+      <div class="form">
+        <h4>Form</h4>
+        <form>
+          <label class="field">
+            <span class="label">First Name ([name='firstName'])</span>
+            <input type="text" name="firstName" value="Jane">
+          </label>
+          <label class="field">
+            <span class="label">Last Name ([name='lastName'])</span>
+            <input type="text" name="lastName" value="Doe">
+          </label>
+          <label class="field">
+            <span class="label">E-Mail ([name='email'])</span>
+            <input type="email" name="email" value="janedoe@jandoe.org">
+          </label>
+          <label class="field">
+            <span class="label">Password ([name='password'])</span>
+            <input type="password" name="password" value="hiddensecret">
+          </label>
+          <label class="field">
+            <span class="label">My Answer 1 ([name='answer[1]'])</span>
+            <input type="text" name="answer[1]" value="You've asked me once">
+          </label>
+          <label class="field">
+            <span class="label">How deep are we going with the array? ([name='deep[deeper][deepest][6]'])</span>
+            <input type="text" name="deep[deeper][deepest][6]" value="As deep as you want">
+          </label>
+          <label class="field">
+            <span class="label">How old are you? ([name='age'])</span>
+            <input type="number" name="age" value="33">
+          </label>
+          <label class="field">
+            <span class="label">Why are you here? ([name='reasons[]'])</span>
+            <select name="reasons[]" multiple="" size="3">
+              <option value="google" selected="">Google</option>
+              <option value="luck">Luck</option>
+              <option value="duno" selected="">Duno</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="label">How satisfied are you? ([name='satisfied'])</span>
+            <input type="radio" name="satisfied" value="1"> 1
+            <input type="radio" name="satisfied" value="2" checked=""> 2
+            <input type="radio" name="satisfied" value="3"> 3
+          </label>
+          <label class="field">
+            <span class="label">Your avatar color ([name='color'])</span>
+            <input type="color" name="color" value="#559922">
+          </label>
+          <label class="field">
+            <span class="label">Do you have a file for us? ([name='file'])</span>
+            <input type="file" name="file">
+          </label>
+          <label class="field">
+            <span class="label">This is disabled ([name='disabled'])</span>
+            <input type="text" name="disabled" value="Sorry, you can't edit this" disabled="">
+          </label>
+          <label class="field">
+            <span class="label">Are you happy with the result? ([name='result'])</span>
+            <input type="checkbox" name="result" value="1" checked="">
+          </label>
+          <label class="field">
+            <span class="label">Du you heard of me before? ([name='heardOfMe'])</span>
+            <input type="checkbox" name="heardOfMe" value="1">
+          </label>
+          <label class="field">
+            <span class="label">This is just a button with no reason ([name='buttonEmpty'])</span>
+            <input type="button" class="button" name="buttonEmpty" value="Click on me does nothing">
+          </label>
+        </form>
+      </div>
+      <div class="results">
+        <h4>Code</h4>
+        <pre><code class="language-javascript code"></code></pre>
+        <h4>Result (Live when form is changed)</h4>
+        <pre><code class="language-json result"></code></pre>
+      </div>
+    </div>
+    <script>
+      addToJsonExample('basic')
+    </script>
+  </article>
+
+
+  <article id="ai">
+    <h3><a href="#ai">Auto Increment indexes with []</a></h3>
+    <div class="example-box">
+      <div class="form">
+        <h4>Form</h4>
+        <form>
+          <label class="field">
+            <span class="label">Checkbox 1 (Name mybox[])</span>
+            <input type="checkbox" name="mybox[]" value="1">
+          </label>
+          <label class="field">
+            <span class="label">Checkbox 2 (Name mybox[])</span>
+            <input type="checkbox" name="mybox[]" value="2">
+          </label>
+          <label class="field">
+            <span class="label">Checkbox 3 (Name mybox[])</span>
+            <input type="checkbox" name="mybox[]" value="3">
+          </label>
+          <label class="field">
+            <span class="label">Checkbox 4 (Name mybox[])</span>
+            <input type="checkbox" name="mybox[]" value="4">
+          </label>
+        </form>
+      </div>
+      <div class="results">
+        <h4>Code</h4>
+        <pre><code class="language-javascript code"></code></pre>
+        <h4>Result (Live when form is changed)</h4>
+        <pre><code class="language-json result"></code></pre>
+      </div>
+    </div>
+    <script>
+      addToJsonExample('ai')
+    </script>
+  </article>
 </div>
 
 <script>hljs.highlightAll()</script>

@@ -3,154 +3,245 @@
  * @link https://github.com/brainfoolong/form-data-json
  * @licence MIT
  */
-class FormDataJson {
+
+export interface FormDataJsonOptionsToJson {
+  /**
+   * Include all disabled field values
+   * @type {boolean}
+   */
+  includeDisabled?: boolean;
+
+  /**
+   * Include all button field values
+   * @type {boolean}
+   */
+  includeButtonValues?: boolean;
+
+  /**
+   * Include all unchecked radio/checkboxes as given value when they are unchecked
+   * If undefined, then the unchecked field will be ignored in output
+   * @type {*}
+   */
+  uncheckedValue?: any;
+
+  /**
+   * A function, where first parameter is the input field to check for
+   * Must return true if the field should be included
+   * All other return values, as well as no return value, will skip the input field in the progress
+   * @type {function|null}
+   */
+  inputFilter?: ((input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLElement) => boolean | undefined) | null;
+
+  /**
+   * Does return an array list, with same values as native Array.from(new FormData(form))
+   * A list will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
+   * The input name will not be changed and the list can contain multiple equal names
+   * @type {boolean}
+   */
+  flatList?: boolean;
+
+  /**
+   * If true, then this does skip empty fields from the output
+   * Empty is considered to be:
+   * An empty array (for multiple selects/checkboxes)
+   * An empty input field (length = 0 or null)
+   * This does recursively remove keys
+   * Example: {"agb":"1", "user" : [{"name" : ""},{"name" : ""}]} will be {"agb":"1"}
+   * @type {boolean}
+   */
+  skipEmpty?: boolean;
+
+  /**
+   * A function that will be called when all file fields are read as base64 data uri
+   * First passed parameter to this function are the form values including all file data
+   * Note: If set, the original return value from toJson() returns null
+   * @type {function|null}
+   */
+  filesCallback?: ((fieldValues: any) => void) | null;
+
+  /**
+   * By default, files are read as base64 data url
+   * Possible values are: readAsDataURL, readAsBinaryString, readAsText, readAsArrayBuffer
+   * @type {list}
+   */
+  fileReaderFunction?: 'readAsDataURL' | 'readAsBinaryString' | 'readAsText' | 'readAsArrayBuffer';
+
+  /**
+   * If true then values try to be a real Array instead of Object where possible
+   * If false then all values that are multiple (multiple select, same input names checkboxes, unnamed array indexes, etc...) will be objects
+   * @type {boolean}
+   */
+  arrayify?: boolean;
+
+  /**
+   * If true and given a form with an id attribute, then the script will
+   * search for any form input element with a form attribute which matches the id of the form in the complete dom
+   * This may come with a performance penalty and you should deactivate it when not needed
+   * Default is true, as this is html standard behaviour
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#form
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#form
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select#form
+   * @type {boolean}
+   */
+  includeLinkedFormElements?: boolean;
+}
+
+export interface FormDataJsonOptionsFromJson {
+
+  /**
+   * Does expect the given values are in a flatList, previously exported with toJson
+   * Instead of the default behaviour with nested objects
+   * @type {boolean}
+   */
+  flatList?: boolean;
+
+  /**
+   * If true, then all fields that are not exist in the passed values object, will be cleared/emptied
+   * Not exist means, the value must be undefined
+   * @type {boolean}
+   */
+  clearOthers?: boolean;
+
+  /**
+   * If true, then all fields that are not exist in the passed values object, will be reset
+   * Not exist means, the value must be undefined
+   * @type {boolean}
+   */
+  resetOthers?: boolean;
+
+  /**
+   * If true, when a fields value has changed, a "change" event will be fired
+   * @type {boolean}
+   */
+  triggerChangeEvent?: boolean;
+
+  /**
+   * Same as
+   * @see FormDataJsonOptionsToJson.includeLinkedFormElements
+   * @type {boolean}
+   */
+  includeLinkedFormElements?: boolean;
+}
+
+export interface FormDataJsonOptionsReset {
+
+  /**
+   * If true, when a fields value has changed, a "change" event will be fired
+   * @type {boolean}
+   */
+  triggerChangeEvent?: boolean;
+
+  /**
+   * Same as
+   * @see FormDataJsonOptionsToJson.includeLinkedFormElements
+   * @type {boolean}
+   */
+  includeLinkedFormElements?: boolean;
+}
+
+export interface FormDataJsonOptionsClear {
+
+  /**
+   * If true, when a fields value has changed, a "change" event will be fired
+   * @type {boolean}
+   */
+  triggerChangeEvent?: boolean;
+
+  /**
+   * Same as
+   * @see FormDataJsonOptionsToJson.includeLinkedFormElements
+   * @type {boolean}
+   */
+  includeLinkedFormElements?: boolean;
+}
+
+export default class FormDataJson {
 
   /**
    * Default options for toJson()
-   * @type {{}}
+   * @type {FormDataJsonOptionsToJson}
    */
-  static defaultOptionsToJson = {
-    /**
-     * Include all disabled field values
-     * @type {boolean}
-     */
-    'includeDisabled': false,
-
-    /**
-     * Include all button field values
-     * @type {boolean}
-     */
-    'includeButtonValues': false,
-
-    /**
-     * Include all unchecked radio/checkboxes as given value when they are unchecked
-     * If undefined, than the unchecked field will be ignored in output
-     * @type {*}
-     */
-    'uncheckedValue': undefined,
-
-    /**
-     * A function, where first parameter is the input field to check for
-     * Must return true if the field should be included
-     * All other return values, as well as no return value, will skip the input field in the progress
-     * @type {function|null}
-     */
-    'inputFilter': null,
-
-    /**
-     * Does return an array list, with same values as native Array.from(new FormData(form))
-     * A list will look like [["inputName", "inputValue"], ["inputName", "inputValue"]]
-     * The input name will not be changed and the list can contain multiple equal names
-     * @type {boolean}
-     */
-    'flatList': false,
-
-    /**
-     * If true, then this does skip empty fields from the output
-     * Empty is considered to be:
-     * An empty array (for multiple selects/checkboxes)
-     * An empty input field (length = 0 or null)
-     * This does recursively remove keys
-     * Example: {"agb":"1", "user" : [{"name" : ""},{"name" : ""}]} will be {"agb":"1"}
-     * @type {boolean}
-     */
-    'skipEmpty': false,
-
-    /**
-     * A function that will be called when all file fields are read as base64 data uri
-     * First passed parameter to this function are the form values including all file data
-     * Note: If set, the original return value from toJson() returns null
-     * @type {function|null}
-     */
-    'filesCallback': null,
-
-    /**
-     * By default, files are read as base64 data url
-     * Possible values are: readAsDataURL, readAsBinaryString, readAsText, readAsArrayBuffer
-     * @type {string}
-     */
-    'fileReaderFunction': 'readAsDataURL',
-
-    /**
-     * If true than values try to be a real Array instead of Object where possible
-     * If false than all values that are multiple (multiple select, same input names checkboxes, unnamed array indexes, etc...) will be objects
-     * @type {boolean}
-     */
-    'arrayify': true
+  static defaultOptionsToJson: FormDataJsonOptionsToJson = {
+    includeDisabled: false,
+    includeButtonValues: false,
+    uncheckedValue: undefined,
+    inputFilter: null,
+    flatList: false,
+    skipEmpty: false,
+    filesCallback: null,
+    fileReaderFunction: 'readAsDataURL',
+    arrayify: true,
+    includeLinkedFormElements: true
   }
 
   /**
    * Default options for fromJson()
-   * @type {{}}
+   * @type {FormDataJsonOptionsFromJson}
    */
-  static defaultOptionsFromJson = {
+  static defaultOptionsFromJson: FormDataJsonOptionsFromJson = {
+    flatList: false,
+    clearOthers: false,
+    resetOthers: false,
+    triggerChangeEvent: false,
+    includeLinkedFormElements: true
+  }
 
-    /**
-     * Does expect the given values are in a flatList, previously exported with toJson
-     * Instead of the default bevhiour with nested objects
-     * @type {boolean}
-     */
-    'flatList': false,
+  /**
+   * Default options for reset()
+   * @type {FormDataJsonOptionsReset}
+   */
+  static defaultOptionsReset: FormDataJsonOptionsReset = {
+    triggerChangeEvent: false,
+    includeLinkedFormElements: true
+  }
 
-    /**
-     * If true, than all fields that are not exist in the passed values object, will be cleared/emptied
-     * Not exist means, the value must be undefined
-     * @type {boolean}
-     */
-    'clearOthers': false,
-
-    /**
-     * If true, than all fields that are not exist in the passed values object, will be reset
-     * Not exist means, the value must be undefined
-     * @type {boolean}
-     */
-    'resetOthers': false,
-
-    /**
-     * If true, when a fields value has changed, a "change" event will be fired
-     * @type {boolean}
-     */
-    'triggerChangeEvent': false
+  /**
+   * Default options for clear()
+   * @type {FormDataJsonOptionsClear}
+   */
+  static defaultOptionsClear: FormDataJsonOptionsClear = {
+    triggerChangeEvent: false,
+    includeLinkedFormElements: true
   }
 
   /**
    * All input types that are buttons
    * @type {string[]}
    */
-  static buttonInputTypes = ['button', 'submit', 'reset', 'image']
+  static buttonInputTypes: string[] = ['button', 'submit', 'reset', 'image']
 
   /**
    * All input types that have a checked status
    * @type {string[]}
    */
-  static checkedInputTypes = ['checkbox', 'radio']
+  static checkedInputTypes: string[] = ['checkbox', 'radio']
 
   /**
    * Get values from all form elements inside the given element
    * @param {*} el
-   * @param {Object=} options
-   * @return {Object|Array}
+   * @param {FormDataJsonOptionsToJson=} toJsonOptions
+   * @return {Object|Array|null}
    */
-  static toJson (el, options) {
-    options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, options)
+  static toJson (el: any, toJsonOptions: FormDataJsonOptionsToJson | undefined): object | Array<any> | null {
+    const options = FormDataJson.merge(FormDataJson.defaultOptionsToJson, toJsonOptions)
 
     /**
      * Check if given input is valid for given filters based on given options
      * @param {HTMLElement} input
      * @return {boolean}
      */
-    function isValidInput (input) {
+    function isValidInput (input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLElement): boolean {
       // filter elements by input filter
       if (typeof options.inputFilter === 'function' && options.inputFilter(input) !== true) {
         return false
       }
 
       // ignore disabled fields
-      if (!options.includeDisabled && input.disabled) {
+      if (!options.includeDisabled && input.hasAttribute('disabled')) {
         return false
       }
 
-      const inputType = (input.type || 'text').toLowerCase()
+      const inputType = (input.getAttribute('type') || 'text').toLowerCase()
 
       // ignore button values
       if (!options.includeButtonValues && (input instanceof HTMLButtonElement || FormDataJson.buttonInputTypes.indexOf(inputType) > -1)) {
@@ -158,23 +249,23 @@ class FormDataJson {
       }
 
       // ignore unchecked fields when no value is given
-      if (typeof options.uncheckedValue === 'undefined' && FormDataJson.checkedInputTypes.indexOf(inputType) > -1 && !input.checked) {
+      if (input instanceof HTMLInputElement && typeof options.uncheckedValue === 'undefined' && FormDataJson.checkedInputTypes.indexOf(inputType) > -1 && !input.checked) {
         return false
       }
 
       return true
     }
 
-    const tree = FormDataJson.getFieldTree(el, isValidInput)
+    const tree = FormDataJson.getFieldTree(el, isValidInput, options)
     let returnObject = options.flatList ? [] : {}
-    const files = []
+    const files: any = []
 
     /**
      * Recursive get values
      * @param {Object} inputs
      * @param {Object} values
      */
-    function recursiveGetInputValues (inputs, values) {
+    function recursiveGetInputValues (inputs: any, values: any): void {
       for (let key in inputs) {
         const row = inputs[key]
         const objectKey = options.flatList ? row.name : key
@@ -213,7 +304,7 @@ class FormDataJson {
         } else if (inputType === 'checkbox') {
           value = input.checked ? input.value : options.uncheckedValue
         } else if (input instanceof HTMLSelectElement) {
-          let arr = []
+          let arr: any = []
           for (let i = 0; i < input.options.length; i++) {
             let option = input.options[i]
             if (option.selected) {
@@ -239,10 +330,10 @@ class FormDataJson {
     /**
      * Make an object to array if possible
      * @param {Object} object
-     * @return {*}
+     * @return {any}
      * @private
      */
-    function arrayify (object) {
+    function arrayify (object: any): any {
       if (FormDataJson.isObject(object)) {
         let count = 0
         let valid = true
@@ -256,7 +347,7 @@ class FormDataJson {
           count++
         }
         if (valid) {
-          let arr = []
+          let arr: any = []
           for (let i in object) {
             arr.push(object[i])
           }
@@ -270,12 +361,12 @@ class FormDataJson {
      * Does some final cleanup before output data
      * @return {*}
      */
-    function output () {
-      if (options.arrayify) {
-        returnObject = arrayify(returnObject)
-      }
+    function output (): any {
       if (options.skipEmpty) {
         returnObject = removeEmpty(returnObject) || (options.flatList ? [] : {})
+      }
+      if (options.arrayify) {
+        returnObject = arrayify(returnObject)
       }
       return returnObject
     }
@@ -286,9 +377,8 @@ class FormDataJson {
      * @param {number} depth
      * @return {Object|Array}
      */
-    function removeEmpty (object, depth) {
-      const isArray = FormDataJson.isArray(object)
-      let newObject = isArray ? [] : {}
+    function removeEmpty (object: any, depth: number = 0): any {
+      const newObject: any = FormDataJson.isArray(object) ? [] : {}
       let count = 0
       for (let key in object) {
         let value = object[key]
@@ -304,7 +394,7 @@ class FormDataJson {
         if (typeof value !== 'object' && FormDataJson.stringify(value) === '') {
           continue
         }
-        if (isArray) {
+        if (FormDataJson.isArray(newObject)) {
           newObject.push(options.flatList && !depth ? [object[key][0], value] : value)
         } else {
           newObject[key] = value
@@ -355,22 +445,21 @@ class FormDataJson {
    * Fill given form values into all form elements inside given element
    * @param {*} el
    * @param {Object|Array} values
-   * @param {Object=} options
-   * @param {string=} keyPrefix Internal only
+   * @param {FormDataJsonOptionsFromJson=} fromJsonOptions
    */
-  static fromJson (el, values, options, keyPrefix) {
+  static fromJson (el: any, values: any, fromJsonOptions: FormDataJsonOptionsFromJson) {
     if (!FormDataJson.isObject(values) && !FormDataJson.isArray(values)) {
       return
     }
-    options = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, options)
-    const tree = FormDataJson.getFieldTree(el)
+    const options: FormDataJsonOptionsFromJson = FormDataJson.merge(FormDataJson.defaultOptionsFromJson, fromJsonOptions)
+    const tree = FormDataJson.getFieldTree(el, null, options)
     const lastUsedFlatListIndex = {}
 
     if (options.clearOthers) {
-      FormDataJson.clear(el)
+      FormDataJson.clear(el, options)
     }
     if (options.resetOthers) {
-      FormDataJson.reset(el)
+      FormDataJson.reset(el, options)
     }
 
     /**
@@ -378,7 +467,7 @@ class FormDataJson {
      * @param {*} inputs
      * @param {*} newValues
      */
-    function resursiveSetInputValues (inputs, newValues) {
+    function resursiveSetInputValues (inputs: any, newValues: any): void {
       if (!FormDataJson.isObject(newValues) && !FormDataJson.isArray(newValues)) {
         return
       }
@@ -439,15 +528,17 @@ class FormDataJson {
   /**
    * Reset all input fields in the given element to their default values
    * @param {*} el
+   * @param {FormDataJsonOptionsReset=} resetOptions
    */
-  static reset (el) {
-    const tree = FormDataJson.getFieldTree(el)
+  static reset (el: any, resetOptions: FormDataJsonOptionsReset | undefined = undefined): void {
+    const options = FormDataJson.merge(FormDataJson.defaultOptionsReset, resetOptions)
+    const tree = FormDataJson.getFieldTree(el, null, options)
 
     /**
      * Recursive reset
      * @param {*} inputs
      */
-    function recursiveResetInputValues (inputs) {
+    function recursiveResetInputValues (inputs: any): void {
       for (let key in inputs) {
         const row = inputs[key]
         // next level
@@ -470,17 +561,21 @@ class FormDataJson {
         }
         const input = row.input
         if (FormDataJson.checkedInputTypes.indexOf(row.inputType) > -1) {
-          input.checked = input.defaultChecked
+          FormDataJson.setInputValue(row, input.defaultChecked, options.triggerChangeEvent)
         } else if (input instanceof HTMLSelectElement) {
-          const options = input.querySelectorAll('option')
-          for (let i = 0; i < options.length; i++) {
-            const option = options[i]
-            option.selected = option.defaultSelected
+          const selectOptions = input.querySelectorAll('option')
+          const value: any = []
+          for (let i = 0; i < selectOptions.length; i++) {
+            const option = selectOptions[i]
+            if (option.defaultSelected) {
+              value.push(option.value)
+            }
           }
+          FormDataJson.setInputValue(row, value, options.triggerChangeEvent)
         } else if (input.getAttribute('value')) {
-          input.value = input.getAttribute('value')
+          FormDataJson.setInputValue(row, input.getAttribute('value'), options.triggerChangeEvent)
         } else if (typeof input.defaultValue === 'string' || typeof input.defaultValue === 'number') {
-          input.value = input.defaultValue
+          FormDataJson.setInputValue(row, input.defaultValue, options.triggerChangeEvent)
         }
       }
     }
@@ -491,15 +586,17 @@ class FormDataJson {
   /**
    * Clear all input fields (to empty, unchecked, unselected) in the given element
    * @param {*} el
+   * @param {FormDataJsonOptionsReset=} clearOptions
    */
-  static clear (el) {
-    const tree = FormDataJson.getFieldTree(el)
+  static clear (el: any, clearOptions: FormDataJsonOptionsReset | undefined = undefined): void {
+    const options = FormDataJson.merge(FormDataJson.defaultOptionsClear, clearOptions)
+    const tree = FormDataJson.getFieldTree(el, null, options)
 
     /**
      * Recursive clear
      * @param {*} inputs
      */
-    function recursiveClearInputValues (inputs) {
+    function recursiveClearInputValues (inputs: any): void {
       for (let key in inputs) {
         const row = inputs[key]
         // next level
@@ -513,7 +610,7 @@ class FormDataJson {
             continue
           }
         }
-        FormDataJson.setInputValue(row, null)
+        FormDataJson.setInputValue(row, null, options.triggerChangeEvent)
       }
     }
 
@@ -522,14 +619,14 @@ class FormDataJson {
 
   /**
    * Set input value
-   * @param {*} row
-   * @param {*|null} newValue Null will unset the value
+   * @param {any} row
+   * @param {any} newValue Null will unset the value
    * @param {boolean=} triggerChangeEvent
    * @private
    */
-  static setInputValue (row, newValue, triggerChangeEvent) {
+  private static setInputValue (row: any, newValue: any, triggerChangeEvent: boolean = false): void {
     const triggerChange = triggerChangeEvent ? function (el) {
-      let ev = null
+      let ev: any
       if (typeof (Event) === 'function') {
         ev = new Event('change', { 'bubbles': true })
       } else {
@@ -539,7 +636,7 @@ class FormDataJson {
       el.dispatchEvent(ev)
     } : null
     if (row.type === 'radio') {
-      let changed = []
+      let changed: any = []
       for (let i = 0; i < row.inputs.length; i++) {
         const radioInput = row.inputs[i]
         if (radioInput.checked) {
@@ -586,12 +683,12 @@ class FormDataJson {
       } else if (!FormDataJson.isArray(newValueArr)) {
         newValueArr = [newValueArr]
       }
-      const oldSelectedOptionIds = []
-      const newSelectedOptionIds = []
+      const oldSelectedOptionIds: any = []
+      const newSelectedOptionIds: any = []
       for (let i = 0; i < input.options.length; i++) {
         const option = input.options[i]
         const optionValue = (typeof option.value !== 'undefined' ? option.value : option.text).toString()
-        if (option.selected !== false) {
+        if (option.selected) {
           oldSelectedOptionIds.push(i)
         }
         option.selected = false
@@ -601,7 +698,7 @@ class FormDataJson {
             break
           }
         }
-        if (option.selected !== false) {
+        if (option.selected) {
           newSelectedOptionIds.push(i)
         }
       }
@@ -622,9 +719,10 @@ class FormDataJson {
    * A object/array/undefined will be an ampty string
    * Boolean will be 1 or 0
    * @param {*} value
+   * @return {string}
    * @private
    */
-  static stringify (value) {
+  private static stringify (value: any): string {
     if (value === undefined) {
       return ''
     }
@@ -639,22 +737,32 @@ class FormDataJson {
 
   /**
    * Get all input fields as a multidimensional tree, as it would later appear in json data, but with input elements as values
-   * @param {*} el
-   * @param {function=} isValidInput A function to check for valid input
+   * @param {*} checkEl
+   * @param {function|null=} isValidInput A function to check for valid input
+   * @param { FormDataJsonOptionsToJson|FormDataJsonOptionsFromJson|FormDataJsonOptionsReset|FormDataJsonOptionsClear} options
    * @return {Object}
    * @private
    */
-  static getFieldTree (el, isValidInput) {
-    el = FormDataJson.getElement(el)
+  private static getFieldTree (
+    checkEl: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLElement,
+    isValidInput: ((input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLElement) => boolean | undefined) | null = null,
+    options: FormDataJsonOptionsToJson | FormDataJsonOptionsFromJson | FormDataJsonOptionsReset | FormDataJsonOptionsClear
+  ): any {
+    const el = FormDataJson.getElement(checkEl)
     if (!el) {
       return []
     }
 
-    let inputs = el.querySelectorAll('select, textarea, input, button')
+    let inputs = Array.from(el.querySelectorAll('select, textarea, input, button'))
+    // if we have a form with a name, we need to find all attributes that have a "form" attribute with that name as value as well
+    if (options.includeLinkedFormElements && el instanceof HTMLFormElement && el.getAttribute('id')) {
+      const formId = el.getAttribute('id')
+      inputs = inputs.concat(Array.from(document.querySelectorAll('select[form="' + formId + '"], textarea[form="' + formId + '"], input[form="' + formId + '"], button[form="' + formId + '"]')))
+    }
     let inputTree = {}
     let autoIncrementCounts = {}
     for (let i = 0; i < inputs.length; i++) {
-      const input = inputs[i]
+      const input = inputs[i] as HTMLInputElement
       if (!input.name || input.name.length === 0) {
         continue
       }
@@ -665,8 +773,8 @@ class FormDataJson {
       const inputType = (input.type || 'text').toLowerCase()
 
       let name = input.name
-      const keyParts = input.name.replace(/\]/g, '').split('[')
-      const isAutoIncrement = name.substr(-2) === '[]'
+      const keyParts = input.name.replace(/]/g, '').split('[')
+      const isAutoIncrement = name.substring(name.length - 2) === '[]'
       if (isAutoIncrement) {
         if (input instanceof HTMLSelectElement && input.multiple) {
           // special for multiple selects, we skip the last empty part to fix double nested arrays
@@ -738,7 +846,7 @@ class FormDataJson {
    * @return {boolean}
    * @private
    */
-  static isObject (arg) {
+  private static isObject (arg: any): boolean {
     return arg && typeof arg === 'object' && Object.prototype.toString.call(arg) !== '[object Array]'
   }
 
@@ -748,7 +856,7 @@ class FormDataJson {
    * @return {boolean}
    * @private
    */
-  static isArray (arg) {
+  private static isArray (arg: any): boolean {
     return Array.isArray(arg)
   }
 
@@ -758,16 +866,18 @@ class FormDataJson {
    * @return {HTMLElement|null}
    * @private
    */
-  static getElement (param) {
+  private static getElement (param: any): HTMLElement | null {
     if (typeof param === 'string') {
       return document.querySelector(param)
     }
     if (param instanceof HTMLElement) {
       return param
     }
+    // @ts-ignore
     if (typeof jQuery !== 'undefined' && param instanceof jQuery) {
       return param[0]
     }
+    // @ts-ignore
     if (typeof $ !== 'undefined' && param instanceof $) {
       return param[0]
     }
@@ -782,7 +892,7 @@ class FormDataJson {
    * @return {Object}
    * @private
    */
-  static merge (a, b) {
+  static merge (a: any, b: any): any {
     let c = {}
     for (let key in a) {
       c[key] = a[key]
@@ -792,9 +902,4 @@ class FormDataJson {
     }
     return c
   }
-}
-
-// module exports
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = FormDataJson
 }
