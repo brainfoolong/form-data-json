@@ -1,3 +1,5 @@
+![Downloads](https://img.shields.io/npm/d18m/form-data-json-convert?style=for-the-badge)
+
 ![Form Data Json Logo](https://brainfoolong.github.io/form-data-json/img/logo-readme-github.png)
 
 # Form Data Json - Form input values to/from JSON (And a bit more...)
