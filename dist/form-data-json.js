@@ -1,4 +1,4 @@
-// form-data-json-convert | version: 3.0.0 | url: https://github.com/brainfoolong/form-data-json
+// form-data-json-convert | version: 3.0.1 | url: https://github.com/brainfoolong/form-data-json
 "use strict";
 
 /**
@@ -125,7 +125,7 @@ class FormDataJson {
           if (FormDataJson.isObject(object[key]) && !(object[key] instanceof Element)) {
             object[key] = arrayify(object[key]);
           }
-          if (parseInt(key) !== count) {
+          if (key.match(/[^0-9]/) || parseInt(key) !== count) {
             valid = false;
           }
           count++;

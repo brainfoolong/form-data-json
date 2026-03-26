@@ -6,9 +6,10 @@
     "type": "git",
     "url": "git+https://github.com/brainfoolong/form-data-json.git"
   },
-  "version": "3.0.0",
+  "version": "3.0.1",
   "scripts": {
-    "dist": "node ./node_modules/typescript/bin/tsc --project tsconfig.json && node build/dist.js"
+    "dist": "node ./node_modules/typescript/bin/tsc --project tsconfig.json && node build/dist.js",
+    "dist-bun": "bun ./node_modules/typescript/bin/tsc --project tsconfig.json && bun build/dist.js"
   },
   "bugs": {
     "url": "https://github.com/brainfoolong/form-data-json/issues"

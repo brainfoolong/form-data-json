@@ -17,10 +17,10 @@ const plugins = [[__dirname + '/../node_modules/@babel/plugin-proposal-class-pro
  * @return {Promise<void>}
  */
 async function compile () {
-  const srcFileTs = __dirname + '/../src/form-data-json.ts'
+  const srcFileTs = path.resolve(__dirname + '/../src/form-data-json.ts')
   const readmeFile = __dirname + '/../README.md'
 
-  fs.copyFileSync(srcFileTs, __dirname + '/../dist/form-data-json.ts')
+  fs.copyFileSync(srcFileTs, path.resolve(__dirname + '/../dist/form-data-json.ts'))
 
   const packageJson = require(__dirname + '/../package.json')
   const srcFileData = fs.readFileSync(srcFileTs).toString().replace(/\r/g, '')

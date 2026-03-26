@@ -944,6 +944,56 @@
 </div>
 
 
+<div data-test-id="testIssue-53" class="test-container">
+  <h3></h3>
+  <p>Testing issue https://github.com/brainfoolong/form-data-json/issues/53</p>
+
+  <form name="testIssue-53" id="testIssue-53">
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="1" checked>
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="2" checked>
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="3">
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="4">
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="5">
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="6">
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="7">
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="8">
+    </label>
+
+    <label>
+      <input type="checkbox" name="0-1/gf_interests[]" value="9">
+    </label>
+  </form>
+  <div class="result"></div>
+  <script>
+    (function () {
+      runTest('read', document.querySelector('#testIssue-53'), { uncheckedValue: false, arrayify:true }, '{"0-1/gf_interests":["1","2",false,false,false,false,false,false,false]}')
+    })()
+  </script>
+</div>
+
+
 <script>
   (function () {
     let url = '../scripts/form-data-json.min.js'
