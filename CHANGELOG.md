@@ -1,6 +1,6 @@
 ### 3.0.1 - 2026-03-26
 
-* optimized change trigger for selects (fired to often) https://github.com/brainfoolong/form-data-json/issues/43
+* bugfix for non-numeric field names starting with 0 and arrayify enabled https://github.com/brainfoolong/form-data-json/issues/53
 
 ## 3.0.0 - 2025-05-15
 
