@@ -1,3 +1,14 @@
+### 3.0.1 - 2025-03-26
+
+* optimized change trigger for selects (fired to often) https://github.com/brainfoolong/form-data-json/issues/43
+
+## 3.0.0 - 2025-05-15
+
+* added typescript version
+* dropped IE11 support
+* added support for "form" attributes #44
+* optimizations in code base regarding old code and typescript updates (#47 #46 #45)
+
 ### 2.2.3 - 2025-01-14
 
 * optimized change trigger for selects (fired to often) https://github.com/brainfoolong/form-data-json/issues/43
