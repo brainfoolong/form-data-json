@@ -1,4 +1,4 @@
-### 3.0.1 - 2025-03-26
+### 3.0.1 - 2026-03-26
 
 * optimized change trigger for selects (fired to often) https://github.com/brainfoolong/form-data-json/issues/43
 
