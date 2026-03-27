@@ -748,12 +748,21 @@ export default class FormDataJson {
     isValidInput: ((input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLElement) => boolean | undefined) | null = null,
     options: FormDataJsonOptionsToJson | FormDataJsonOptionsFromJson | FormDataJsonOptionsReset | FormDataJsonOptionsClear
   ): any {
-    const el = FormDataJson.getElement(checkEl)
-    if (!el) {
-      return []
+    let inputs = [];
+    if (Array.isArray(checkEl)) {
+      inputs = checkEl;
     }
-
-    let inputs = Array.from(el.querySelectorAll('select, textarea, input, button'))
+    else if (checkEl.jquery && checkEl.length>1) {
+      const el = null;
+      inputs = checkEl.toArray();
+    }
+    else {
+      const el = FormDataJson.getElement(checkEl);
+      if (!el) {
+        return [];
+      }
+      inputs = Array.from(el.querySelectorAll('select, textarea, input, button'));
+    }
     // if we have a form with a name, we need to find all attributes that have a "form" attribute with that name as value as well
     if (options.includeLinkedFormElements && el instanceof HTMLFormElement && el.getAttribute('id')) {
       const formId = el.getAttribute('id')
